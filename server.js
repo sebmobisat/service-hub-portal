@@ -11,10 +11,16 @@ const FMB003Mapping = require('./js/fmb003-mapping.js');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Initialize OpenAI with API key
-const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY
-});
+// Initialize OpenAI with API key (optional for healthcheck)
+let openai = null;
+if (process.env.OPENAI_API_KEY) {
+    openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY
+    });
+    console.log('OpenAI client initialized');
+} else {
+    console.log('OpenAI API key not provided - AI features will be disabled');
+}
 
 //  DEPLOYMENT REMINDER:
 // Set the OpenAI API key as environment variable in production
@@ -2483,7 +2489,7 @@ ${isItalian ? 'NOTA: Non usare separatori delle migliaia nei numeri. Esempio: 16
         if (!openaiApiKey || openaiApiKey === 'your-openai-api-key-here') {
             console.warn(' OpenAI API key not properly configured, using enhanced fallback report');
             // Skip OpenAI call and go directly to fallback
-        } else {
+        } else if (openai) {
             try {
                 console.log(' Calling OpenAI API for intelligent analysis...');
                 
@@ -2534,7 +2540,7 @@ ${isItalian ? 'NOTA: Non usare separatori delle migliaia nei numeri. Esempio: 16
         // Helper function to call OpenAI for each section
         const generateSection = async (sectionName, prompt) => {
             try {
-                if (!openaiApiKey || openaiApiKey === 'your-openai-api-key-here') {
+                if (!openaiApiKey || openaiApiKey === 'your-openai-api-key-here' || !openai) {
                     // Return enhanced fallback content instead of just "Loading..."
                     return generateAISectionResponse(prompt, { vehicle, obdData: { spikeAnalysis: obdInsights.spikeAnalysis } }, isItalian ? 'it' : 'en', sectionName);
                 }
@@ -4002,6 +4008,17 @@ async function generateCriticalAlerts(context, lang) {
     }).join('\n');
     
     const fullPrompt = `${criticalAlertsPrompt}\n\nParametri critici rilevati:\n${parameterData}`;
+    
+    if (!openai) {
+        console.warn(' OpenAI not available, using fallback response');
+        return JSON.stringify(top3Critical.map(param => ({
+            parameter: param.parameter,
+            values: param.values,
+            explanation: isItalian ? 'Parametro critico rilevato' : 'Critical parameter detected',
+            problems: isItalian ? 'Analisi dettagliata richiesta' : 'Detailed analysis required',
+            solutions: isItalian ? 'Controllo diagnostico raccomandato' : 'Diagnostic check recommended'
+        })));
+    }
     
     try {
         // Call OpenAI API
