@@ -1,0 +1,37 @@
+<svg width="200" height="120" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="leonGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#e53e3e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#c53030;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- SEAT Leon body (sporty hatchback) -->
+  <path d="M20 80 L30 55 L50 45 L150 45 L170 55 L180 80 L180 90 L20 90 Z" fill="url(#leonGradient)" stroke="#1a1a1a" stroke-width="1"/>
+  
+  <!-- Sporty windows -->
+  <path d="M35 55 L45 47 L125 47 L135 55 L125 62 L45 62 Z" fill="#87ceeb" stroke="#1a1a1a" stroke-width="1"/>
+  <path d="M125 47 L155 47 L165 55 L155 62 L125 62 Z" fill="#87ceeb" stroke="#1a1a1a" stroke-width="1"/>
+  
+  <!-- Wheels -->
+  <circle cx="45" cy="90" r="12" fill="#2c3e50" stroke="#1a1a1a" stroke-width="2"/>
+  <circle cx="155" cy="90" r="12" fill="#2c3e50" stroke="#1a1a1a" stroke-width="2"/>
+  
+  <!-- Wheel centers with sporty design -->
+  <circle cx="45" cy="90" r="6" fill="#95a5a6"/>
+  <circle cx="155" cy="90" r="6" fill="#95a5a6"/>
+  <path d="M42 87 L48 93 M48 87 L42 93" stroke="#2c3e50" stroke-width="2"/>
+  <path d="M152 87 L158 93 M158 87 L152 93" stroke="#2c3e50" stroke-width="2"/>
+  
+  <!-- Headlights -->
+  <ellipse cx="175" cy="70" rx="4" ry="6" fill="#f1c40f"/>
+  
+  <!-- SEAT grille -->
+  <rect x="170" y="65" width="8" height="10" fill="#1a1a1a"/>
+  <rect x="172" y="67" width="4" height="6" fill="#e53e3e"/>
+  
+  <!-- Sporty side line -->
+  <path d="M30 65 L170 65" stroke="#c53030" stroke-width="2"/>
+  
+  <text x="100" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#e53e3e">SEAT Leon 2025</text>
+</svg> 

@@ -1,0 +1,38 @@
+<svg width="200" height="120" viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="teslaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#e2e8f0;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Tesla Model 3 body (sleek sedan) -->
+  <path d="M15 82 L25 58 L45 48 L155 48 L175 58 L185 82 L185 92 L15 92 Z" fill="url(#teslaGradient)" stroke="#2d3748" stroke-width="1"/>
+  
+  <!-- Large panoramic windshield -->
+  <path d="M30 58 L40 50 L160 50 L170 58 L165 65 L35 65 Z" fill="#4299e1" stroke="#2d3748" stroke-width="1"/>
+  
+  <!-- Side windows -->
+  <rect x="35" y="65" width="60" height="17" fill="#4299e1" stroke="#2d3748" stroke-width="1"/>
+  <rect x="105" y="65" width="60" height="17" fill="#4299e1" stroke="#2d3748" stroke-width="1"/>
+  
+  <!-- Tesla wheels (aero design) -->
+  <circle cx="40" cy="92" r="12" fill="#2d3748" stroke="#1a1a1a" stroke-width="2"/>
+  <circle cx="160" cy="92" r="12" fill="#2d3748" stroke="#1a1a1a" stroke-width="2"/>
+  
+  <!-- Aero wheel covers -->
+  <circle cx="40" cy="92" r="8" fill="#e2e8f0"/>
+  <circle cx="160" cy="92" r="8" fill="#e2e8f0"/>
+  
+  <!-- Tesla T logo -->
+  <rect x="177" y="70" width="6" height="2" fill="#2d3748"/>
+  <rect x="179" y="70" width="2" height="8" fill="#2d3748"/>
+  
+  <!-- Minimalist design line -->
+  <path d="M25 75 L175 75" stroke="#cbd5e0" stroke-width="1"/>
+  
+  <!-- Door handle (hidden) -->
+  <rect x="100" y="75" width="8" height="1" fill="#a0aec0"/>
+  
+  <text x="100" y="110" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#2d3748">Tesla Model 3</text>
+</svg> 

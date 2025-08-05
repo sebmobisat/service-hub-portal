@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="it" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FMB003 - Mappatura Parametri OBD - Service Hub Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <style>
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #374151;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #6b7280;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+        
+        /* Parameter category colors */
+        .category-obd { @apply bg-blue-900/20 border-blue-500/30; }
+        .category-permanent { @apply bg-green-900/20 border-green-500/30; }
+        .category-eventual { @apply bg-yellow-900/20 border-yellow-500/30; }
+        .category-can { @apply bg-purple-900/20 border-purple-500/30; }
+        
+        .param-row:hover { @apply bg-gray-700/50; }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-white min-h-screen">
+    <!-- Header -->
+    <header class="page-header px-4 py-3">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <img id="headerLogo" src="/images/header_logo_light_theme.png?v10" alt="Logo" class="h-8">
+                <div>
+                    <h1 class="text-xl font-bold">FMB003 - Mappatura Parametri</h1>
+                    <p class="text-sm text-gray-400">Model ID: 7 | Teltonika FMB003 OBD Tracker</p>
+                </div>
+            </div>
+            <a href="/certificates.html" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors">
+                ← Torna ai Certificati
+            </a>
+        </div>
+    </header>
+
+    <div class="container mx-auto px-4 py-6">
+        
+        <!-- Device Info Card -->
+        <div class="bg-gray-800 rounded-lg border border-gray-700 p-6 mb-6">
+            <div class="flex items-start justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-white mb-2">Teltonika FMB003</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                            <span class="text-gray-400">Model ID:</span>
+                            <span class="text-white font-medium ml-2">7</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400">Device Type:</span>
+                            <span class="text-white font-medium ml-2">OBD Tracker</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-400">Firmware:</span>
+                            <span class="text-white font-medium ml-2">FMB.Ver.03.29.00+</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <a href="https://wiki.teltonika-gps.com/view/FMB003_Teltonika_Data_Sending_Parameters_ID" 
+                       target="_blank" 
+                       class="inline-flex items-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                        </svg>
+                        Documentazione Ufficiale
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="bg-gray-800 rounded-lg border border-gray-700 p-4 mb-6">
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                    <input type="text" 
+                           id="searchInput" 
+                           placeholder="Cerca parametro (ID, nome, descrizione...)" 
+                           class="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-blue-500 focus:outline-none">
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="filterCategory('all')" class="filter-btn active px-4 py-2 bg-gray-600 hover:bg-gray-500 rounded-lg text-sm font-medium transition-colors">
+                        Tutti
+                    </button>
+                    <button onclick="filterCategory('obd')" class="filter-btn px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors">
+                        OBD
+                    </button>
+                    <button onclick="filterCategory('permanent')" class="filter-btn px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg text-sm font-medium transition-colors">
+                        Permanent I/O
+                    </button>
+                    <button onclick="filterCategory('eventual')" class="filter-btn px-4 py-2 bg-yellow-600 hover:bg-yellow-700 rounded-lg text-sm font-medium transition-colors">
+                        Eventual I/O
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Parameters Table -->
+        <div class="bg-gray-800 rounded-lg border border-gray-700 overflow-hidden">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-700">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-medium text-gray-300">ID</th>
+                            <th class="px-4 py-3 text-left font-medium text-gray-300">Nome Parametro</th>
+                            <th class="px-4 py-3 text-left font-medium text-gray-300">Bytes</th>
+                            <th class="px-4 py-3 text-left font-medium text-gray-300">Tipo</th>
+                            <th class="px-4 py-3 text-left font-medium text-gray-300">Range</th>
+                            <th class="px-4 py-3 text-left font-medium text-gray-300">Unità</th>
+                            <th class="px-4 py-3 text-left font-medium text-gray-300">Moltiplicatore</th>
+                            <th class="px-4 py-3 text-left font-medium text-gray-300">Descrizione</th>
+                            <th class="px-4 py-3 text-left font-medium text-gray-300">Categoria</th>
+                        </tr>
+                    </thead>
+                    <tbody id="parametersTable" class="divide-y divide-gray-700">
+                        <!-- Parameters will be populated by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Legend -->
+        <div class="bg-gray-800 rounded-lg border border-gray-700 p-6 mt-6">
+            <h3 class="text-lg font-bold text-white mb-4">Legenda Categorie</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="flex items-center gap-3 category-obd p-3 rounded-lg">
+                    <div class="w-4 h-4 bg-blue-500 rounded"></div>
+                    <div>
+                        <div class="font-medium text-blue-200">OBD Elements</div>
+                        <div class="text-xs text-blue-300">Parametri diagnostici OBD-II standard</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 category-permanent p-3 rounded-lg">
+                    <div class="w-4 h-4 bg-green-500 rounded"></div>
+                    <div>
+                        <div class="font-medium text-green-200">Permanent I/O</div>
+                        <div class="text-xs text-green-300">Parametri sempre disponibili</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 category-eventual p-3 rounded-lg">
+                    <div class="w-4 h-4 bg-yellow-500 rounded"></div>
+                    <div>
+                        <div class="font-medium text-yellow-200">Eventual I/O</div>
+                        <div class="text-xs text-yellow-300">Parametri condizionali</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-3 category-can p-3 rounded-lg">
+                    <div class="w-4 h-4 bg-purple-500 rounded"></div>
+                    <div>
+                        <div class="font-medium text-purple-200">CAN Elements</div>
+                        <div class="text-xs text-purple-300">Parametri CAN Bus</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // FMB003 Parameters Database - Based on official Teltonika documentation
+        const fmb003Parameters = [
+            // === OBD ELEMENTS ===
+            { id: 30, name: "Number of DTC", bytes: 1, type: "Unsigned", min: 0, max: 255, unit: "-", multiplier: "-", description: "Number of diagnostic trouble codes", category: "obd" },
+            { id: 31, name: "Engine Load", bytes: 1, type: "Unsigned", min: 0, max: 100, unit: "%", multiplier: "-", description: "Calculated engine load value", category: "obd" },
+            { id: 32, name: "Coolant Temperature", bytes: 1, type: "Signed", min: -128, max: 127, unit: "°C", multiplier: "-", description: "Engine coolant temperature", category: "obd" },
+            { id: 33, name: "Short Fuel Trim", bytes: 1, type: "Signed", min: -100, max: 99, unit: "%", multiplier: "-", description: "Short term fuel trim 1", category: "obd" },
+            { id: 34, name: "Fuel Pressure", bytes: 2, type: "Unsigned", min: 0, max: 765, unit: "kPa", multiplier: "-", description: "Fuel pressure", category: "obd" },
+            { id: 35, name: "Intake MAP", bytes: 1, type: "Unsigned", min: 0, max: 255, unit: "kPa", multiplier: "-", description: "Intake manifold absolute pressure", category: "obd" },
+            { id: 36, name: "Engine RPM", bytes: 2, type: "Unsigned", min: 0, max: 16384, unit: "rpm", multiplier: "-", description: "Engine RPM", category: "obd" },
+            { id: 37, name: "Vehicle Speed", bytes: 1, type: "Unsigned", min: 0, max: 255, unit: "km/h", multiplier: "-", description: "Vehicle speed", category: "obd" },
+            { id: 38, name: "Timing Advance", bytes: 1, type: "Signed", min: -64, max: 64, unit: "°", multiplier: "-", description: "Timing advance", category: "obd" },
+            { id: 39, name: "Intake Air Temperature", bytes: 1, type: "Signed", min: -128, max: 127, unit: "°C", multiplier: "-", description: "Intake air temperature", category: "obd" },
+            { id: 40, name: "MAF", bytes: 2, type: "Unsigned", min: 0, max: 65535, unit: "g/sec", multiplier: "0.01", description: "MAF air flow rate", category: "obd" },
+            { id: 41, name: "Throttle Position", bytes: 1, type: "Unsigned", min: 0, max: 100, unit: "%", multiplier: "-", description: "Throttle position", category: "obd" },
+            { id: 42, name: "Runtime Since Engine Start", bytes: 2, type: "Unsigned", min: 0, max: 65535, unit: "s", multiplier: "-", description: "Runtime since engine start", category: "obd" },
+            { id: 43, name: "Distance Traveled MIL On", bytes: 2, type: "Unsigned", min: 0, max: 65535, unit: "km", multiplier: "-", description: "Distance traveled with MIL on", category: "obd" },
+            { id: 44, name: "Relative Fuel Rail Pressure", bytes: 2, type: "Unsigned", min: 0, max: 5178, unit: "kPa", multiplier: "0.1", description: "Relative fuel rail pressure", category: "obd" },
+            { id: 45, name: "Direct Fuel Rail Pressure", bytes: 2, type: "Unsigned", min: 0, max: 65535, unit: "kPa", multiplier: "10", description: "Direct fuel rail pressure", category: "obd" },
+            { id: 46, name: "Commanded EGR", bytes: 1, type: "Unsigned", min: 0, max: 100, unit: "%", multiplier: "-", description: "Commanded EGR", category: "obd" },
+            { id: 47, name: "EGR Error", bytes: 1, type: "Signed", min: -100, max: 100, unit: "%", multiplier: "-", description: "EGR error", category: "obd" },
+            { id: 48, name: "Fuel Level", bytes: 1, type: "Unsigned", min: 0, max: 100, unit: "%", multiplier: "-", description: "Fuel level", category: "obd" },
+            { id: 49, name: "Distance Since Codes Clear", bytes: 2, type: "Unsigned", min: 0, max: 65535, unit: "km", multiplier: "-", description: "Distance traveled since codes cleared", category: "obd" },
+            { id: 50, name: "Barometric Pressure", bytes: 1, type: "Unsigned", min: 0, max: 255, unit: "kPa", multiplier: "-", description: "Barometric pressure", category: "obd" },
+            { id: 51, name: "Control Module Voltage", bytes: 2, type: "Unsigned", min: 0, max: 65535, unit: "V", multiplier: "0.001", description: "Control module voltage", category: "obd" },
+            { id: 52, name: "Absolute Load Value", bytes: 2, type: "Unsigned", min: 0, max: 25700, unit: "%", multiplier: "-", description: "Absolute load value", category: "obd" },
+
+            // === PERMANENT I/O ELEMENTS ===
+            { id: 239, name: "Ignition", bytes: 1, type: "Unsigned", min: 0, max: 1, unit: "-", multiplier: "-", description: "0 – Ignition Off, 1 – Ignition On", category: "permanent" },
+            { id: 240, name: "Movement", bytes: 1, type: "Unsigned", min: 0, max: 1, unit: "-", multiplier: "-", description: "0 – Movement Off, 1 – Movement On", category: "permanent" },
+            { id: 80, name: "Data Mode", bytes: 1, type: "Unsigned", min: 0, max: 3, unit: "-", multiplier: "-", description: "GSM/GNSS/Accelerometer data mode", category: "permanent" },
+            { id: 21, name: "GSM Signal", bytes: 1, type: "Unsigned", min: 0, max: 5, unit: "-", multiplier: "-", description: "GSM signal strength", category: "permanent" },
+            { id: 200, name: "Sleep Mode", bytes: 1, type: "Unsigned", min: 0, max: 4, unit: "-", multiplier: "-", description: "Sleep mode status", category: "permanent" },
+            { id: 69, name: "GNSS Status", bytes: 1, type: "Unsigned", min: 0, max: 3, unit: "-", multiplier: "-", description: "GNSS status", category: "permanent" },
+            { id: 181, name: "GNSS PDOP", bytes: 2, type: "Unsigned", min: 0, max: 65535, unit: "-", multiplier: "0.1", description: "GNSS Position Dilution of Precision", category: "permanent" },
+            { id: 182, name: "GNSS HDOP", bytes: 2, type: "Unsigned", min: 0, max: 65535, unit: "-", multiplier: "0.1", description: "GNSS Horizontal Dilution of Precision", category: "permanent" },
+            { id: 66, name: "External Voltage", bytes: 2, type: "Unsigned", min: 0, max: 65535, unit: "mV", multiplier: "-", description: "External voltage", category: "permanent" },
+            { id: 67, name: "Battery Voltage", bytes: 2, type: "Unsigned", min: 0, max: 65535, unit: "mV", multiplier: "-", description: "Battery voltage", category: "permanent" },
+            { id: 68, name: "Battery Current", bytes: 2, type: "Signed", min: -32768, max: 32767, unit: "mA", multiplier: "-", description: "Battery current", category: "permanent" },
+
+            // === EVENTUAL I/O ELEMENTS ===
+            { id: 1, name: "Digital Input 1", bytes: 1, type: "Unsigned", min: 0, max: 1, unit: "-", multiplier: "-", description: "Digital input 1 status", category: "eventual" },
+            { id: 179, name: "Digital Output 1", bytes: 1, type: "Unsigned", min: 0, max: 1, unit: "-", multiplier: "-", description: "Digital output 1 status", category: "eventual" },
+            { id: 180, name: "Digital Output 2", bytes: 1, type: "Unsigned", min: 0, max: 1, unit: "-", multiplier: "-", description: "Digital output 2 status", category: "eventual" },
+            { id: 113, name: "Battery Level", bytes: 1, type: "Unsigned", min: 0, max: 100, unit: "%", multiplier: "-", description: "Battery level percentage", category: "eventual" },
+            { id: 199, name: "Trip Distance", bytes: 4, type: "Unsigned", min: 0, max: 0xFFFFFFFF, unit: "m", multiplier: "-", description: "Trip distance", category: "eventual" },
+            { id: 16, name: "Total Odometer", bytes: 4, type: "Unsigned", min: 0, max: 0xFFFFFFFF, unit: "m", multiplier: "-", description: "Total distance traveled", category: "eventual" },
+            { id: 17, name: "Axis X", bytes: 2, type: "Signed", min: -32768, max: 32767, unit: "mg", multiplier: "-", description: "Accelerometer X axis", category: "eventual" },
+            { id: 18, name: "Axis Y", bytes: 2, type: "Signed", min: -32768, max: 32767, unit: "mg", multiplier: "-", description: "Accelerometer Y axis", category: "eventual" },
+            { id: 19, name: "Axis Z", bytes: 2, type: "Signed", min: -32768, max: 32767, unit: "mg", multiplier: "-", description: "Accelerometer Z axis", category: "eventual" },
+
+            // === CAN ADAPTER ELEMENTS (samples) ===
+            { id: 256, name: "VIN", bytes: 17, type: "ASCII", min: 0, max: 0xFF, unit: "-", multiplier: "-", description: "VIN number", category: "can" },
+            { id: 1116, name: "LVCAN MaxRoadSpeed", bytes: 1, type: "Unsigned", min: 0, max: 255, unit: "km/h", multiplier: "-", description: "Maximum speed from road signs", category: "can" },
+            { id: 1117, name: "LVCAN ExceededRoadSpeed", bytes: 1, type: "Unsigned", min: 0, max: 255, unit: "km/h", multiplier: "-", description: "Exceeded speed from road signs", category: "can" }
+        ];
+
+        let filteredParameters = [...fmb003Parameters];
+        let currentFilter = 'all';
+
+        // Populate table
+        function populateTable() {
+            const tableBody = document.getElementById('parametersTable');
+            tableBody.innerHTML = '';
+
+            filteredParameters.forEach(param => {
+                const row = document.createElement('tr');
+                row.className = `param-row category-${param.category}`;
+                
+                const rangeText = param.min !== undefined && param.max !== undefined 
+                    ? `${param.min} - ${param.max}` 
+                    : '-';
+
+                row.innerHTML = `
+                    <td class="px-4 py-3 font-mono text-yellow-400 font-bold">${param.id}</td>
+                    <td class="px-4 py-3 font-medium text-blue-300">${param.name}</td>
+                    <td class="px-4 py-3 text-center">${param.bytes}</td>
+                    <td class="px-4 py-3">${param.type}</td>
+                    <td class="px-4 py-3 font-mono text-sm">${rangeText}</td>
+                    <td class="px-4 py-3 text-center font-medium text-green-400">${param.unit}</td>
+                    <td class="px-4 py-3 text-center">${param.multiplier}</td>
+                    <td class="px-4 py-3 text-gray-300">${param.description}</td>
+                    <td class="px-4 py-3">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                            ${param.category === 'obd' ? 'bg-blue-900/50 text-blue-200' : 
+                              param.category === 'permanent' ? 'bg-green-900/50 text-green-200' :
+                              param.category === 'eventual' ? 'bg-yellow-900/50 text-yellow-200' :
+                              'bg-purple-900/50 text-purple-200'}">
+                            ${param.category.toUpperCase()}
+                        </span>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Filter by category
+        function filterCategory(category) {
+            currentFilter = category;
+            
+            // Update button states
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active', 'bg-gray-500');
+                btn.classList.add('bg-gray-600');
+            });
+            event.target.classList.add('active', 'bg-gray-500');
+            event.target.classList.remove('bg-gray-600');
+            
+            applyFilters();
+        }
+
+        // Search functionality
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            
+            filteredParameters = fmb003Parameters.filter(param => {
+                const matchesCategory = currentFilter === 'all' || param.category === currentFilter;
+                const matchesSearch = searchTerm === '' || 
+                    param.id.toString().includes(searchTerm) ||
+                    param.name.toLowerCase().includes(searchTerm) ||
+                    param.description.toLowerCase().includes(searchTerm) ||
+                    param.unit.toLowerCase().includes(searchTerm);
+                
+                return matchesCategory && matchesSearch;
+            });
+            
+            populateTable();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            populateTable();
+            
+            // Search input listener
+            document.getElementById('searchInput').addEventListener('input', applyFilters);
+            
+            console.log('📊 FMB003 Parameter Database loaded:', fmb003Parameters.length, 'parameters');
+        });
+        
+        // Logo management
+        function updateHeaderLogo() {
+            const logo = document.getElementById('headerLogo');
+            if (!logo) return;
+            
+            const isDark = document.documentElement.classList.contains('dark');
+            const baseUrl = isDark ? '/images/header_logo_light_theme.png' : '/images/header_logo_dark_theme.png';
+            logo.src = baseUrl + '?v10';
+        }
+        
+        updateHeaderLogo();
+    </script>
+</body>
+</html>

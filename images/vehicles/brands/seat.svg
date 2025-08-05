@@ -1,0 +1,18 @@
+<svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="seatGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e53e3e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#c53030;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- SEAT logo background -->
+  <circle cx="40" cy="40" r="35" fill="url(#seatGradient)" stroke="#2d3748" stroke-width="2"/>
+  
+  <!-- SEAT text -->
+  <text x="40" y="28" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">SEAT</text>
+  
+  <!-- Stylized S -->
+  <path d="M25 45 Q30 42 35 45 Q40 48 45 45 Q50 42 55 45" stroke="white" stroke-width="3" fill="none"/>
+  <path d="M25 52 Q30 49 35 52 Q40 55 45 52 Q50 49 55 52" stroke="white" stroke-width="2" fill="none"/>
+</svg> 

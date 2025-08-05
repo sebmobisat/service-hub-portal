@@ -1,0 +1,152 @@
+<footer style="background-color: #f9fafb; border-top: 1px solid #e5e7eb; padding: 48px 0;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 24px;">
+        <!-- Service Hub Logo/Branding -->
+        <div style="text-align: center; margin-bottom: 32px;">
+            <div style="font-size: 32px; font-weight: 700; color: #374151; margin-bottom: 8px;">
+                SERVICE HUB PORTAL
+            </div>
+            <p style="color: #6b7280; font-size: 14px; margin: 0;" data-en="Powered by Mobisat - Dealer Management Platform" data-it="Alimentato da Mobisat - Piattaforma Gestione Dealer">
+                Powered by Mobisat - Dealer Management Platform
+            </p>
+        </div>
+        
+        <!-- Links -->
+        <div class="footer-links" style="text-align: center; margin-bottom: 32px;">
+            <a href="/pages/help.html" style="color: #6b7280; text-decoration: none; padding: 8px 16px; font-size: 16px;" onmouseover="this.style.color='#00D4FF'" onmouseout="this.style.color='#6b7280'" data-en="Help & Support" data-it="Aiuto e Supporto">Help & Support</a>
+            <span style="color: #6b7280; margin: 0 8px;">•</span>
+            <span id="contact-modal-trigger" style="color: #6b7280; cursor: pointer; padding: 8px 16px; font-size: 16px;" onmouseover="this.style.color='#00D4FF'" onmouseout="this.style.color='#6b7280'" data-en="Contact Support" data-it="Contatta Supporto">Contact Support</span>
+            <span style="color: #6b7280; margin: 0 8px;">•</span>
+            <a href="/pages/documentation.html" style="color: #6b7280; text-decoration: none; padding: 8px 16px; font-size: 16px;" onmouseover="this.style.color='#00D4FF'" onmouseout="this.style.color='#6b7280'" data-en="Documentation" data-it="Documentazione">Documentation</a>
+            <span style="color: #6b7280; margin: 0 8px;">•</span>
+            <a href="https://mobisat.com/privacy.html" target="_blank" style="color: #6b7280; text-decoration: none; padding: 8px 16px; font-size: 16px;" onmouseover="this.style.color='#00D4FF'" onmouseout="this.style.color='#6b7280'">Privacy</a>
+        </div>
+        
+        <!-- Portal Status -->
+        <div style="text-align: center; margin-bottom: 24px;">
+            <div class="flex items-center justify-center space-x-4 text-sm">
+                <div class="flex items-center space-x-2">
+                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span style="color: #6b7280;" data-en="Portal Online" data-it="Portale Online">Portal Online</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span style="color: #6b7280;" data-en="Database Connected" data-it="Database Connesso">Database Connected</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom -->
+        <div class="footer-bottom" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+            <p style="color: #6b7280; font-size: 14px; margin: 0;">
+                &copy; 2025 Mobisat SRL. All rights reserved.
+            </p>
+            <div style="color: #6b7280; font-size: 14px;">
+                <span style="color: #6b7280;">Service Hub Portal v1.0</span>
+                <span style="color: #6b7280; margin: 0 8px;">•</span>
+                <span style="color: #6b7280;">P.IVA: 03864950120</span>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Dark mode styles -->
+<style>
+@media (prefers-color-scheme: dark) {
+    footer { background-color: #1f2937 !important; border-top-color: #374151 !important; }
+    footer div[style*="color: #374151"] { color: #e5e7eb !important; }
+    footer p[style*="color: #6b7280"], footer span[style*="color: #6b7280"], footer a[style*="color: #6b7280"], footer div[style*="color: #6b7280"] { color: #d1d5db !important; }
+}
+
+/* Mobile footer improvements */
+@media (max-width: 768px) {
+    .footer-links {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 12px !important;
+    }
+    
+    .footer-links a,
+    .footer-links span[id="contact-modal-trigger"] {
+        padding: 12px 24px !important;
+        font-size: 16px !important;
+        min-height: 44px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 8px !important;
+        transition: background-color 0.2s ease !important;
+    }
+    
+    .footer-links a:hover,
+    .footer-links span[id="contact-modal-trigger"]:hover {
+        background-color: rgba(0, 212, 255, 0.1) !important;
+    }
+    
+    .footer-links span:not([id="contact-modal-trigger"]) {
+        display: none !important; /* Hide bullet separators on mobile */
+    }
+    
+    /* Improve bottom section alignment on mobile */
+    .footer-bottom {
+        flex-direction: column !important;
+        text-align: center !important;
+        gap: 8px !important;
+    }
+    
+    .footer-bottom > * {
+        text-align: center !important;
+    }
+}
+</style>
+
+<!-- Contact Support Modal -->
+<div id="contact-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-gray-900 bg-opacity-95 backdrop-blur-sm">
+    <div class="relative bg-white dark:bg-dark-secondary rounded-3xl shadow-2xl max-w-md w-full mx-4">
+        <!-- Modal Header -->
+        <div class="bg-gradient-to-r from-primary to-secondary px-6 py-4 rounded-t-3xl">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-blue-900 rounded-full flex items-center justify-center">
+                        <i class="fas fa-headset text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold font-display text-white" data-en="Contact Support" data-it="Contatta Supporto">
+                            Contact Support
+                        </h2>
+                    </div>
+                </div>
+                <button id="contact-modal-close" class="bg-blue-900 text-white hover:bg-blue-800 transition-colors p-2 rounded-full">
+                    <i class="fas fa-times text-sm"></i>
+                </button>
+            </div>
+            <p class="text-white text-opacity-90 mt-3 text-sm" data-en="Need assistance with the Service Hub Portal? We're here to help!" data-it="Hai bisogno di assistenza con il Portale Service Hub? Siamo qui per aiutarti!">
+                Need assistance with the Service Hub Portal? We're here to help!
+            </p>
+        </div>
+        
+        <!-- Modal Content -->
+        <div class="px-6 py-4">
+            <div class="space-y-4">
+                <div class="text-center">
+                    <p class="text-gray-600 dark:text-gray-400 mb-4" data-en="For technical support, please contact:" data-it="Per supporto tecnico, contatta:">
+                        For technical support, please contact:
+                    </p>
+                    <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
+                        <div class="flex items-center justify-center space-x-2 mb-2">
+                            <i class="fas fa-envelope text-primary"></i>
+                            <a href="mailto:support@mobisat.com" class="text-primary hover:text-blue-600 font-medium">support@mobisat.com</a>
+                        </div>
+                        <div class="flex items-center justify-center space-x-2">
+                            <i class="fas fa-phone text-primary"></i>
+                            <a href="tel:+390331984284" class="text-primary hover:text-blue-600 font-medium">+39 0331 984 284</a>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-3" data-en="Support hours: Monday - Friday, 9:00 AM - 6:00 PM CET" data-it="Orari supporto: Lunedì - Venerdì, 9:00 - 18:00 CET">
+                        Support hours: Monday - Friday, 9:00 AM - 6:00 PM CET
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

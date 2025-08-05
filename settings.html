@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="it" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impostazioni - Service Hub Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+</head>
+<body class="min-h-screen theme-transition">
+    <!-- Sidebar -->
+    <div class="sidebar fixed left-0 top-0 h-full w-16 flex flex-col py-4 z-50">
+        <!-- Logo -->
+        <div class="flex items-center justify-center mb-8">
+            <img src="/images/greenbox-logo.png" alt="Service Hub" class="w-10 h-10 object-contain" onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='flex'" id="sidebarLogo">
+            <!-- Fallback logo if image fails -->
+            <div class="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center text-white font-bold text-xs" style="display: none;" id="logoFallback">
+                SH
+            </div>
+        </div>
+        
+        <!-- Menu Items -->
+        <nav class="flex-1 py-4">
+            <!-- Dashboard -->
+            <div class="relative group">
+                <button onclick="window.location.href='/'" class="sidebar-nav-item w-full p-3 flex justify-center rounded-lg transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                </button>
+                                 <!-- Tooltip -->
+                 <div class="sidebar-tooltip absolute left-full ml-2 px-2 py-1 text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-60" data-i18n="nav.dashboard">
+                 </div>
+            </div>
+            
+            <!-- Certificates -->
+            <div class="relative group mt-2">
+                <button onclick="window.location.href='/certificates.html'" class="sidebar-nav-item w-full p-3 flex justify-center rounded-lg transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </button>
+                                 <!-- Tooltip -->
+                 <div class="sidebar-tooltip absolute left-full ml-2 px-2 py-1 text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-60" data-i18n="nav.certificates">
+                 </div>
+            </div>
+            
+            <!-- Settings (Active) -->
+            <div class="relative group mt-2">
+                <button class="sidebar-nav-item active w-full p-3 flex justify-center rounded-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </button>
+                                 <!-- Tooltip -->
+                 <div class="sidebar-tooltip absolute left-full ml-2 px-2 py-1 text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-60" data-i18n="nav.settings">
+                 </div>
+            </div>
+        </nav>
+        
+        <!-- Logout -->
+        <div class="relative group mt-auto">
+            <button onclick="logout()" class="sidebar-nav-item w-full p-3 flex justify-center rounded-lg hover:bg-red-600 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+            </button>
+                         <!-- Tooltip -->
+             <div class="sidebar-tooltip absolute left-full ml-2 px-2 py-1 text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-60" data-i18n="nav.logout">
+             </div>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <div style="margin-left: 64px;">
+        <!-- Header -->
+        <header class="page-header px-4 py-3">
+            <div class="flex items-center justify-between">
+                                 <div>
+                     <h1 class="page-title text-xl font-semibold" data-i18n="page.settings.title"></h1>
+                     <p class="page-subtitle text-sm" data-i18n="page.settings.subtitle"></p>
+                 </div>
+                                 <div class="flex items-center space-x-4">
+                     <img id="headerLogo" src="/images/header_logo_light_theme.png?v10" alt="Mobisat" class="h-8 w-auto object-contain">
+                 </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid gap-6">
+                                 <!-- Language Settings -->
+                 <div class="settings-card rounded-lg p-6 border">
+                     <h2 class="settings-title text-lg font-semibold mb-4" data-i18n="settings.language.title"></h2>
+                     <div class="space-y-4">
+                         <p class="settings-description text-sm" data-i18n="settings.language.description"></p>
+                         <div class="flex space-x-4">
+                             <button id="langIT" onclick="changeLanguage('it')" class="px-4 py-2 rounded-lg bg-green-600 text-white transition-colors hover:bg-green-700" data-i18n="settings.language.italian">
+                              </button>
+                              <button id="langEN" onclick="changeLanguage('en')" class="px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700 transition-colors" data-i18n="settings.language.english">
+                              </button>
+                         </div>
+                     </div>
+                 </div>
+
+                                 <!-- Theme Settings -->
+                 <div class="settings-card rounded-lg p-6 border">
+                     <h2 class="settings-title text-lg font-semibold mb-4" data-i18n="settings.theme.title"></h2>
+                     <div class="space-y-4">
+                         <p class="settings-description text-sm" data-i18n="settings.theme.description"></p>
+                         <div class="flex space-x-4">
+                             <button id="themeDark" class="btn-theme btn-theme-active px-4 py-2 rounded-lg transition-colors" data-i18n="settings.theme.dark">
+                             </button>
+                             <button id="themeLight" class="btn-theme btn-theme-inactive px-4 py-2 rounded-lg transition-colors" data-i18n="settings.theme.light">
+                             </button>
+                         </div>
+                     </div>
+                 </div>
+
+                                 <!-- Dealer Information -->
+                 <div class="settings-card rounded-lg p-6 border">
+                     <h2 class="settings-title text-lg font-semibold mb-4" data-i18n="settings.dealer.title"></h2>
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                         <div>
+                             <p class="settings-description text-sm" data-i18n="settings.dealer.id"></p>
+                             <p class="settings-title font-mono" id="dealerIdDisplay">1</p>
+                         </div>
+                         <div>
+                             <p class="settings-description text-sm" data-i18n="settings.dealer.name"></p>
+                             <p class="settings-title" id="dealerNameDisplay">Mobisat Dealer</p>
+                         </div>
+                     </div>
+                 </div>
+
+                                 <!-- System Information -->
+                 <div class="settings-card rounded-lg p-6 border">
+                     <h2 class="settings-title text-lg font-semibold mb-4" data-i18n="settings.system.title"></h2>
+                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                         <div>
+                             <p class="settings-description text-sm" data-i18n="settings.system.version"></p>
+                             <p class="settings-title">Service Hub Portal v1.0</p>
+                         </div>
+                         <div>
+                             <p class="settings-description text-sm" data-i18n="settings.system.database"></p>
+                             <p class="text-green-400" data-i18n="settings.system.connected"></p>
+                         </div>
+                     </div>
+                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Authentication Guard -->
+    <script src="/js/auth-guard.js"></script>
+    <script src="/js/theme.js"></script>
+    <script src="/js/i18n.js"></script>
+    
+    <script>
+        // Logo switcher function
+        function updateHeaderLogo() {
+            const logo = document.getElementById('headerLogo');
+            if (!logo) return;
+            
+            const isDark = document.documentElement.classList.contains('dark');
+            
+            if (isDark) {
+                // Dark mode -> use header_logo_dark_theme.png
+                logo.src = '/images/header_logo_dark_theme.png?v10';
+            } else {
+                // Light mode -> use header_logo_light_theme.png  
+                logo.src = '/images/header_logo_light_theme.png?v10';
+            }
+        }
+        
+        // Run on page load
+        document.addEventListener('DOMContentLoaded', updateHeaderLogo);
+        
+        // Watch for theme changes
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    updateHeaderLogo();
+                }
+            });
+        });
+        
+        // Start observing
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+    </script>
+
+    
+    <script>
+        // Load dealer information from database
+        async function loadDealerInfo() {
+            try {
+                // Get current dealer ID from localStorage
+                const authData = localStorage.getItem('authData');
+                let dealerId = 1; // default
+                
+                if (authData) {
+                    const parsed = JSON.parse(authData);
+                    dealerId = parsed.dealerId || 1;
+                }
+                
+
+                
+                // Make API call to get dealer information
+                const response = await fetch(`/api/dealer/${dealerId}`);
+                const data = await response.json();
+                
+                const dealerIdEl = document.getElementById('dealerIdDisplay');
+                const dealerNameEl = document.getElementById('dealerNameDisplay');
+                
+                if (data.success && data.dealer) {
+                    // Update UI with data from database
+                    if (dealerIdEl) dealerIdEl.textContent = data.dealer.id || dealerId;
+                    if (dealerNameEl) dealerNameEl.textContent = data.dealer.companyName || 'Mobisat Dealer';
+                    
+
+                } else {
+                    // Fallback to localStorage or defaults
+                    if (dealerIdEl) dealerIdEl.textContent = dealerId;
+                    if (dealerNameEl) {
+                        const fallbackName = authData ? (JSON.parse(authData).dealerName || 'Mobisat Dealer') : 'Mobisat Dealer';
+                        dealerNameEl.textContent = fallbackName;
+                    }
+
+                }
+                
+            } catch (error) {
+                console.error('Error loading dealer info:', error);
+                
+                // Fallback on error
+                const dealerIdEl = document.getElementById('dealerIdDisplay');
+                const dealerNameEl = document.getElementById('dealerNameDisplay');
+                
+                if (dealerIdEl) dealerIdEl.textContent = '1';
+                if (dealerNameEl) dealerNameEl.textContent = 'Mobisat Dealer';
+            }
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm(t('message.logout_confirm'))) {
+                localStorage.clear();
+                window.location.href = '/pages/login.html';
+            }
+        }
+
+        // Initialize page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load dealer info
+            loadDealerInfo();
+        });
+    </script>
+</body>
+</html> 

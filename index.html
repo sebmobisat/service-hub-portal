@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="it" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Service Hub Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+</head>
+<body class="min-h-screen theme-transition">
+    <!-- Sidebar -->
+    <div class="sidebar fixed left-0 top-0 h-full w-16 flex flex-col py-4 z-50">
+        <!-- Logo -->
+        <div class="flex items-center justify-center mb-8">
+            <img src="/images/greenbox-logo.png" alt="Service Hub" class="w-10 h-10 object-contain" onerror="handleLogoError()" id="sidebarLogo">
+            <!-- Fallback logo if image fails -->
+            <div class="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center text-white font-bold text-xs" style="display: none;" id="logoFallback">
+                SH
+            </div>
+        </div>
+        
+        <!-- Menu Items (only icons) -->
+        <nav class="flex-1 py-4">
+            <!-- Dashboard Page (Active) -->
+            <div class="relative group">
+                <button class="sidebar-nav-item active w-full p-3 flex justify-center rounded-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                </button>
+                                    <!-- Tooltip -->
+                    <div class="sidebar-tooltip absolute left-full ml-2 px-2 py-1 text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-60" data-i18n="nav.dashboard">
+                    </div>
+            </div>
+            
+            <!-- Certificates Page -->
+            <div class="relative group mt-2">
+                <button onclick="window.location.href='/certificates.html'" class="sidebar-nav-item w-full p-3 flex justify-center rounded-lg transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </button>
+                                    <!-- Tooltip -->
+                    <div class="sidebar-tooltip absolute left-full ml-2 px-2 py-1 text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-60" data-i18n="nav.certificates">
+                    </div>
+            </div>
+            
+            <!-- Settings -->
+            <div class="relative group mt-2">
+                <button onclick="window.location.href='/settings.html'" class="sidebar-nav-item w-full p-3 flex justify-center rounded-lg transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stripe-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </button>
+                                    <!-- Tooltip -->
+                    <div class="sidebar-tooltip absolute left-full ml-2 px-2 py-1 text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-60" data-i18n="nav.settings">
+                    </div>
+            </div>
+        </nav>
+        
+        <!-- Logout -->
+        <div class="relative group mt-auto">
+            <button onclick="logout()" class="sidebar-nav-item w-full p-3 flex justify-center rounded-lg hover:bg-red-600 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+            </button>
+                            <!-- Tooltip -->
+                <div class="sidebar-tooltip absolute left-full ml-2 px-2 py-1 text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-60" data-i18n="nav.logout">
+                </div>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <div style="margin-left: 64px;">
+    <!-- Header -->
+        <header class="page-header px-4 py-3">
+            <div class="flex items-center justify-between">
+                    <div>
+                        <h1 class="page-title text-2xl font-bold" data-i18n="page.dashboard.title"></h1>
+                        <p class="page-subtitle" data-i18n="page.dashboard.subtitle"></p>
+                    </div>
+                <div class="flex items-center space-x-4">
+                                                                        <img id="headerLogo" src="/images/header_logo_light_theme.png?v10" alt="Mobisat" class="h-8 w-auto object-contain">
+            </div>
+        </div>
+    </header>
+
+        <!-- Dashboard Content -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- Welcome Message -->
+            <div class="mb-8">
+                <div class="content-card p-6 rounded-lg border">
+                    <h2 class="text-2xl font-bold mb-2">
+                        <span data-i18n="dashboard.welcome.title"></span>
+                        <span id="companyName" class="text-green-600" data-i18n="dashboard.welcome.loading"></span>
+                    </h2>
+                    <p class="page-subtitle text-sm" data-i18n="page.dashboard.subtitle"></p>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- Stats Cards -->
+                <div class="content-card p-6 rounded-lg border">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+            </div>
+                                                    <div class="ml-4">
+                                <p class="page-subtitle text-sm font-medium" data-i18n="dashboard.stats.total_certificates"></p>
+                                <p class="page-title text-2xl font-bold">0</p>
+            </div>
+            </div>
+                         </div>
+                        
+                <div class="content-card p-6 rounded-lg border">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                                                    <div class="ml-4">
+                                <p class="page-subtitle text-sm font-medium" data-i18n="dashboard.stats.active_devices"></p>
+                                <p class="page-title text-2xl font-bold">0</p>
+                            </div>
+                    </div>
+                        </div>
+                        
+                <div class="content-card p-6 rounded-lg border">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                                                    <div class="ml-4">
+                                <p class="page-subtitle text-sm font-medium" data-i18n="dashboard.stats.pending"></p>
+                                <p class="page-title text-2xl font-bold">0</p>
+                            </div>
+                    </div>
+                </div>
+                
+                <div class="content-card p-6 rounded-lg border">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.502 0L4.232 18.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                        </div>
+                                                    <div class="ml-4">
+                                <p class="page-subtitle text-sm font-medium" data-i18n="dashboard.stats.issues"></p>
+                                <p class="page-title text-2xl font-bold">0</p>
+                </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+                                <div class="mt-8">
+                        <h2 class="page-title text-lg font-semibold mb-4" data-i18n="dashboard.actions.title"></h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <button onclick="window.location.href='/certificates.html'" class="btn-theme btn-theme-inactive p-4 rounded-lg border hover:shadow-lg transition-all">
+                        <svg class="w-8 h-8 mx-auto mb-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                                                    <h3 class="font-medium" data-i18n="dashboard.actions.view_certificates"></h3>
+                            <p class="page-subtitle text-xs mt-1" data-i18n="dashboard.actions.view_certificates_desc"></p>
+                    </button>
+
+                    <button onclick="window.location.href='/settings.html'" class="btn-theme btn-theme-inactive p-4 rounded-lg border hover:shadow-lg transition-all">
+                        <svg class="w-8 h-8 mx-auto mb-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                                                    <h3 class="font-medium" data-i18n="dashboard.actions.settings"></h3>
+                            <p class="page-subtitle text-xs mt-1" data-i18n="dashboard.actions.settings_desc"></p>
+                    </button>
+
+                    <button class="btn-theme btn-theme-inactive p-4 rounded-lg border hover:shadow-lg transition-all" disabled>
+                        <svg class="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                                                    <h3 class="font-medium" data-i18n="dashboard.actions.reports"></h3>
+                            <p class="page-subtitle text-xs mt-1" data-i18n="dashboard.actions.reports_desc"></p>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Authentication Guard -->
+    <script src="/js/auth-guard.js"></script>
+    <script src="/js/theme.js"></script>
+    <script src="/js/i18n.js"></script>
+    
+    <script>
+        // Logo switcher function
+        function updateHeaderLogo() {
+            const logo = document.getElementById('headerLogo');
+            if (!logo) return;
+            
+            const isDark = document.documentElement.classList.contains('dark');
+            
+            if (isDark) {
+                // Dark mode -> use header_logo_dark_theme.png
+                logo.src = '/images/header_logo_dark_theme.png?v10';
+            } else {
+                // Light mode -> use header_logo_light_theme.png  
+                logo.src = '/images/header_logo_light_theme.png?v10';
+            }
+        }
+        
+        // Run on page load
+        document.addEventListener('DOMContentLoaded', updateHeaderLogo);
+        
+        // Watch for theme changes
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    updateHeaderLogo();
+                }
+            });
+        });
+        
+        // Start observing
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+    </script>
+    <script>
+        // Function to load dealer information for welcome message
+        async function loadWelcomeMessage() {
+            try {
+                // Get current dealer ID from localStorage
+                const authData = localStorage.getItem('authData');
+                let dealerId = 1; // default
+                
+                if (authData) {
+                    const parsed = JSON.parse(authData);
+                    dealerId = parsed.dealerId || 1;
+                }
+                
+
+                
+                const response = await fetch(`/api/dealer/${dealerId}`);
+                const data = await response.json();
+
+                const companyNameElement = document.getElementById('companyName');
+                
+                if (data.success && data.dealer) {
+                    const companyName = data.dealer.companyName || 'Mobisat Dealer';
+                    companyNameElement.textContent = companyName;
+
+                } else {
+                    // Fallback to stored dealer name or default
+                    const fallbackName = authData ? (JSON.parse(authData).dealerName || 'Mobisat Dealer') : 'Mobisat Dealer';
+                    companyNameElement.textContent = fallbackName;
+
+                }
+                
+            } catch (error) {
+                console.error('Error loading welcome message:', error);
+                // Show fallback name
+                const companyNameElement = document.getElementById('companyName');
+                companyNameElement.textContent = 'Mobisat Dealer';
+            }
+        }
+    </script>
+    <script>
+        // Handle logo loading error
+        function handleLogoError() {
+            const logo = document.getElementById('sidebarLogo');
+            const fallback = document.getElementById('logoFallback');
+            if (logo && fallback) {
+                logo.style.display = 'none';
+                fallback.style.display = 'flex';
+
+            }
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm('Sei sicuro di voler uscire?')) {
+                // Use auth manager if available, otherwise clear localStorage
+                if (window.authManager) {
+                    window.authManager.logout();
+                } else {
+                    localStorage.clear();
+                }
+                window.location.href = '/pages/login.html';
+            }
+        }
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize auth data if needed
+            const authData = localStorage.getItem('authData');
+            if (!authData) {
+                // Create default auth data
+                const defaultAuth = { dealerId: 1, dealerName: 'Mobisat Dealer' };
+                localStorage.setItem('authData', JSON.stringify(defaultAuth));
+            }
+
+            // Load dealer information for welcome message
+            loadWelcomeMessage();
+            
+            // Check logo loading
+            const logo = document.getElementById('sidebarLogo');
+            if (logo) {
+                setTimeout(() => {
+                    if (logo.naturalWidth === 0) {
+                        handleLogoError();
+                    }
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html> 

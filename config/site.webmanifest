@@ -1,0 +1,16 @@
+{
+    "name": "Service Hub Portal",
+    "short_name": "ServiceHub",
+    "description": "Advanced Automotive Telematics Dashboard for Dealerships",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0f172a",
+    "theme_color": "#00D4FF",
+    "icons": [
+        {
+            "src": "/images/serviceHub.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        }
+    ]
+} 

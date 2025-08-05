@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <!-- Starting point -->
+  <circle cx="5" cy="12" r="3" fill="currentColor" stroke="none"/>
+  <circle cx="5" cy="12" r="2" fill="white"/>
+  <text x="5" y="13" text-anchor="middle" font-size="2" font-weight="bold" fill="currentColor">A</text>
+  
+  <!-- Destination point -->
+  <circle cx="19" cy="12" r="3" fill="currentColor" stroke="none"/>
+  <circle cx="19" cy="12" r="2" fill="white"/>
+  <text x="19" y="13" text-anchor="middle" font-size="2" font-weight="bold" fill="currentColor">B</text>
+  
+  <!-- Route path -->
+  <path d="M8 12 Q12 8 16 12" stroke-width="2" fill="none" stroke-dasharray="2,2"/>
+  
+  <!-- Waypoints -->
+  <circle cx="10" cy="10" r="1" fill="currentColor" opacity="0.7"/>
+  <circle cx="12" cy="9" r="1" fill="currentColor" opacity="0.7"/>
+  <circle cx="14" cy="10" r="1" fill="currentColor" opacity="0.7"/>
+  
+  <!-- Car icon -->
+  <rect x="11" y="11.5" width="2" height="1" rx="0.5" fill="currentColor"/>
+  <circle cx="11.5" cy="12" r="0.3" fill="white"/>
+  <circle cx="12.5" cy="12" r="0.3" fill="white"/>
+</svg>

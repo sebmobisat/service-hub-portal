@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Service Hub Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="min-h-screen bg-gray-900 flex items-center justify-center p-4">
+    
+    <!-- Login Container -->
+    <div class="w-full max-w-md">
+        
+        <!-- Logo and Title -->
+        <div class="text-center mb-8">
+                         <div class="mb-4">
+                 <img src="../images/serviceHub.png" alt="Service Hub" class="h-16 mx-auto" onerror="this.outerHTML='<div class=&quot;w-16 h-16 bg-blue-600 rounded-lg mx-auto flex items-center justify-center&quot;><span class=&quot;text-white font-bold text-2xl&quot;>SH</span></div>'">
+             </div>
+            <h1 class="text-3xl font-bold text-white mb-2">Service Hub Portal</h1>
+            <p class="text-blue-300">Advanced Telematics Platform</p>
+        </div>
+        
+        <!-- Login Form -->
+        <div class="bg-gray-800 rounded-xl p-8 shadow-2xl border border-gray-700">
+            
+            <form id="loginForm" class="space-y-6" onsubmit="handleLogin(event)">
+                
+                <!-- Email Field -->
+                <div>
+                    <label for="email" class="block text-sm font-medium text-white mb-2">
+                        Email Address
+                    </label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        required
+                        class="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="dealer@company.com"
+                    >
+                </div>
+                
+                <!-- PIN Field -->
+                <div>
+                    <label for="pin" class="block text-sm font-medium text-white mb-2">
+                        Access PIN
+                    </label>
+                    <div class="relative">
+                                                 <input 
+                             type="password" 
+                             id="pin" 
+                             name="pin" 
+                             maxlength="6"
+                             class="w-full px-4 py-3 pr-12 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                             placeholder="Enter PIN"
+                         >
+                        <button 
+                            type="button" 
+                            id="togglePin" 
+                            onclick="togglePin()"
+                            class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                        >
+                            👁️
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Remember Me and Forgot PIN -->
+                <div class="flex items-center justify-between">
+                    <label class="flex items-center text-sm text-white">
+                        <input type="checkbox" id="rememberMe" class="rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500">
+                        <span class="ml-2">Remember me</span>
+                    </label>
+                    <button type="button" id="forgotPin" onclick="showForgotModal()" class="text-sm text-blue-400 hover:text-blue-300">
+                        Forgot PIN?
+                    </button>
+                </div>
+                
+                <!-- Login Button -->
+                <button 
+                    type="submit" 
+                    id="loginButton"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    Access System
+                </button>
+                
+            </form>
+            
+            <!-- Status Messages -->
+            <div id="statusMessages" class="mt-6">
+                <div id="errorMessage" class="hidden bg-red-600 text-white p-3 rounded-lg text-sm mb-2"></div>
+                <div id="successMessage" class="hidden bg-green-600 text-white p-3 rounded-lg text-sm mb-2"></div>
+            </div>
+            
+        </div>
+        
+        <!-- Footer -->
+        <div class="text-center mt-6 text-sm text-gray-400">
+            <p>Authorized personnel only. All access is monitored.</p>
+        </div>
+        
+    </div>
+    
+    <!-- Forgot PIN Modal -->
+    <div id="forgotPinModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-gray-800 rounded-xl p-6 max-w-md w-full border border-gray-700">
+            <div class="text-center space-y-4">
+                <h3 class="text-lg font-semibold text-white">PIN Recovery</h3>
+                <p class="text-gray-300">Contact your system administrator for PIN recovery assistance.</p>
+                <div class="space-y-2 text-sm text-blue-300">
+                    <div>Email: support@servicehub.portal</div>
+                    <div>Phone: +39 02 1234 5678</div>
+                </div>
+                <div class="flex space-x-3">
+                    <button id="closeForgotModal" onclick="hideForgotModal()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg">
+                        Close
+                    </button>
+                    <a href="mailto:support@servicehub.portal" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-center">
+                        Contact Support
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Load Authentication Modules -->
+    <script src="../js/auth.js"></script>
+    <script src="../js/auth-guard.js"></script>
+    
+    <script>
+        let currentStep = 'email'; // 'email', 'pin'
+        
+        function togglePin() {
+            const pinField = document.getElementById('pin');
+            pinField.type = pinField.type === 'password' ? 'text' : 'password';
+        }
+        
+        function showForgotModal() {
+            document.getElementById('forgotPinModal').classList.remove('hidden');
+        }
+        
+        function hideForgotModal() {
+            document.getElementById('forgotPinModal').classList.add('hidden');
+        }
+        
+                 function updateUI() {
+             const emailField = document.getElementById('email');
+             const pinField = document.getElementById('pin');
+             const loginButton = document.getElementById('loginButton');
+             const forgotPinButton = document.getElementById('forgotPin');
+             const formTitle = document.querySelector('h1');
+             const formSubtitle = document.querySelector('p.text-blue-300');
+             
+             if (currentStep === 'email') {
+                 // Step 1: Email validation
+                 emailField.style.display = 'block';
+                 emailField.required = true;
+                 pinField.parentNode.parentNode.style.display = 'none';
+                 pinField.required = false;
+                 loginButton.textContent = 'Send PIN';
+                 forgotPinButton.style.display = 'none';
+                 formTitle.textContent = 'Service Hub Portal';
+                 formSubtitle.textContent = 'Enter your dealer email to receive a PIN';
+                 
+                 // Re-enable and focus email field
+                 emailField.disabled = false;
+                 emailField.focus();
+                 
+             } else if (currentStep === 'pin') {
+                 // Step 2: PIN verification
+                 emailField.style.display = 'none';
+                 emailField.required = false;
+                 pinField.parentNode.parentNode.style.display = 'block';
+                 pinField.required = true;
+                 loginButton.textContent = 'Verify PIN';
+                 forgotPinButton.style.display = 'inline-block';
+                 formTitle.textContent = 'Enter PIN Code';
+                 formSubtitle.textContent = 'Check your email for the 6-digit PIN';
+                 
+                 // Clear and focus PIN field
+                 pinField.value = '';
+                 pinField.focus();
+             }
+             
+             // Reset button state
+             loginButton.disabled = false;
+         }
+        
+        async function handleLogin(e) {
+            e.preventDefault();
+            
+            const emailField = document.getElementById('email');
+            const pinField = document.getElementById('pin');
+            const loginButton = document.getElementById('loginButton');
+            
+            if (currentStep === 'email') {
+                // Step 1: Validate email and request PIN
+                const email = emailField.value.trim();
+                
+                if (!email) {
+                    authManager.showMessage('Please enter your email address', 'error');
+                    return;
+                }
+                
+                if (!isValidEmail(email)) {
+                    authManager.showMessage('Please enter a valid email address', 'error');
+                    return;
+                }
+                
+                // Disable button and show loading
+                loginButton.disabled = true;
+                loginButton.textContent = 'Validating...';
+                
+                const result = await authManager.requestPin(email);
+                
+                if (result.success) {
+                    // Move to PIN step
+                    currentStep = 'pin';
+                    updateUI();
+                } else {
+                    // Reset button state
+                    loginButton.disabled = false;
+                    loginButton.textContent = 'Send PIN';
+                }
+                
+            } else if (currentStep === 'pin') {
+                // Step 2: Verify PIN
+                const pin = pinField.value.trim();
+                
+                if (!pin) {
+                    authManager.showMessage('Please enter the PIN code', 'error');
+                    return;
+                }
+                
+                if (pin.length !== 6 || !/^\d{6}$/.test(pin)) {
+                    authManager.showMessage('PIN must be exactly 6 digits', 'error');
+                    return;
+                }
+                
+                // Disable button and show loading
+                loginButton.disabled = true;
+                loginButton.textContent = 'Verifying...';
+                
+                const result = await authManager.verifyPin(pin);
+                
+                if (result.success) {
+                    // Login successful - use auth guard to handle redirect
+                    if (window.authGuard) {
+                        window.authGuard.handleSuccessfulLogin(result.userData);
+                    } else {
+                        // Fallback redirect
+                        setTimeout(() => {
+                            window.location.href = '../index.html';
+                        }, 2000);
+                    }
+                } else {
+                    // Check if we need to go back to email step
+                    if (result.error === 'pin_expired' || result.error === 'too_many_attempts') {
+                        currentStep = 'email';
+                        updateUI();
+                        // Clear email field to allow re-entry
+                        emailField.value = '';
+                    } else {
+                        // Reset button state for retry
+                        loginButton.disabled = false;
+                        loginButton.textContent = 'Verify PIN';
+                    }
+                }
+            }
+        }
+        
+        function resetToEmail() {
+            currentStep = 'email';
+            authManager.resetToEmailStep();
+            updateUI();
+            
+            // Clear form fields
+            document.getElementById('email').value = '';
+            document.getElementById('pin').value = '';
+            
+            // Clear messages
+            authManager.showMessage('', 'info');
+            document.getElementById('errorMessage').classList.add('hidden');
+            document.getElementById('successMessage').classList.add('hidden');
+        }
+        
+        function isValidEmail(email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return emailRegex.test(email);
+        }
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if already authenticated
+            if (authManager.isAuthenticated()) {
+                window.location.href = '../index.html';
+                return;
+            }
+            
+            // Set up initial UI
+            currentStep = 'email';
+            updateUI();
+            
+            // Set up event listeners
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('togglePin').addEventListener('click', togglePin);
+            document.getElementById('forgotPin').addEventListener('click', showForgotModal);
+            document.getElementById('closeForgotModal').addEventListener('click', hideForgotModal);
+            
+            // Add "Start Over" button functionality
+            const startOverBtn = document.createElement('button');
+            startOverBtn.type = 'button';
+            startOverBtn.className = 'text-sm text-gray-400 hover:text-gray-300 mt-4';
+            startOverBtn.textContent = '← Start Over';
+            startOverBtn.onclick = resetToEmail;
+            startOverBtn.style.display = 'none';
+            startOverBtn.id = 'startOverBtn';
+            
+            document.querySelector('.bg-gray-800').appendChild(startOverBtn);
+            
+            // Show start over button only in PIN step
+            const observer = new MutationObserver(() => {
+                startOverBtn.style.display = currentStep === 'pin' ? 'block' : 'none';
+            });
+            
+            // Close modal on backdrop click
+            document.getElementById('forgotPinModal').addEventListener('click', function(e) {
+                if (e.target === document.getElementById('forgotPinModal')) {
+                    hideForgotModal();
+                }
+            });
+        });
+    </script>
+    
+</body>
+</html> 
