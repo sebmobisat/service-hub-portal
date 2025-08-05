@@ -24,6 +24,29 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('./')); // Serve static files from current directory
 
+// Health check endpoint for Railway
+app.get('/health', (req, res) => {
+    res.status(200).json({ 
+        status: 'OK', 
+        timestamp: new Date().toISOString(),
+        service: 'Service Hub Portal'
+    });
+});
+
+// Root endpoint
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Startup check endpoint
+app.get('/startup', (req, res) => {
+    res.status(200).json({ 
+        status: 'Server is running', 
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
+});
+
 // Database configuration (same as in config/database.js)
 const dbConfig = {
     host: 'devmobisat.ca15w70vfof5.eu-south-1.rds.amazonaws.com',
