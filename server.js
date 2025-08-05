@@ -47,13 +47,13 @@ app.get('/startup', (req, res) => {
     });
 });
 
-// Database configuration (same as in config/database.js)
+// Database configuration from environment variables
 const dbConfig = {
-    host: 'devmobisat.ca15w70vfof5.eu-south-1.rds.amazonaws.com',
-    port: 5432,
-    user: 'readonly_user',
-    password: '34Ahs09gthsalgh922w4ghkajgehkag',
-    database: 'mobisat',
+    host: process.env.DATABASE_HOST || 'devmobisat.ca15w70vfof5.eu-south-1.rds.amazonaws.com',
+    port: parseInt(process.env.DATABASE_PORT) || 5432,
+    user: process.env.DATABASE_USER || 'readonly_user',
+    password: process.env.DATABASE_PASSWORD || '34Ahs09gthsalgh922w4ghkajgehkag',
+    database: process.env.DATABASE_NAME || 'mobisat',
     ssl: {
         rejectUnauthorized: false
     },

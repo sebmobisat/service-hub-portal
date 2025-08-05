@@ -7,10 +7,10 @@ const fetch = require('node-fetch');
 // Polyfill fetch for Node.js
 global.fetch = fetch;
 
-// Supabase configuration
-const supabaseUrl = 'https://ivgzcwnmjeetdiccijmp.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2Z3pjd25tamVldGRpY2Npam1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2NDc2ODksImV4cCI6MjA2OTIyMzY4OX0.ThFPu3_1kBiCF472QXjuH93SScql3i7NzF6Sg6wjMac';
-const supabaseServiceKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2Z3pjd25tamVldGRpY2Npam1wIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MzY0NzY4OSwiZXhwIjoyMDY5MjIzNjg5fQ.pg_P_KKVq_ATan8YR5btGAK0HUe0TVzILHx_VwCmWPs';
+// Supabase configuration from environment variables
+const supabaseUrl = process.env.SUPABASE_URL || 'https://ivgzcwnmjeetdiccijmp.supabase.co';
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2Z3pjd25tamVldGRpY2Npam1wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTM2NDc2ODksImV4cCI6MjA2OTIyMzY4OX0.ThFPu3_1kBiCF472QXjuH93SScql3i7NzF6Sg6wjMac';
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Iml2Z3pjd25tamVldGRpY2Npam1wIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MzY0NzY4OSwiZXhwIjoyMDY5MjIzNjg5fQ.pg_P_KKVq_ATan8YR5btGAK0HUe0TVzILHx_VwCmWPs';
 
 // Create Supabase client for client-side operations (anon key)
 const supabase = createClient(supabaseUrl, supabaseAnonKey);

@@ -44,20 +44,29 @@ Un portale web completo per i concessionari Mobisat che fornisce autenticazione,
 3. **Configura le variabili d'ambiente**
    Crea un file `.env` nella root del progetto:
    ```env
-   # Database
-   DATABASE_URL=your_postgresql_connection_string
+   # OpenAI API Key (Required for AI features)
+   OPENAI_API_KEY=your_openai_api_key_here
    
-   # Supabase
+   # Environment
+   NODE_ENV=development
+   
+   # Database Configuration (PostgreSQL)
+   DATABASE_HOST=your_database_host
+   DATABASE_PORT=5432
+   DATABASE_USER=your_database_user
+   DATABASE_PASSWORD=your_database_password
+   DATABASE_NAME=your_database_name
+   
+   # Supabase Configuration
    SUPABASE_URL=your_supabase_url
    SUPABASE_ANON_KEY=your_supabase_anon_key
+   SUPABASE_SERVICE_KEY=your_supabase_service_key
    
-   # OpenAI
-   OPENAI_API_KEY=your_openai_api_key
-   
-   # Server
+   # Server Configuration
    PORT=3000
-   NODE_ENV=development
    ```
+   
+   **⚠️ IMPORTANTE**: Copia il file `env.example` come riferimento per tutte le variabili necessarie.
 
 4. **Avvia il server di sviluppo**
    ```bash
@@ -87,11 +96,24 @@ git push origin main
 
 ### Variabili d'ambiente per Railway
 Assicurati di configurare queste variabili nel dashboard Railway:
-- `DATABASE_URL`
+
+**Obbligatorie:**
+- `OPENAI_API_KEY` - La tua chiave API OpenAI
+- `NODE_ENV=production`
+
+**Database (se vuoi usare credenziali personalizzate):**
+- `DATABASE_HOST`
+- `DATABASE_PORT`
+- `DATABASE_USER`
+- `DATABASE_PASSWORD`
+- `DATABASE_NAME`
+
+**Supabase (se vuoi usare credenziali personalizzate):**
 - `SUPABASE_URL`
 - `SUPABASE_ANON_KEY`
-- `OPENAI_API_KEY`
-- `NODE_ENV=production`
+- `SUPABASE_SERVICE_KEY`
+
+**⚠️ NOTA**: Se non configuri le variabili del database e Supabase, il sistema userà le credenziali di default per lo sviluppo.
 
 ## 📁 Struttura del Progetto
 
