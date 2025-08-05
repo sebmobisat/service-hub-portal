@@ -36,6 +36,7 @@ app.get('/health', (req, res) => {
 
 // Root endpoint
 app.get('/', (req, res) => {
+    console.log('Root endpoint accessed at:', new Date().toISOString());
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
@@ -52,6 +53,16 @@ app.get('/startup', (req, res) => {
 app.get('/ping', (req, res) => {
     console.log('Ping received at:', new Date().toISOString());
     res.status(200).send('pong');
+});
+
+// Status endpoint for Railway healthcheck
+app.get('/status', (req, res) => {
+    console.log('Status check at:', new Date().toISOString());
+    res.status(200).json({
+        status: 'OK',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
 });
 
 // Database configuration from environment variables
@@ -4987,6 +4998,9 @@ app.listen(PORT, () => {
     console.log(` Server running on port ${PORT}`);
     console.log(` Service Hub Portal is ready!`);
     console.log(` Health check available at: http://localhost:${PORT}/health`);
+    console.log(` Status endpoint available at: http://localhost:${PORT}/status`);
     console.log(` Ping endpoint available at: http://localhost:${PORT}/ping`);
+    console.log(` Root endpoint available at: http://localhost:${PORT}/`);
     console.log(` Open http://localhost:${PORT} in your browser`);
+    console.log(` Railway healthcheck will use: /status`);
 });
