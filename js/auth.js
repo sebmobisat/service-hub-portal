@@ -45,7 +45,7 @@ class AuthManager {
                 
                 // Development mode - show PIN in console
                 if (data.developmentPin) {
-                    console.log(`🔐 Development PIN: ${data.developmentPin}`);
+                    console.log(`Development PIN: ${data.developmentPin}`);
                     this.showMessage(
                         `Development Mode: Your PIN is ${data.developmentPin}`, 
                         'info'

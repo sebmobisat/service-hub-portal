@@ -36,7 +36,7 @@ class ThemeManager {
      */
     saveTheme(theme) {
         localStorage.setItem(this.storageKey, theme);
-        console.log(`🎨 Theme saved: ${theme}`);
+        console.log(`Theme saved: ${theme}`);
     }
 
     /**
@@ -59,7 +59,7 @@ class ThemeManager {
         document.body.classList.add(`theme-${theme}`);
         
         this.currentTheme = theme;
-        console.log(`✅ Theme applied globally: ${theme}`);
+        console.log(`Theme applied globally: ${theme}`);
     }
 
     /**
@@ -121,7 +121,7 @@ class ThemeManager {
      * Initialize theme system
      */
     init() {
-        console.log('🚀 ThemeManager initializing...');
+        console.log('ThemeManager initializing...');
         
         // Apply stored theme immediately
         this.applyTheme(this.currentTheme);
@@ -137,7 +137,7 @@ class ThemeManager {
             this.updateThemeButtons();
         }
         
-        console.log(`✅ ThemeManager initialized with theme: ${this.currentTheme}`);
+        console.log(`ThemeManager initialized with theme: ${this.currentTheme}`);
     }
 
     /**
@@ -162,7 +162,7 @@ class ThemeManager {
             toggle.addEventListener('click', () => this.toggle());
         });
 
-        console.log('🔧 Theme event listeners setup complete');
+        console.log('Theme event listeners setup complete');
     }
 
     /**
@@ -203,4 +203,4 @@ window.changeTheme = function(theme) {
 window.getCurrentTheme = () => window.themeManager.getCurrentTheme();
 window.toggleTheme = () => window.themeManager.toggle();
 
-console.log('🎨 Global Theme System loaded successfully!'); 
+console.log('Global Theme System loaded successfully!'); 

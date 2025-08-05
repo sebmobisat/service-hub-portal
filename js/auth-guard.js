@@ -74,13 +74,13 @@ class AuthGuard {
     protectPage() {
         // Skip protection in development
         if (!this.isProduction) {
-            console.log('🔓 Development mode: Authentication bypassed');
+            console.log('Development mode: Authentication bypassed');
             return true;
         }
 
         // Allow public pages
         if (this.isPublicPage()) {
-            console.log('🔓 Public page: No authentication required');
+            console.log('Public page: No authentication required');
             return true;
         }
 
@@ -91,7 +91,7 @@ class AuthGuard {
             return false;
         }
 
-        console.log('✅ Page protected - user authenticated');
+        console.log('Page protected - user authenticated');
         return true;
     }
 
@@ -135,7 +135,7 @@ class AuthGuard {
         sessionStorage.removeItem('servicehub-user');
         sessionStorage.removeItem('redirectAfterLogin');
         
-        console.log('🔓 User logged out');
+        console.log('User logged out');
         
         // Redirect to login
         window.location.href = this.loginUrl;
@@ -145,7 +145,7 @@ class AuthGuard {
      * Initialize auth guard
      */
     init() {
-        console.log(`🔐 Auth Guard initialized - Production: ${this.isProduction}`);
+        console.log(`Auth Guard initialized - Production: ${this.isProduction}`);
         
         // Protect page on load
         this.protectPage();

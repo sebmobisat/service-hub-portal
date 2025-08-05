@@ -16,7 +16,7 @@ const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY
 });
 
-// 🚨 DEPLOYMENT REMINDER:
+//  DEPLOYMENT REMINDER:
 // Set the OpenAI API key as environment variable in production
 
 // Middleware
@@ -44,11 +44,11 @@ const pool = new Pool(dbConfig);
 
 // Test database connection
 pool.on('connect', () => {
-    console.log('✅ Connected to Mobisat PostgreSQL database');
+    console.log('Connected to Mobisat PostgreSQL database');
 });
 
 pool.on('error', (err) => {
-    console.error('❌ Database connection error:', err);
+    console.error('Database connection error:', err);
 });
 
 // Database helper functions
@@ -121,17 +121,17 @@ app.post('/api/auth/request-pin', async (req, res) => {
             return res.json({ success: false, error: 'email_required' });
         }
         
-        console.log(`🔐 PIN request for email: ${email}`);
+        console.log(` PIN request for email: ${email}`);
         
         // Check if dealer exists
         const dealer = await DatabaseManager.getDealerByEmail(email);
         
         if (!dealer) {
-            console.log(`❌ Dealer not found for email: ${email}`);
+            console.log(` Dealer not found for email: ${email}`);
             return res.json({ success: false, error: 'dealer_not_found' });
         }
         
-        console.log(`✅ Dealer found: ${dealer.companyName}`);
+        console.log(` Dealer found: ${dealer.companyName}`);
         
         // In a real application, you would:
         // 1. Generate a time-limited PIN
@@ -173,12 +173,12 @@ app.post('/api/auth/verify-pin', async (req, res) => {
             return res.json({ success: false, error: 'missing_fields' });
         }
         
-        console.log(`🔐 PIN verification for email: ${email}`);
+        console.log(` PIN verification for email: ${email}`);
         
         const result = await DatabaseManager.validateDealerPin(email, pin);
         
         if (result.success) {
-            console.log(`✅ PIN verified for dealer: ${result.dealer.companyName}`);
+            console.log(` PIN verified for dealer: ${result.dealer.companyName}`);
             
             // Generate a simple JWT-like token for the session
             const token = Buffer.from(JSON.stringify({
@@ -194,7 +194,7 @@ app.post('/api/auth/verify-pin', async (req, res) => {
                 message: 'Authentication successful'
             });
         } else {
-            console.log(`❌ PIN verification failed for email: ${email}`);
+            console.log(` PIN verification failed for email: ${email}`);
             res.json(result);
         }
         
@@ -241,12 +241,12 @@ app.get('/api/certificates/:dealerId', async (req, res) => {
             return res.json({ success: false, error: 'invalid_dealer_id' });
         }
         
-        console.log(`📋 Fetching certificates for dealer ID: ${dealerId}`);
+        console.log(` Fetching certificates for dealer ID: ${dealerId}`);
         
                  /**
           * ENHANCED CERTIFICATES QUERY WITH VEHICLE DATA AND PROPER FILTERING
           * 
-          * This query implements the correct data flow: Certificate → Device → Vehicle
+          * This query implements the correct data flow: Certificate  Device  Vehicle
           * and includes proper filtering to show only certificates with complete data.
           * 
           * KEY IMPROVEMENTS:
@@ -257,8 +257,8 @@ app.get('/api/certificates/:dealerId', async (req, res) => {
           * 5. Proper filtering to exclude incomplete data
           * 
           * DATA FLOW:
-          * - Certificate → Device (INNER JOIN)
-          * - Device → Vehicle (INNER JOIN) 
+          * - Certificate  Device (INNER JOIN)
+          * - Device  Vehicle (INNER JOIN) 
           * - Only certificates with complete device + vehicle data
           * 
           * VEHICLE GROUPS INTEGRATION:
@@ -291,7 +291,7 @@ app.get('/api/certificates/:dealerId', async (req, res) => {
                 
             FROM certificate c
             
-            -- CORRECT DATA FLOW: Certificate → Device → Vehicle (INNER JOINs to ensure data exists)
+            -- CORRECT DATA FLOW: Certificate  Device  Vehicle (INNER JOINs to ensure data exists)
             INNER JOIN device d ON c."deviceId" = d.id
             INNER JOIN vehicle v ON d."vehicleId" = v.id
             
@@ -300,19 +300,19 @@ app.get('/api/certificates/:dealerId', async (req, res) => {
             LIMIT 50
         `;
         
-        console.log('🔄 Executing query for dealer:', dealerId);
-        console.log('🔄 Query:', query.slice(0, 200) + '...');
+        console.log(' Executing query for dealer:', dealerId);
+        console.log(' Query:', query.slice(0, 200) + '...');
         
         let certificates;
         try {
             certificates = await DatabaseManager.executeQuery(query, [dealerId]);
         } catch (queryError) {
-            console.error('💥 QUERY ERROR:', queryError);
+            console.error(' QUERY ERROR:', queryError);
             throw queryError;
         }
         
-        console.log(`✅ Found ${certificates.length} certificates for dealer ${dealerId}`);
-        console.log('🔍 First certificate sample:', certificates[0] ? JSON.stringify(certificates[0], null, 2) : 'NONE');
+        console.log(` Found ${certificates.length} certificates for dealer ${dealerId}`);
+        console.log(' First certificate sample:', certificates[0] ? JSON.stringify(certificates[0], null, 2) : 'NONE');
         
         // Log odometer source statistics for debugging
         let obdCount = 0, gpsCount = 0, nullCount = 0;
@@ -326,7 +326,7 @@ app.get('/api/certificates/:dealerId', async (req, res) => {
             }
         });
         
-        console.log(`📊 Odometer sources - With readings: ${gpsCount}, Null/Empty: ${nullCount}`);
+        console.log(` Odometer sources - With readings: ${gpsCount}, Null/Empty: ${nullCount}`);
         
         res.json({
             success: true,
@@ -351,7 +351,7 @@ app.get('/api/certificates/:dealerId', async (req, res) => {
 // Get all certificates - WORKING VERSION
 app.get('/api/certificates/simple', async (req, res) => {
     try {
-        console.log('📋 Loading all certificates...');
+        console.log(' Loading all certificates...');
         
                                    // Use the SAME smart odometer query but for ALL certificates (no dealer filter)
           const query = `
@@ -390,7 +390,7 @@ app.get('/api/certificates/simple', async (req, res) => {
           `;
         
         const result = await pool.query(query);
-        console.log(`✅ Found ${result.rows.length} certificates`);
+        console.log(` Found ${result.rows.length} certificates`);
         
         const certificates = result.rows.map(cert => ({
             id: cert.id,
@@ -413,7 +413,7 @@ app.get('/api/certificates/simple', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Certificates error:', error);
+        console.error(' Certificates error:', error);
         res.status(500).json({
             success: false,
             message: error.message,
@@ -524,7 +524,7 @@ app.get('/api/device/:deviceId/odometer-trace', async (req, res) => {
             });
         }
 
-                 console.log(`🔍 Tracing odometer source for device ID: ${deviceId}`);
+                 console.log(` Tracing odometer source for device ID: ${deviceId}`);
          
          // Get certificate info for this device
          const certQuery = `
@@ -622,7 +622,7 @@ app.get('/api/debug/obd/:deviceId', async (req, res) => {
     try {
         const { deviceId } = req.params;
         
-        console.log(`🔍 Debugging OBD data for device ${deviceId}...`);
+        console.log(` Debugging OBD data for device ${deviceId}...`);
         
         // Check position table structure
         const structureQuery = `
@@ -772,7 +772,7 @@ app.get('/api/dealer/:dealerId', async (req, res) => {
             });
         }
 
-        console.log(`📋 Fetching dealer info for ID: ${dealerId}`);
+        console.log(` Fetching dealer info for ID: ${dealerId}`);
         
         const query = `
             SELECT id, "companyLoginEmail", "companyName", "companyMobisatTechRefName", 
@@ -790,7 +790,7 @@ app.get('/api/dealer/:dealerId', async (req, res) => {
             });
         }
         
-        console.log(`✅ Found dealer: ${dealers[0].companyName}`);
+        console.log(` Found dealer: ${dealers[0].companyName}`);
         
         res.json({
             success: true,
@@ -799,7 +799,7 @@ app.get('/api/dealer/:dealerId', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Error fetching dealer:', error);
+        console.error(' Error fetching dealer:', error);
         res.status(500).json({
             success: false,
             message: error.message
@@ -818,13 +818,13 @@ app.get('/api/device/:deviceId/client', async (req, res) => {
             });
         }
 
-        console.log(`👤 Fetching client info for device ID: ${deviceId}`);
+        console.log(` Fetching client info for device ID: ${deviceId}`);
         
         // First, let's check if the device exists and has a userId
         const deviceQuery = `SELECT id, "userId" FROM device WHERE id = $1`;
         const deviceResult = await DatabaseManager.executeQuery(deviceQuery, [deviceId]);
         
-        console.log(`🔍 Device lookup result:`, deviceResult);
+        console.log(` Device lookup result:`, deviceResult);
         
         if (deviceResult.length === 0) {
             return res.json({
@@ -843,10 +843,10 @@ app.get('/api/device/:deviceId/client', async (req, res) => {
             });
         }
         
-        console.log(`📋 Device ${deviceId} has userId: ${device.userId}`);
+        console.log(` Device ${deviceId} has userId: ${device.userId}`);
         
         // First, let's see what columns actually exist in the user table
-        console.log(`🔍 Checking user table structure...`);
+        console.log(` Checking user table structure...`);
         const structureQuery = `
             SELECT column_name, data_type 
             FROM information_schema.columns 
@@ -855,7 +855,7 @@ app.get('/api/device/:deviceId/client', async (req, res) => {
         `;
         
         const columns = await DatabaseManager.executeQuery(structureQuery, []);
-        console.log(`📋 Available columns in user table:`, columns.map(c => c.column_name));
+        console.log(` Available columns in user table:`, columns.map(c => c.column_name));
         
         // Now get the user information with available columns
         const userQuery = `
@@ -868,7 +868,7 @@ app.get('/api/device/:deviceId/client', async (req, res) => {
         
         const userResult = await DatabaseManager.executeQuery(userQuery, [device.userId]);
         
-        console.log(`👤 User lookup result:`, userResult);
+        console.log(` User lookup result:`, userResult);
         
         if (userResult.length === 0) {
             return res.json({
@@ -879,7 +879,7 @@ app.get('/api/device/:deviceId/client', async (req, res) => {
         }
         
         const client = userResult[0];
-        console.log(`✅ Found client: ${client.firstName} ${client.lastName}`);
+        console.log(` Found client: ${client.firstName} ${client.lastName}`);
         
         res.json({
             success: true,
@@ -888,8 +888,8 @@ app.get('/api/device/:deviceId/client', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Error fetching client info:', error);
-        console.error('❌ Error details:', error.message);
+        console.error(' Error fetching client info:', error);
+        console.error(' Error details:', error.message);
         res.status(500).json({
             success: false,
             message: error.message,
@@ -909,7 +909,7 @@ app.get('/api/device/:deviceId/throttle', async (req, res) => {
             });
         }
 
-        console.log(`🚗 Fetching throttle data for device ID: ${deviceId}`);
+        console.log(` Fetching throttle data for device ID: ${deviceId}`);
         
         const query = `
             SELECT throttle, "createdAt", speed, latitude, longitude
@@ -923,7 +923,7 @@ app.get('/api/device/:deviceId/throttle', async (req, res) => {
         
         const throttleData = await DatabaseManager.executeQuery(query, [deviceId]);
         
-        console.log(`✅ Found ${throttleData.length} throttle readings for device ${deviceId}`);
+        console.log(` Found ${throttleData.length} throttle readings for device ${deviceId}`);
         
         // Calculate statistics
         let avgThrottle = 0;
@@ -950,7 +950,7 @@ app.get('/api/device/:deviceId/throttle', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Error fetching throttle data:', error);
+        console.error(' Error fetching throttle data:', error);
         res.status(500).json({
             success: false,
             message: error.message,
@@ -971,7 +971,7 @@ app.get('/api/device/:deviceId/engine-temperature', async (req, res) => {
             });
         }
 
-        console.log(`🌡️ Fetching engine temperature data for device ID: ${deviceId}`);
+        console.log(` Fetching engine temperature data for device ID: ${deviceId}`);
         
         // Testing WITHOUT data field (like working throttle query)
         const query = `
@@ -986,7 +986,7 @@ app.get('/api/device/:deviceId/engine-temperature', async (req, res) => {
         
         const positionData = await DatabaseManager.executeQuery(query, [deviceId]);
         
-        console.log(`✅ Found ${positionData.length} position records for device ${deviceId}`);
+        console.log(` Found ${positionData.length} position records for device ${deviceId}`);
         
         // TESTING: Use throttle data as temperature (just to test endpoint works)
         const temperatureData = [];
@@ -1015,7 +1015,7 @@ app.get('/api/device/:deviceId/engine-temperature', async (req, res) => {
         
         const avgTemp = validReadings > 0 ? totalTemp / validReadings : 0;
         
-        console.log(`📊 Processed ${validReadings} valid temperature readings`);
+        console.log(` Processed ${validReadings} valid temperature readings`);
         
         res.json({
             success: true,
@@ -1025,11 +1025,11 @@ app.get('/api/device/:deviceId/engine-temperature', async (req, res) => {
                 averageTemperature: Math.round(avgTemp * 10) / 10,
                 maxTemperature: validReadings > 0 ? maxTemp : null,
                 minTemperature: validReadings > 0 ? minTemp : null,
-                unit: '°C'
+                unit: 'C'
             }
         });
     } catch (error) {
-        console.error('❌ Error fetching engine temperature data:', error);
+        console.error(' Error fetching engine temperature data:', error);
         res.status(500).json({
             success: false,
             message: 'Database error',
@@ -1049,7 +1049,7 @@ app.get('/api/device/:deviceId/engine-rpm', async (req, res) => {
             });
         }
 
-        console.log(`🏎️ Fetching engine RPM data for device ID: ${deviceId}`);
+        console.log(` Fetching engine RPM data for device ID: ${deviceId}`);
         
         const query = `
             SELECT data, "createdAt", speed, latitude, longitude
@@ -1063,7 +1063,7 @@ app.get('/api/device/:deviceId/engine-rpm', async (req, res) => {
         
         const positionData = await DatabaseManager.executeQuery(query, [deviceId]);
         
-        console.log(`✅ Found ${positionData.length} position records for device ${deviceId}`);
+        console.log(` Found ${positionData.length} position records for device ${deviceId}`);
         
         const rpmData = [];
         let totalRpm = 0;
@@ -1097,7 +1097,7 @@ app.get('/api/device/:deviceId/engine-rpm', async (req, res) => {
         
         const avgRpm = validReadings > 0 ? totalRpm / validReadings : 0;
         
-        console.log(`📊 Processed ${validReadings} valid RPM readings`);
+        console.log(` Processed ${validReadings} valid RPM readings`);
         
         res.json({
             success: true,
@@ -1111,7 +1111,7 @@ app.get('/api/device/:deviceId/engine-rpm', async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('❌ Error fetching engine RPM data:', error);
+        console.error(' Error fetching engine RPM data:', error);
         res.status(500).json({
             success: false,
             message: 'Database error',
@@ -1131,7 +1131,7 @@ app.get('/api/device/:deviceId/engine-load', async (req, res) => {
             });
         }
 
-        console.log(`⚙️ Fetching engine load data for device ID: ${deviceId}`);
+        console.log(` Fetching engine load data for device ID: ${deviceId}`);
         
         const query = `
             SELECT data, "createdAt", speed, latitude, longitude
@@ -1145,7 +1145,7 @@ app.get('/api/device/:deviceId/engine-load', async (req, res) => {
         
         const positionData = await DatabaseManager.executeQuery(query, [deviceId]);
         
-        console.log(`✅ Found ${positionData.length} position records for device ${deviceId}`);
+        console.log(` Found ${positionData.length} position records for device ${deviceId}`);
         
         const loadData = [];
         let totalLoad = 0;
@@ -1179,7 +1179,7 @@ app.get('/api/device/:deviceId/engine-load', async (req, res) => {
         
         const avgLoad = validReadings > 0 ? totalLoad / validReadings : 0;
         
-        console.log(`📊 Processed ${validReadings} valid engine load readings`);
+        console.log(` Processed ${validReadings} valid engine load readings`);
         
         res.json({
             success: true,
@@ -1193,7 +1193,7 @@ app.get('/api/device/:deviceId/engine-load', async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('❌ Error fetching engine load data:', error);
+        console.error(' Error fetching engine load data:', error);
         res.status(500).json({
             success: false,
             message: 'Database error',
@@ -1205,7 +1205,7 @@ app.get('/api/device/:deviceId/engine-load', async (req, res) => {
 // Debug endpoint for report table structure
 app.get('/api/report/debug', async (req, res) => {
     try {
-        console.log('🔍 Analyzing report table structure...');
+        console.log(' Analyzing report table structure...');
         
         // Get table structure
         const structure = await pool.query(`
@@ -1227,7 +1227,7 @@ app.get('/api/report/debug', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Error analyzing report table:', error);
+        console.error(' Error analyzing report table:', error);
         res.status(500).json({
             success: false,
             error: error.message
@@ -1241,7 +1241,7 @@ app.get('/api/vehicle/:deviceId/analytics', async (req, res) => {
         const { deviceId } = req.params;
         const { startDate, endDate } = req.query;
         
-        console.log(`📊 Fetching analytics for device ${deviceId} from ${startDate} to ${endDate}`);
+        console.log(` Fetching analytics for device ${deviceId} from ${startDate} to ${endDate}`);
         
         // Build date filter
         let dateFilter = '';
@@ -1250,13 +1250,13 @@ app.get('/api/vehicle/:deviceId/analytics', async (req, res) => {
         if (startDate && endDate) {
             dateFilter = 'AND hour >= $2 AND hour <= $3';
             queryParams.push(startDate, endDate);
-            console.log(`📊 Date filter applied: ${dateFilter} with params: [${queryParams.join(', ')}]`);
+            console.log(` Date filter applied: ${dateFilter} with params: [${queryParams.join(', ')}]`);
         } else {
-            console.log(`📊 No date filter applied`);
+            console.log(` No date filter applied`);
         }
         
         // Query actual report table for daily analytics data
-        console.log('📊 Querying report table for daily analytics data...');
+        console.log(' Querying report table for daily analytics data...');
         
         const analyticsQuery = `
             SELECT 
@@ -1296,11 +1296,11 @@ app.get('/api/vehicle/:deviceId/analytics', async (req, res) => {
             data: result.rows,
             totalRecords: result.rows.length,
             obdDataAvailable: !isLongPeriod,
-            obdDataNote: isLongPeriod ? "⚠️ I dati OBD sono disponibili solo per gli ultimi 7 giorni. Per periodi più lunghi vengono mostrati solo i dati aggregati." : null
+            obdDataNote: isLongPeriod ? " I dati OBD sono disponibili solo per gli ultimi 7 giorni. Per periodi pi lunghi vengono mostrati solo i dati aggregati." : null
         });
         
     } catch (error) {
-        console.error('❌ Error fetching vehicle analytics:', error);
+        console.error(' Error fetching vehicle analytics:', error);
         res.status(500).json({
             success: false,
             error: error.message
@@ -1323,12 +1323,12 @@ app.get('/api/vehicle/:deviceId/summary', async (req, res) => {
             dateFilter = 'AND hour >= $2 AND hour <= $3';
             queryParams.push(startDate, endDate);
             dateInfo = `from ${startDate} to ${endDate}`;
-            console.log(`📈 Summary date filter applied: ${dateFilter} with params: [${queryParams.join(', ')}]`);
+            console.log(` Summary date filter applied: ${dateFilter} with params: [${queryParams.join(', ')}]`);
         } else {
-            console.log(`📈 Summary no date filter applied`);
+            console.log(` Summary no date filter applied`);
         }
         
-        console.log(`📈 Fetching summary for device ${deviceId}, ${dateInfo}`);
+        console.log(` Fetching summary for device ${deviceId}, ${dateInfo}`);
         
         const query = `
             SELECT 
@@ -1368,7 +1368,7 @@ app.get('/api/vehicle/:deviceId/summary', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Error fetching vehicle summary:', error);
+        console.error(' Error fetching vehicle summary:', error);
         res.status(500).json({
             success: false,
             error: error.message
@@ -1387,7 +1387,7 @@ app.get('/api/debug/vehicle-schema', async (req, res) => {
         `);
         res.json({ success: true, columns: result.rows });
     } catch (error) {
-        console.error('❌ Error fetching vehicle schema:', error);
+        console.error(' Error fetching vehicle schema:', error);
         res.status(500).json({ success: false, error: error.message });
     }
 });
@@ -1398,7 +1398,7 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
         const { deviceId } = req.params;
         const { startDate, endDate, lang = 'en' } = req.query;
         
-        console.log(`🤖 Generating AI report with REAL DATABASE DATA for device ${deviceId}...`);
+        console.log(` Generating AI report with REAL DATABASE DATA for device ${deviceId}...`);
         
         // Build date filter
         let dateFilter = '';
@@ -1425,10 +1425,10 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
             WHERE d.id = $1
         `;
         
-        console.log('📊 Executing REAL DATABASE QUERIES (optimized for speed)...');
+        console.log(' Executing REAL DATABASE QUERIES (optimized for speed)...');
         
         // SKIP FAILING REPORT QUERY: Use diagnostic data instead
-        console.log('⚠️ Skipping failing report query - will use diagnostic data for accurate values');
+        console.log(' Skipping failing report query - will use diagnostic data for accurate values');
         
         // DIAGNOSTIC QUERY: Check what data actually exists in report table
         const diagnosticQuery = `
@@ -1464,7 +1464,7 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
             ORDER BY "createdAt" DESC
         `;
         
-        console.log('🚀 Starting FAST data queries (vehicle + OBD only)...');
+        console.log(' Starting FAST data queries (vehicle + OBD only)...');
         
         const queryTimeout = new Promise((_, reject) => {
             setTimeout(() => reject(new Error('Fast queries timeout after 30 seconds')), 30000);
@@ -1472,19 +1472,19 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
         
         // Add timing for debugging
         const startTime = Date.now();
-        console.log('⏱️ Starting vehicle query...');
+        console.log(' Starting vehicle query...');
         const vehiclePromise = pool.query(vehicleQuery, [deviceId]).then(result => {
-            console.log(`✅ Vehicle query completed in ${Date.now() - startTime}ms`);
+            console.log(` Vehicle query completed in ${Date.now() - startTime}ms`);
             return result;
         });
         
-        console.log('⏱️ Skipping report query (failing) - will use diagnostic data instead...');
+        console.log(' Skipping report query (failing) - will use diagnostic data instead...');
         
         // Add diagnostic query to understand what's in the report table
-        console.log('🔍 Running diagnostic query to check report table data...');
+        console.log(' Running diagnostic query to check report table data...');
         const diagnosticPromise = pool.query(diagnosticQuery, [deviceId]).then(result => {
             const diagnosticData = result.rows[0];
-            console.log('🔍 DIAGNOSTIC RESULTS for report table:');
+            console.log(' DIAGNOSTIC RESULTS for report table:');
             console.log(`  - Total records: ${diagnosticData.total_records}`);
             console.log(`  - Records with distance: ${diagnosticData.records_with_distance}`);
             console.log(`  - Records with time: ${diagnosticData.records_with_time}`);
@@ -1503,14 +1503,14 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
             return result;
         });
         
-        console.log('⏱️ Starting OBD query...');
+        console.log(' Starting OBD query...');
         const obdStartTime = Date.now();
         const obdPromise = pool.query(obdQuery, [deviceId]).then(result => {
-            console.log(`✅ OBD query completed in ${Date.now() - obdStartTime}ms, found ${result.rows.length} records`);
+            console.log(` OBD query completed in ${Date.now() - obdStartTime}ms, found ${result.rows.length} records`);
             
             // Debug: Check if we have any ignition=true records
             if (result.rows.length === 0) {
-                console.log('⚠️ No ignition=true records found. Let me check what ignition values exist...');
+                console.log(' No ignition=true records found. Let me check what ignition values exist...');
                 // Quick check for ignition values
                 pool.query(`
                     SELECT DISTINCT ignition, COUNT(*) as count 
@@ -1519,9 +1519,9 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
                     AND "createdAt" >= NOW() - INTERVAL '7 days'
                     GROUP BY ignition
                 `, [deviceId]).then(ignitionResult => {
-                    console.log('🔍 Ignition values found:', ignitionResult.rows);
+                    console.log(' Ignition values found:', ignitionResult.rows);
                 }).catch(err => {
-                    console.log('❌ Error checking ignition values:', err.message);
+                    console.log(' Error checking ignition values:', err.message);
                 });
             }
             
@@ -1533,7 +1533,7 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
         let vehicleData, reportData, obdData, diagnosticData;
         
         // Skip the failing report query and use only working queries
-        console.log('🎯 Using only working queries (vehicle, OBD, diagnostic)...');
+        console.log(' Using only working queries (vehicle, OBD, diagnostic)...');
         try {
             const [vehicleResult, obdResult, diagnosticResult] = await Promise.race([
                 Promise.all([vehiclePromise, obdPromise, diagnosticPromise]),
@@ -1544,29 +1544,29 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
             reportData = {}; // Skip failing report query
             obdData = obdResult.rows || [];
             diagnosticData = diagnosticResult.rows[0] || {};
-            console.log(`✅ Working queries successful! Using diagnostic data for accurate values`);
-            console.log(`✅ Found ${obdData.length} OBD records with detailed parameters`);
+            console.log(` Working queries successful! Using diagnostic data for accurate values`);
+            console.log(` Found ${obdData.length} OBD records with detailed parameters`);
             
         } catch (queryError) {
-            console.warn('⚠️ Report table query failed:', queryError.message);
+            console.warn(' Report table query failed:', queryError.message);
             
             // Get vehicle info first
             vehicleData = (await pool.query(vehicleQuery, [deviceId])).rows[0];
-            console.log('✅ Vehicle info retrieved');
+            console.log(' Vehicle info retrieved');
             
             // Get diagnostic data separately
             try {
                 const diagnosticResult = await pool.query(diagnosticQuery, [deviceId]);
                 diagnosticData = diagnosticResult.rows[0] || {};
-                console.log('✅ Diagnostic data retrieved');
+                console.log(' Diagnostic data retrieved');
             } catch (diagnosticError) {
-                console.warn('⚠️ Diagnostic query failed:', diagnosticError.message);
+                console.warn(' Diagnostic query failed:', diagnosticError.message);
                 diagnosticData = {};
             }
             
             // Skip the failing report query and use diagnostic data directly
             reportData = {};
-            console.log('⚠️ Skipping main report query, will use diagnostic data');
+            console.log(' Skipping main report query, will use diagnostic data');
             
             try {
                 // Try simple OBD query as fallback
@@ -1586,9 +1586,9 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
             `;
             const obdResult = await pool.query(simpleObdQuery, [deviceId]);
             obdData = obdResult.rows || [];
-            console.log(`✅ Simple OBD query worked! Found ${obdData.length} records`);
+            console.log(` Simple OBD query worked! Found ${obdData.length} records`);
         } catch (simpleError) {
-                console.error('❌ Even simple query failed:', simpleError.message);
+                console.error(' Even simple query failed:', simpleError.message);
                 throw simpleError;
             }
         }
@@ -1600,7 +1600,7 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
         };
         
         // Use report table data directly (like regular analytics)
-        console.log(`📊 Using report table data for last 7 days`);
+        console.log(` Using report table data for last 7 days`);
         
         // Extract data from report table (already aggregated)
         let totalDistance = safeNumber(reportData.total_distance_km || 0);
@@ -1613,7 +1613,7 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
         const avgBattery = safeNumber(reportData.avg_battery_v || 12.4);
         
         // DEBUG: Log the raw report data to see what we're getting
-        console.log('🔍 RAW REPORT DATA RECEIVED:', {
+        console.log(' RAW REPORT DATA RECEIVED:', {
             total_distance_km: reportData.total_distance_km,
             total_trips: reportData.total_trips,
             total_time_hours: reportData.total_time_hours,
@@ -1626,14 +1626,14 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
         
         // SOLUTION: Use diagnostic data directly since it works and contains correct values
         if (diagnosticData && diagnosticData.raw_total_distance > 0) {
-            console.log('✅ Using diagnostic data (working query) for accurate values...');
+            console.log(' Using diagnostic data (working query) for accurate values...');
             totalDistance = diagnosticData.raw_total_distance / 1000; // Convert to km
             totalTime = diagnosticData.raw_total_time / 3600; // Convert to hours
             avgSpeed = parseFloat(diagnosticData.raw_avg_speed) || 0;
             maxSpeed = parseFloat(diagnosticData.raw_max_speed) || 0;
             totalTrips = diagnosticData.raw_total_trips || 0;
             
-            console.log('✅ DIAGNOSTIC DATA CALCULATION:', {
+            console.log(' DIAGNOSTIC DATA CALCULATION:', {
                 distance: totalDistance.toFixed(2) + ' km',
                 time: totalTime.toFixed(2) + ' hours',
                 avgSpeed: avgSpeed.toFixed(1) + ' km/h',
@@ -1642,7 +1642,7 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
         } else if (totalDistance === 0 && totalTime === 0 && avgSpeed === 0) {
             // Fallback to position table calculation if diagnostic data not available
             if (obdData.length > 0) {
-            console.log('⚠️ Report table has no data, calculating from position table...');
+            console.log(' Report table has no data, calculating from position table...');
             
             // Calculate distance from realOdometer changes
             let distanceCalculated = 0;
@@ -1686,29 +1686,29 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
             // Update values with calculated data
             if (distanceCalculated > 0) {
                 totalDistance = distanceCalculated / 1000; // Convert to km
-                console.log(`✅ Calculated distance from odometer: ${totalDistance.toFixed(2)} km`);
+                console.log(` Calculated distance from odometer: ${totalDistance.toFixed(2)} km`);
             }
             
             if (timeCalculated > 0) {
                 totalTime = timeCalculated;
-                console.log(`✅ Calculated time from position data: ${totalTime.toFixed(2)} hours`);
+                console.log(` Calculated time from position data: ${totalTime.toFixed(2)} hours`);
             }
             
             if (speedCount > 0) {
                 avgSpeed = speedSum / speedCount;
-                console.log(`✅ Calculated average speed: ${avgSpeed.toFixed(1)} km/h`);
+                console.log(` Calculated average speed: ${avgSpeed.toFixed(1)} km/h`);
             }
             
             if (maxSpeedCalculated > 0) {
                 maxSpeed = maxSpeedCalculated;
-                console.log(`✅ Calculated max speed: ${maxSpeed} km/h`);
+                console.log(` Calculated max speed: ${maxSpeed} km/h`);
             }
             
             // Estimate trips based on ignition events
             const ignitionEvents = obdData.filter(record => record.ignition === true).length;
             totalTrips = Math.max(1, Math.floor(ignitionEvents / 2)); // Rough estimate
             
-            console.log('✅ FALLBACK CALCULATION COMPLETE:', {
+            console.log(' FALLBACK CALCULATION COMPLETE:', {
                 distance: totalDistance.toFixed(2) + ' km',
                 time: totalTime.toFixed(2) + ' hours',
                 avgSpeed: avgSpeed.toFixed(1) + ' km/h',
@@ -1717,7 +1717,7 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
             });
             } else {
                 // ULTIMATE FALLBACK: Use realistic estimates based on vehicle type and installation date
-                console.log('⚠️ No OBD data available, using realistic estimates...');
+                console.log(' No OBD data available, using realistic estimates...');
                 
                 // Calculate days since installation
                 let installDate = new Date();
@@ -1745,7 +1745,7 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
                 maxSpeed = 80; // Conservative max speed
                 totalTrips = Math.max(1, Math.floor(daysSinceInstallation / 2)); // Rough estimate
                 
-                console.log('✅ REALISTIC ESTIMATES CALCULATED:', {
+                console.log(' REALISTIC ESTIMATES CALCULATED:', {
                     daysSinceInstallation,
                     dailyDistance: dailyDistance + ' km/day',
                     dailyTime: dailyTime + ' hours/day',
@@ -1768,8 +1768,8 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
             total_speed_violations: totalSpeedViolations
         };
         
-        console.log('✅ FAST REAL DATA retrieved successfully!');
-        console.log('📊 Calculated Analytics from report table:', {
+        console.log(' FAST REAL DATA retrieved successfully!');
+        console.log(' Calculated Analytics from report table:', {
             distance: analyticsData.total_distance_km.toFixed(1) + ' km',
             trips: analyticsData.total_trips,
             time: analyticsData.total_time_hours.toFixed(1) + ' hours',
@@ -1785,7 +1785,7 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
             });
         }
         
-        console.log('🚗 Vehicle Data Retrieved:', {
+        console.log(' Vehicle Data Retrieved:', {
             brand: vehicleData?.brand,
             model: vehicleData?.model,
             year: vehicleData?.year,
@@ -1799,7 +1799,7 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
         // totalDistance, totalTime, maxSpeed, totalTrips, totalOBDErrors, totalSpeedViolations already declared above from calculations
         const totalFuel = 0; // Will be calculated from OBD if available
         
-        console.log('📊 Summary Metrics:', { 
+        console.log(' Summary Metrics:', { 
             totalDistance, 
             totalTrips, 
             totalTime, 
@@ -1810,7 +1810,7 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
         });
         
         // Process OBD parameters from position table data with spike detection
-        console.log(`🔍 Processing ${obdData.length} OBD records for detailed parameters and spike analysis...`);
+        console.log(` Processing ${obdData.length} OBD records for detailed parameters and spike analysis...`);
         
         let rpmSum = 0, rpmCount = 0;
         let loadSum = 0, loadCount = 0;
@@ -1866,7 +1866,7 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
         let intakeMAP2Values = [];
         
         // Process OBD data field to extract parameters
-        console.log('🔍 Debug: First OBD record structure:', JSON.stringify(obdData[0] || {}, null, 2));
+        console.log(' Debug: First OBD record structure:', JSON.stringify(obdData[0] || {}, null, 2));
         
         obdData.forEach((record, index) => {
             try {
@@ -1896,7 +1896,7 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
                     try {
                         dataObj = JSON.parse(record.data);
                     } catch (parseError) {
-                        console.warn(`⚠️ Failed to parse data as JSON for record ${index}:`, parseError.message);
+                        console.warn(` Failed to parse data as JSON for record ${index}:`, parseError.message);
                         return;
                     }
                 }
@@ -1907,14 +1907,14 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
                     
                     // Debug: Log the keys available in the data
                     if (index === 0) {
-                        console.log('🔍 Available OBD parameters:', Object.keys(dataObj));
-                        console.log('🔍 OBD Elements available:', Object.keys(obdElements));
-                        console.log('🔍 Direct OBD fields:', {
+                        console.log(' Available OBD parameters:', Object.keys(dataObj));
+                        console.log(' OBD Elements available:', Object.keys(obdElements));
+                        console.log(' Direct OBD fields:', {
                             rpm: record.rpm,
                             throttle: record.throttle,
                             realOdometer: record.realOdometer
                         });
-                        console.log('🔍 Sample OBD values from data:', {
+                        console.log(' Sample OBD values from data:', {
                             '31': obdElements['31'],
                             '32': obdElements['32'],
                             '36': obdElements['36'],
@@ -2148,14 +2148,14 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
                     }
                 }
             } catch (error) {
-                console.warn(`⚠️ Error processing OBD record ${index}:`, error.message);
+                console.warn(` Error processing OBD record ${index}:`, error.message);
             }
         });
         
-        console.log(`🔍 OBD Parameter counts - RPM: ${rpmCount}, Load: ${loadCount}, Temp: ${tempCount}, Fuel: ${fuelCount}, Throttle: ${throttleCount}, MAP: ${mapCount}, Timing: ${timingCount}, Air Temp: ${airTempCount}, Fuel Trim: ${fuelTrimCount}, Voltage: ${voltageCount}, Oil Temp: ${oilTempCount}, Barometric: ${barometricCount}, DTC: ${dtcCount}, Engine Load Calc: ${engineLoadCalcCount}, Fuel Rail Pressure: ${fuelRailPressureCount}, Run Time: ${runTimeCount}, Distance MIL: ${distanceMILCount}, Distance Codes Cleared: ${distanceCodesClearedCount}, Absolute Load: ${absoluteLoadCount}, Ambient Temp: ${ambientTempCount}, Absolute Fuel Rail Pressure: ${absoluteFuelRailPressureCount}, Fuel Injection Timing: ${fuelInjectionTimingCount}, Engine Fuel Rate: ${engineFuelRateCount}, Commanded Equivalence: ${commandedEquivalenceCount}, Intake MAP2: ${intakeMAP2Count}`);
+        console.log(` OBD Parameter counts - RPM: ${rpmCount}, Load: ${loadCount}, Temp: ${tempCount}, Fuel: ${fuelCount}, Throttle: ${throttleCount}, MAP: ${mapCount}, Timing: ${timingCount}, Air Temp: ${airTempCount}, Fuel Trim: ${fuelTrimCount}, Voltage: ${voltageCount}, Oil Temp: ${oilTempCount}, Barometric: ${barometricCount}, DTC: ${dtcCount}, Engine Load Calc: ${engineLoadCalcCount}, Fuel Rail Pressure: ${fuelRailPressureCount}, Run Time: ${runTimeCount}, Distance MIL: ${distanceMILCount}, Distance Codes Cleared: ${distanceCodesClearedCount}, Absolute Load: ${absoluteLoadCount}, Ambient Temp: ${ambientTempCount}, Absolute Fuel Rail Pressure: ${absoluteFuelRailPressureCount}, Fuel Injection Timing: ${fuelInjectionTimingCount}, Engine Fuel Rate: ${engineFuelRateCount}, Commanded Equivalence: ${commandedEquivalenceCount}, Intake MAP2: ${intakeMAP2Count}`);
         
         // Spike detection and analysis
-        console.log('🔍 Analyzing OBD parameter spikes for potential issues...');
+        console.log(' Analyzing OBD parameter spikes for potential issues...');
         
         const analyzeSpikes = (values, parameterName, thresholds) => {
             if (values.length === 0) return null;
@@ -2206,15 +2206,15 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
         const thresholds = {
             rpm: { warning: 4000, critical: 5000 }, // RPM thresholds
             load: { warning: 80, critical: 95 }, // Engine load thresholds
-            temp: { warning: 105, critical: 115 }, // Coolant temperature thresholds (°C)
+            temp: { warning: 105, critical: 115 }, // Coolant temperature thresholds (C)
             fuel: { warning: 15, critical: 5 }, // Fuel level thresholds (%)
             throttle: { warning: 80, critical: 95 }, // Throttle position thresholds (%)
             map: { warning: 120, critical: 150 }, // MAP thresholds (kPa)
             timing: { warning: 20, critical: 30 }, // Timing advance thresholds (degrees)
-            airTemp: { warning: 50, critical: 60 }, // Intake air temperature thresholds (°C)
+            airTemp: { warning: 50, critical: 60 }, // Intake air temperature thresholds (C)
             fuelTrim: { warning: 10, critical: 15 }, // Fuel trim thresholds (%)
             voltage: { warning: 14.5, critical: 15.5 }, // Voltage thresholds (V)
-            oilTemp: { warning: 120, critical: 140 }, // Oil temperature thresholds (°C)
+            oilTemp: { warning: 120, critical: 140 }, // Oil temperature thresholds (C)
             barometric: { warning: 110, critical: 120 }, // Barometric pressure thresholds (kPa)
             dtc: { warning: 1, critical: 3 }, // DTC count thresholds
             engineLoadCalc: { warning: 80, critical: 95 }, // Calculated engine load thresholds (%)
@@ -2223,7 +2223,7 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
             distanceMIL: { warning: 100, critical: 500 }, // Distance MIL thresholds (km)
             distanceCodesCleared: { warning: 1000, critical: 5000 }, // Distance codes cleared thresholds (km)
             absoluteLoad: { warning: 80, critical: 95 }, // Absolute load thresholds (%)
-            ambientTemp: { warning: 40, critical: 50 }, // Ambient temperature thresholds (°C)
+            ambientTemp: { warning: 40, critical: 50 }, // Ambient temperature thresholds (C)
             absoluteFuelRailPressure: { warning: 5000, critical: 7000 }, // Absolute fuel rail pressure thresholds (kPa)
             fuelInjectionTiming: { warning: 20, critical: 30 }, // Fuel injection timing thresholds (degrees)
             engineFuelRate: { warning: 20, critical: 30 }, // Engine fuel rate thresholds (L/h)
@@ -2258,7 +2258,7 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
         const commandedEquivalenceAnalysis = analyzeSpikes(commandedEquivalenceValues, 'Commanded Equivalence', thresholds.commandedEquivalence);
         const intakeMAP2Analysis = analyzeSpikes(intakeMAP2Values, 'Intake MAP2', thresholds.intakeMAP2);
         
-        console.log('📊 Spike Analysis Results:');
+        console.log(' Spike Analysis Results:');
         [rpmAnalysis, loadAnalysis, tempAnalysis, fuelAnalysis, throttleAnalysis, mapAnalysis, timingAnalysis, airTempAnalysis, fuelTrimAnalysis, voltageAnalysis, oilTempAnalysis, barometricAnalysis, dtcAnalysis, engineLoadCalcAnalysis, fuelRailPressureAnalysis, runTimeAnalysis, distanceMILAnalysis, distanceCodesClearedAnalysis, absoluteLoadAnalysis, ambientTempAnalysis, absoluteFuelRailPressureAnalysis, fuelInjectionTimingAnalysis, engineFuelRateAnalysis, commandedEquivalenceAnalysis, intakeMAP2Analysis].forEach(analysis => {
             if (analysis) {
                 console.log(`  ${analysis.parameter}: ${analysis.severity} - ${analysis.analysis}`);
@@ -2267,7 +2267,7 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
         
         // Debug: Show sample of actual OBD data we received
         if (obdData.length > 0) {
-            console.log('🔍 Sample OBD records (first 3):');
+            console.log(' Sample OBD records (first 3):');
             obdData.slice(0, 3).forEach((record, index) => {
                 console.log(`  Record ${index + 1}:`, {
                     rpm: record.rpm,
@@ -2278,7 +2278,7 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
                 });
             });
         } else {
-            console.log('❌ No OBD records found with ignition=true');
+            console.log(' No OBD records found with ignition=true');
         }
         
         // Calculate basic driving insights from report data + OBD parameters
@@ -2343,11 +2343,11 @@ app.get('/api/vehicle/:deviceId/ai-report', async (req, res) => {
             }
         };
         
-        console.log(`📈 Position Analysis Complete:`, {
+        console.log(` Position Analysis Complete:`, {
             realSamples: obdInsights.samples,
             avgRPM: obdInsights.avgRPM > 0 ? obdInsights.avgRPM + ' RPM' : 'N/A',
             avgLoad: obdInsights.avgLoad > 0 ? obdInsights.avgLoad + '%' : 'N/A', 
-            avgTemp: obdInsights.avgTemp > 0 ? obdInsights.avgTemp + '°C' : 'N/A',
+            avgTemp: obdInsights.avgTemp > 0 ? obdInsights.avgTemp + 'C' : 'N/A',
             avgVoltage: obdInsights.avgVoltage.toFixed(2) + 'V',
             avgThrottle: obdInsights.avgThrottle > 0 ? obdInsights.avgThrottle.toFixed(1) + '%' : 'N/A',
             totalDTCs: obdInsights.totalDTCs,
@@ -2401,7 +2401,7 @@ VEHICLE MAINTENANCE REPORT - COMPREHENSIVE ANALYSIS
 **Vehicle Sensor Diagnostics (${obdInsights.realSamples} readings from full week):**
 - Engine RPM Average: ${obdInsights.avgRPM ? obdInsights.avgRPM + ' RPM' : 'N/A'}
 - Engine Load Average: ${obdInsights.avgLoad ? obdInsights.avgLoad + '%' : 'N/A'}
-- Coolant Temperature: ${obdInsights.avgTemp ? obdInsights.avgTemp + '°C' : 'N/A'}
+- Coolant Temperature: ${obdInsights.avgTemp ? obdInsights.avgTemp + 'C' : 'N/A'}
 - Fuel Level Average: ${obdInsights.avgFuelLevel ? obdInsights.avgFuelLevel + '%' : 'N/A'}
 - Battery Voltage: ${safeFormat(obdInsights.avgVoltage, 2)}V
 - Throttle Position: ${obdInsights.avgThrottle ? obdInsights.avgThrottle + '%' : 'N/A'}
@@ -2435,16 +2435,16 @@ ${isItalian ? 'NOTA: Non usare separatori delle migliaia nei numeri. Esempio: 16
         let aiReport;
         
         // Check OpenAI configuration and try API with robust timeout handling
-        console.log('🤖 Checking OpenAI configuration...');
+        console.log(' Checking OpenAI configuration...');
         
         const openaiApiKey = process.env.OPENAI_API_KEY || (openai.apiKey && openai.apiKey !== 'your-openai-api-key-here' ? openai.apiKey : null);
         
         if (!openaiApiKey || openaiApiKey === 'your-openai-api-key-here') {
-            console.warn('⚠️ OpenAI API key not properly configured, using enhanced fallback report');
+            console.warn(' OpenAI API key not properly configured, using enhanced fallback report');
             // Skip OpenAI call and go directly to fallback
         } else {
             try {
-                console.log('🤖 Calling OpenAI API for intelligent analysis...');
+                console.log(' Calling OpenAI API for intelligent analysis...');
                 
                 // Create timeout promise
                 const openaiTimeout = new Promise((_, reject) => {
@@ -2458,8 +2458,8 @@ ${isItalian ? 'NOTA: Non usare separatori delle migliaia nei numeri. Esempio: 16
                         {
                             role: "system",
                             content: isItalian ? 
-                                "Sei un esperto consulente automotive specializzato in manutenzione predittiva per concessionari. Genera report professionali completi in italiano per ottimizzare le vendite di servizi di manutenzione. Usa i dati OBD-II reali per raccomandazioni specifiche. IMPORTANTE: Non usare separatori delle migliaia (virgole) nei numeri. Usa solo il punto decimale. Esempio: 1673 RPM, non 1,673 RPM. REGOLA ASSOLUTA: NON USARE MAI ALCUN'ICONA, EMOJI, SIMBOLO GRAFICO, CARATTERE SPECIALE O PITTORICO. NIENTE 🚗 🔧 ⚡ 📊 🌡️ ✅ ⚠️ O QUALSIASI ALTRO SIMBOLO. SOLO LETTERE, NUMERI E PUNTEGGIATURA NORMALE. TESTO COMPLETAMENTE PURO SENZA ALCUN ELEMENTO VISIVO." :
-                                "You are an expert automotive consultant specializing in predictive maintenance for dealerships. Generate complete professional reports to optimize maintenance service sales. Use real OBD-II data for specific recommendations. IMPORTANT: Do not use thousands separators (commas) in numbers. Use only decimal points. Example: 1673 RPM, not 1,673 RPM. ABSOLUTE RULE: NEVER USE ANY ICONS, EMOJIS, GRAPHICAL SYMBOLS, SPECIAL CHARACTERS OR PICTORIAL ELEMENTS. NO 🚗 🔧 ⚡ 📊 🌡️ ✅ ⚠️ OR ANY OTHER SYMBOLS. ONLY LETTERS, NUMBERS AND NORMAL PUNCTUATION. COMPLETELY PURE TEXT WITHOUT ANY VISUAL ELEMENTS."
+                                "Sei un esperto consulente automotive specializzato in manutenzione predittiva per concessionari. Genera report professionali completi in italiano per ottimizzare le vendite di servizi di manutenzione. Usa i dati OBD-II reali per raccomandazioni specifiche. IMPORTANTE: Non usare separatori delle migliaia (virgole) nei numeri. Usa solo il punto decimale. Esempio: 1673 RPM, non 1,673 RPM. REGOLA ASSOLUTA: NON USARE MAI ALCUN'ICONA, EMOJI, SIMBOLO GRAFICO, CARATTERE SPECIALE O PITTORICO. NIENTE        O QUALSIASI ALTRO SIMBOLO. SOLO LETTERE, NUMERI E PUNTEGGIATURA NORMALE. TESTO COMPLETAMENTE PURO SENZA ALCUN ELEMENTO VISIVO." :
+                                "You are an expert automotive consultant specializing in predictive maintenance for dealerships. Generate complete professional reports to optimize maintenance service sales. Use real OBD-II data for specific recommendations. IMPORTANT: Do not use thousands separators (commas) in numbers. Use only decimal points. Example: 1673 RPM, not 1,673 RPM. ABSOLUTE RULE: NEVER USE ANY ICONS, EMOJIS, GRAPHICAL SYMBOLS, SPECIAL CHARACTERS OR PICTORIAL ELEMENTS. NO        OR ANY OTHER SYMBOLS. ONLY LETTERS, NUMBERS AND NORMAL PUNCTUATION. COMPLETELY PURE TEXT WITHOUT ANY VISUAL ELEMENTS."
                         },
                         {
                             role: "user", 
@@ -2477,16 +2477,16 @@ ${isItalian ? 'NOTA: Non usare separatori delle migliaia nei numeri. Esempio: 16
                 // STRIP ALL EMOJIS AND ICONS FROM AI RESPONSE
                 aiReport = aiReport.replace(/[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]|[\u{1F900}-\u{1F9FF}]|[\u{1F018}-\u{1F270}]|[\u{238C}-\u{2454}]|[\u{20D0}-\u{20FF}]|[\u{FE00}-\u{FE0F}]|[\u{1F900}-\u{1F9FF}]|[\u{1F018}-\u{1F270}]|[\u{238C}-\u{2454}]|[\u{20D0}-\u{20FF}]|[\u{FE00}-\u{FE0F}]/gu, '');
                 
-                console.log(`✅ OpenAI AI report generated successfully! Tokens: ${completion.usage?.total_tokens || 'N/A'}`);
-                console.log(`📊 Report length: ${aiReport.length} characters`);
+                console.log(` OpenAI AI report generated successfully! Tokens: ${completion.usage?.total_tokens || 'N/A'}`);
+                console.log(` Report length: ${aiReport.length} characters`);
                 
             } catch (openaiError) {
-                console.warn('⚠️ OpenAI API failed, using enhanced fallback report:', openaiError.message);
+                console.warn(' OpenAI API failed, using enhanced fallback report:', openaiError.message);
             }
         }
         
         // Generate structured AI report sections
-        console.log('🤖 Generating structured AI report sections...');
+        console.log(' Generating structured AI report sections...');
         
         const sections = {};
         
@@ -2522,7 +2522,7 @@ ${isItalian ? 'NOTA: Non usare separatori delle migliaia nei numeri. Esempio: 16
                 
                 return content;
             } catch (error) {
-                console.warn(`⚠️ Failed to generate ${sectionName}:`, error.message);
+                console.warn(` Failed to generate ${sectionName}:`, error.message);
                 // Return enhanced fallback content instead of generic error
                 return generateAISectionResponse(prompt, { vehicle, obdData: { spikeAnalysis: obdInsights.spikeAnalysis } }, isItalian ? 'it' : 'en', sectionName);
             }
@@ -2530,12 +2530,12 @@ ${isItalian ? 'NOTA: Non usare separatori delle migliaia nei numeri. Esempio: 16
         
         // Generate each section with specific prompts
         const vehicleHealthPrompt = isItalian ? 
-            `Analizza lo stato di salute generale di questo ${vehicleInfo} basandoti sui dati OBD. Considera: prestazioni motore (RPM ${safeFormat(obdInsights.avgRPM, 0)}, carico ${safeFormat(obdInsights.avgLoad, 1)}%), temperatura (${safeFormat(obdInsights.avgTemp, 1)}°C), tensione batteria (${safeFormat(obdInsights.avgVoltage, 2)}V), e codici di errore (${obdInsights.totalDTCs}). Fornisci una valutazione professionale dello stato attuale del veicolo.` :
-            `Analyze the overall health status of this ${vehicleInfo} based on OBD data. Consider: engine performance (RPM ${safeFormat(obdInsights.avgRPM, 0)}, load ${safeFormat(obdInsights.avgLoad, 1)}%), temperature (${safeFormat(obdInsights.avgTemp, 1)}°C), battery voltage (${safeFormat(obdInsights.avgVoltage, 2)}V), and error codes (${obdInsights.totalDTCs}). Provide a professional assessment of the vehicle's current health status.`;
+            `Analizza lo stato di salute generale di questo ${vehicleInfo} basandoti sui dati OBD. Considera: prestazioni motore (RPM ${safeFormat(obdInsights.avgRPM, 0)}, carico ${safeFormat(obdInsights.avgLoad, 1)}%), temperatura (${safeFormat(obdInsights.avgTemp, 1)}C), tensione batteria (${safeFormat(obdInsights.avgVoltage, 2)}V), e codici di errore (${obdInsights.totalDTCs}). Fornisci una valutazione professionale dello stato attuale del veicolo.` :
+            `Analyze the overall health status of this ${vehicleInfo} based on OBD data. Consider: engine performance (RPM ${safeFormat(obdInsights.avgRPM, 0)}, load ${safeFormat(obdInsights.avgLoad, 1)}%), temperature (${safeFormat(obdInsights.avgTemp, 1)}C), battery voltage (${safeFormat(obdInsights.avgVoltage, 2)}V), and error codes (${obdInsights.totalDTCs}). Provide a professional assessment of the vehicle's current health status.`;
         
         // Debug: Log spike analysis data
-        console.log('🚨🚨🚨 DEBUG: Spike Analysis Data being sent to AI 🚨🚨🚨');
-        console.log('🔍 DEBUG: Spike Analysis Data being sent to AI:', {
+        console.log(' DEBUG: Spike Analysis Data being sent to AI ');
+        console.log(' DEBUG: Spike Analysis Data being sent to AI:', {
             rpm: obdInsights.spikeAnalysis?.rpm,
             load: obdInsights.spikeAnalysis?.load,
             temp: obdInsights.spikeAnalysis?.temp,
@@ -2548,7 +2548,7 @@ ${isItalian ? 'NOTA: Non usare separatori delle migliaia nei numeri. Esempio: 16
 
 RPM: ${obdInsights.spikeAnalysis?.rpm ? `${obdInsights.spikeAnalysis.rpm.totalSpikes} picchi rilevati, massimo: ${obdInsights.spikeAnalysis.rpm.maxSpike || 'N/A'}, media: ${obdInsights.spikeAnalysis.rpm.average || 'N/A'}` : 'N/A'}
 Carico Motore: ${obdInsights.spikeAnalysis?.load ? `${obdInsights.spikeAnalysis.load.totalSpikes} picchi rilevati, massimo: ${obdInsights.spikeAnalysis.load.maxSpike || 'N/A'}, media: ${obdInsights.spikeAnalysis.load.average || 'N/A'}%` : 'N/A'}
-Temperatura: ${obdInsights.spikeAnalysis?.temp ? `${obdInsights.spikeAnalysis.temp.totalSpikes} picchi rilevati, massimo: ${obdInsights.spikeAnalysis.temp.maxSpike || 'N/A'}°C, media: ${obdInsights.spikeAnalysis.temp.average || 'N/A'}°C` : 'N/A'}
+Temperatura: ${obdInsights.spikeAnalysis?.temp ? `${obdInsights.spikeAnalysis.temp.totalSpikes} picchi rilevati, massimo: ${obdInsights.spikeAnalysis.temp.maxSpike || 'N/A'}C, media: ${obdInsights.spikeAnalysis.temp.average || 'N/A'}C` : 'N/A'}
 Carburante: ${obdInsights.spikeAnalysis?.fuel ? `${obdInsights.spikeAnalysis.fuel.totalSpikes} picchi rilevati, massimo: ${obdInsights.spikeAnalysis.fuel.maxSpike || 'N/A'}%, media: ${obdInsights.spikeAnalysis.fuel.average || 'N/A'}%` : 'N/A'}
 Farfalla: ${obdInsights.spikeAnalysis?.throttle ? `${obdInsights.spikeAnalysis.throttle.totalSpikes} picchi rilevati, massimo: ${obdInsights.spikeAnalysis.throttle.maxSpike || 'N/A'}%, media: ${obdInsights.spikeAnalysis.throttle.average || 'N/A'}%` : 'N/A'}
 
@@ -2557,15 +2557,15 @@ IMPORTANTE: Nel tuo commento, DEVI menzionare esplicitamente questi valori numer
 
 RPM: ${obdInsights.spikeAnalysis?.rpm ? `${obdInsights.spikeAnalysis.rpm.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.rpm.maxSpike || 'N/A'}, avg: ${obdInsights.spikeAnalysis.rpm.average || 'N/A'}` : 'N/A'}
 Engine Load: ${obdInsights.spikeAnalysis?.load ? `${obdInsights.spikeAnalysis.load.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.load.maxSpike || 'N/A'}, avg: ${obdInsights.spikeAnalysis.load.average || 'N/A'}%` : 'N/A'}
-Coolant Temperature: ${obdInsights.spikeAnalysis?.temp ? `${obdInsights.spikeAnalysis.temp.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.temp.maxSpike || 'N/A'}°C, avg: ${obdInsights.spikeAnalysis.temp.average || 'N/A'}°C` : 'N/A'}
+Coolant Temperature: ${obdInsights.spikeAnalysis?.temp ? `${obdInsights.spikeAnalysis.temp.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.temp.maxSpike || 'N/A'}C, avg: ${obdInsights.spikeAnalysis.temp.average || 'N/A'}C` : 'N/A'}
 Fuel Level: ${obdInsights.spikeAnalysis?.fuel ? `${obdInsights.spikeAnalysis.fuel.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.fuel.maxSpike || 'N/A'}%, avg: ${obdInsights.spikeAnalysis.fuel.average || 'N/A'}%` : 'N/A'}
 Throttle Position: ${obdInsights.spikeAnalysis?.throttle ? `${obdInsights.spikeAnalysis.throttle.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.throttle.maxSpike || 'N/A'}%, avg: ${obdInsights.spikeAnalysis.throttle.average || 'N/A'}%` : 'N/A'}
 Intake MAP: ${obdInsights.spikeAnalysis?.map ? `${obdInsights.spikeAnalysis.map.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.map.maxSpike || 'N/A'}, avg: ${obdInsights.spikeAnalysis.map.average || 'N/A'}` : 'N/A'}
 Timing Advance: ${obdInsights.spikeAnalysis?.timing ? `${obdInsights.spikeAnalysis.timing.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.timing.maxSpike || 'N/A'}, avg: ${obdInsights.spikeAnalysis.timing.average || 'N/A'}` : 'N/A'}
-Intake Air Temp: ${obdInsights.spikeAnalysis?.airTemp ? `${obdInsights.spikeAnalysis.airTemp.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.airTemp.maxSpike || 'N/A'}°C, avg: ${obdInsights.spikeAnalysis.airTemp.average || 'N/A'}°C` : 'N/A'}
+Intake Air Temp: ${obdInsights.spikeAnalysis?.airTemp ? `${obdInsights.spikeAnalysis.airTemp.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.airTemp.maxSpike || 'N/A'}C, avg: ${obdInsights.spikeAnalysis.airTemp.average || 'N/A'}C` : 'N/A'}
 Fuel Trim: ${obdInsights.spikeAnalysis?.fuelTrim ? `${obdInsights.spikeAnalysis.fuelTrim.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.fuelTrim.maxSpike || 'N/A'}%, avg: ${obdInsights.spikeAnalysis.fuelTrim.average || 'N/A'}%` : 'N/A'}
 Control Voltage: ${obdInsights.spikeAnalysis?.voltage ? `${obdInsights.spikeAnalysis.voltage.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.voltage.maxSpike || 'N/A'}V, avg: ${obdInsights.spikeAnalysis.voltage.average || 'N/A'}V` : 'N/A'}
-Oil Temperature: ${obdInsights.spikeAnalysis?.oilTemp ? `${obdInsights.spikeAnalysis.oilTemp.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.oilTemp.maxSpike || 'N/A'}°C, avg: ${obdInsights.spikeAnalysis.oilTemp.average || 'N/A'}°C` : 'N/A'}
+Oil Temperature: ${obdInsights.spikeAnalysis?.oilTemp ? `${obdInsights.spikeAnalysis.oilTemp.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.oilTemp.maxSpike || 'N/A'}C, avg: ${obdInsights.spikeAnalysis.oilTemp.average || 'N/A'}C` : 'N/A'}
 Barometric Pressure: ${obdInsights.spikeAnalysis?.barometric ? `${obdInsights.spikeAnalysis.barometric.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.barometric.maxSpike || 'N/A'}kPa, avg: ${obdInsights.spikeAnalysis.barometric.average || 'N/A'}kPa` : 'N/A'}
 DTC Count: ${obdInsights.spikeAnalysis?.dtc ? `${obdInsights.spikeAnalysis.dtc.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.dtc.maxSpike || 'N/A'}, avg: ${obdInsights.spikeAnalysis.dtc.average || 'N/A'}` : 'N/A'}
 Engine Load Calc: ${obdInsights.spikeAnalysis?.engineLoadCalc ? `${obdInsights.spikeAnalysis.engineLoadCalc.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.engineLoadCalc.maxSpike || 'N/A'}%, avg: ${obdInsights.spikeAnalysis.engineLoadCalc.average || 'N/A'}%` : 'N/A'}
@@ -2574,9 +2574,9 @@ Run Time: ${obdInsights.spikeAnalysis?.runTime ? `${obdInsights.spikeAnalysis.ru
 Distance MIL: ${obdInsights.spikeAnalysis?.distanceMIL ? `${obdInsights.spikeAnalysis.distanceMIL.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.distanceMIL.maxSpike || 'N/A'}km, avg: ${obdInsights.spikeAnalysis.distanceMIL.average || 'N/A'}km` : 'N/A'}
 Distance Codes Cleared: ${obdInsights.spikeAnalysis?.distanceCodesCleared ? `${obdInsights.spikeAnalysis.distanceCodesCleared.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.distanceCodesCleared.maxSpike || 'N/A'}km, avg: ${obdInsights.spikeAnalysis.distanceCodesCleared.average || 'N/A'}km` : 'N/A'}
 Absolute Load: ${obdInsights.spikeAnalysis?.absoluteLoad ? `${obdInsights.spikeAnalysis.absoluteLoad.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.absoluteLoad.maxSpike || 'N/A'}%, avg: ${obdInsights.spikeAnalysis.absoluteLoad.average || 'N/A'}%` : 'N/A'}
-Ambient Temperature: ${obdInsights.spikeAnalysis?.ambientTemp ? `${obdInsights.spikeAnalysis.ambientTemp.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.ambientTemp.maxSpike || 'N/A'}°C, avg: ${obdInsights.spikeAnalysis.ambientTemp.average || 'N/A'}°C` : 'N/A'}
+Ambient Temperature: ${obdInsights.spikeAnalysis?.ambientTemp ? `${obdInsights.spikeAnalysis.ambientTemp.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.ambientTemp.maxSpike || 'N/A'}C, avg: ${obdInsights.spikeAnalysis.ambientTemp.average || 'N/A'}C` : 'N/A'}
 Absolute Fuel Rail Pressure: ${obdInsights.spikeAnalysis?.absoluteFuelRailPressure ? `${obdInsights.spikeAnalysis.absoluteFuelRailPressure.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.absoluteFuelRailPressure.maxSpike || 'N/A'}kPa, avg: ${obdInsights.spikeAnalysis.absoluteFuelRailPressure.average || 'N/A'}kPa` : 'N/A'}
-Fuel Injection Timing: ${obdInsights.spikeAnalysis?.fuelInjectionTiming ? `${obdInsights.spikeAnalysis.fuelInjectionTiming.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.fuelInjectionTiming.maxSpike || 'N/A'}°, avg: ${obdInsights.spikeAnalysis.fuelInjectionTiming.average || 'N/A'}°` : 'N/A'}
+Fuel Injection Timing: ${obdInsights.spikeAnalysis?.fuelInjectionTiming ? `${obdInsights.spikeAnalysis.fuelInjectionTiming.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.fuelInjectionTiming.maxSpike || 'N/A'}, avg: ${obdInsights.spikeAnalysis.fuelInjectionTiming.average || 'N/A'}` : 'N/A'}
 Engine Fuel Rate: ${obdInsights.spikeAnalysis?.engineFuelRate ? `${obdInsights.spikeAnalysis.engineFuelRate.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.engineFuelRate.maxSpike || 'N/A'}L/h, avg: ${obdInsights.spikeAnalysis.engineFuelRate.average || 'N/A'}L/h` : 'N/A'}
 Commanded Equivalence: ${obdInsights.spikeAnalysis?.commandedEquivalence ? `${obdInsights.spikeAnalysis.commandedEquivalence.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.commandedEquivalence.maxSpike || 'N/A'}, avg: ${obdInsights.spikeAnalysis.commandedEquivalence.average || 'N/A'}` : 'N/A'}
 Intake MAP2: ${obdInsights.spikeAnalysis?.intakeMAP2 ? `${obdInsights.spikeAnalysis.intakeMAP2.totalSpikes} spikes detected, max: ${obdInsights.spikeAnalysis.intakeMAP2.maxSpike || 'N/A'}kPa, avg: ${obdInsights.spikeAnalysis.intakeMAP2.average || 'N/A'}kPa` : 'N/A'}
@@ -2584,15 +2584,15 @@ Intake MAP2: ${obdInsights.spikeAnalysis?.intakeMAP2 ? `${obdInsights.spikeAnaly
 IMPORTANT: In your response, you MUST explicitly mention these specific numerical values. For example: "RPM showed 30 spikes with a maximum of 3842 RPM", "Engine load reached 100% on 45 occasions", etc. Explain what these specific values mean in terms of driving behavior, potential mechanical issues, and whether the spikes are normal or concerning.`;
 
         // Debug: Log the actual prompt being sent
-        console.log('🚨🚨🚨 DEBUG: Spike Analysis Prompt being sent to AI 🚨🚨🚨');
-        console.log('🔍 DEBUG: Spike Analysis Prompt being sent to AI:', spikeAnalysisPrompt);
+        console.log(' DEBUG: Spike Analysis Prompt being sent to AI ');
+        console.log(' DEBUG: Spike Analysis Prompt being sent to AI:', spikeAnalysisPrompt);
         
         const maintenancePrompt = isItalian ?
             `Basandoti sull'analisi dei dati del veicolo, fornisci raccomandazioni di manutenzione specifiche per questo ${vehicleInfo}. Considera: distanza percorsa (${safeFormat(totalDistance)}km), tempo di utilizzo (${safeFormat(totalTime)} ore), e analisi dei picchi. Suggerisci azioni immediate, manutenzione preventiva e intervalli di servizio.` :
             `Based on the vehicle data analysis, provide specific maintenance recommendations for this ${vehicleInfo}. Consider: distance traveled (${safeFormat(totalDistance)}km), usage time (${safeFormat(totalTime)} hours), and spike analysis. Suggest immediate actions, preventive maintenance, and service intervals.`;
         
         const performancePrompt = isItalian ?
-            `Analizza i pattern di prestazioni di guida dai dati: distanza (${safeFormat(totalDistance)}km), viaggi (${totalTrips}), tempo (${safeFormat(totalTime)} ore), velocità media (${safeFormat(avgSpeed, 1)}km/h), velocità massima (${safeFormat(maxSpeed, 1)}km/h). Fornisci insights sull'efficienza di guida e aree di miglioramento.` :
+            `Analizza i pattern di prestazioni di guida dai dati: distanza (${safeFormat(totalDistance)}km), viaggi (${totalTrips}), tempo (${safeFormat(totalTime)} ore), velocit media (${safeFormat(avgSpeed, 1)}km/h), velocit massima (${safeFormat(maxSpeed, 1)}km/h). Fornisci insights sull'efficienza di guida e aree di miglioramento.` :
             `Analyze driving performance patterns from data: distance (${safeFormat(totalDistance)}km), trips (${totalTrips}), time (${safeFormat(totalTime)} hours), average speed (${safeFormat(avgSpeed, 1)}km/h), max speed (${safeFormat(maxSpeed, 1)}km/h). Provide insights about driving efficiency and areas for improvement.`;
         
         const issuesPrompt = isItalian ?
@@ -2600,7 +2600,7 @@ IMPORTANT: In your response, you MUST explicitly mention these specific numerica
             `Identify potential issues or concerns from the OBD data analysis for this ${vehicleInfo}. Consider: abnormal spikes, warning signs, potential mechanical problems, safety concerns. Be specific about detected issues and their potential impact.`;
         
         const opportunitiesPrompt = isItalian ?
-            `Basandoti sull'analisi del veicolo, identifica opportunità commerciali per questo ${vehicleInfo}. Considera: raccomandazioni di servizio che potrebbero generare ricavi, opportunità di upselling, strategie di fidelizzazione clienti, servizi aggiuntivi di cui il cliente potrebbe aver bisogno.` :
+            `Basandoti sull'analisi del veicolo, identifica opportunit commerciali per questo ${vehicleInfo}. Considera: raccomandazioni di servizio che potrebbero generare ricavi, opportunit di upselling, strategie di fidelizzazione clienti, servizi aggiuntivi di cui il cliente potrebbe aver bisogno.` :
             `Based on the vehicle analysis, identify commercial opportunities for this ${vehicleInfo}. Consider: service recommendations that could generate revenue, upselling opportunities, customer retention strategies, additional services the customer might need.`;
         
         // Generate all sections in parallel
@@ -2682,10 +2682,10 @@ IMPORTANT: In your response, you MUST explicitly mention these specific numerica
             }
         });
         
-        console.log('📤 FAST REAL OBD DATA AI report sent successfully!');
+        console.log(' FAST REAL OBD DATA AI report sent successfully!');
         
     } catch (error) {
-        console.error('❌ Error generating complete AI report:', error);
+        console.error(' Error generating complete AI report:', error);
         res.status(500).json({
             success: false,
             error: error.message,
@@ -2697,7 +2697,7 @@ IMPORTANT: In your response, you MUST explicitly mention these specific numerica
 // Temporary endpoint to find certificate A21
 app.get('/api/certificate/A21', async (req, res) => {
     try {
-        console.log('🔍 Searching for certificate A21...');
+        console.log(' Searching for certificate A21...');
         
         // Search for certificate A21
         const certQuery = `
@@ -2708,10 +2708,10 @@ app.get('/api/certificate/A21', async (req, res) => {
         `;
         
         const certResult = await pool.query(certQuery);
-        console.log(`✅ Found ${certResult.rows.length} certificates matching A21`);
+        console.log(` Found ${certResult.rows.length} certificates matching A21`);
         
         if (certResult.rows.length > 0) {
-            console.log('📋 Certificate A21 details:', certResult.rows[0]);
+            console.log(' Certificate A21 details:', certResult.rows[0]);
         }
         
         res.json({
@@ -2722,7 +2722,7 @@ app.get('/api/certificate/A21', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Error searching for certificate A21:', error);
+        console.error(' Error searching for certificate A21:', error);
         res.status(500).json({
             success: false,
             message: 'Failed to search for certificate A21',
@@ -2739,7 +2739,7 @@ app.get('/api/vehicle/:deviceId/obd', async (req, res) => {
         const { deviceId } = req.params;
         const { startDate, endDate } = req.query;
         
-        console.log(`🔧 Loading OBD data for device ${deviceId} from ${startDate} to ${endDate}...`);
+        console.log(` Loading OBD data for device ${deviceId} from ${startDate} to ${endDate}...`);
         
         // Validate date parameters
         if (!startDate || !endDate) {
@@ -2774,14 +2774,14 @@ app.get('/api/vehicle/:deviceId/obd', async (req, res) => {
         const startDateTime = `${startDate} 00:00:00`;
         const endDateTime = `${endDate} 23:59:59`;
         
-        console.log(`🔧 Executing OBD query for device ${deviceId} from ${startDateTime} to ${endDateTime}`);
+        console.log(` Executing OBD query for device ${deviceId} from ${startDateTime} to ${endDateTime}`);
         
         const obdResult = await pool.query(obdQuery, [deviceId, startDateTime, endDateTime]);
-        console.log(`✅ OBD query found ${obdResult.rows.length} positions with rpm > 0 (engine running)`);
+        console.log(` OBD query found ${obdResult.rows.length} positions with rpm > 0 (engine running)`);
         
         // Log raw results for debugging
         if (obdResult.rows.length > 0) {
-            console.log('🔍 First OBD result:', {
+            console.log(' First OBD result:', {
                 id: obdResult.rows[0].id,
                 createdAt: obdResult.rows[0].createdAt,
                 rpm: obdResult.rows[0].rpm,
@@ -2789,7 +2789,7 @@ app.get('/api/vehicle/:deviceId/obd', async (req, res) => {
                 data: obdResult.rows[0].data
             });
         } else {
-            console.log('⚠️ No OBD data found for the specified criteria');
+            console.log(' No OBD data found for the specified criteria');
         }
         
         // Process OBD data - simplified version for testing
@@ -2813,8 +2813,8 @@ app.get('/api/vehicle/:deviceId/obd', async (req, res) => {
                 
                 // Debug: Log raw OBD elements for first few records
                 if (obdResult.rows.indexOf(row) < 3) {
-                    console.log(`🔍 Raw OBD elements for position ${row.id}:`, obdElements);
-                    console.log(`🔍 Full data object for position ${row.id}:`, dataObj);
+                    console.log(` Raw OBD elements for position ${row.id}:`, obdElements);
+                    console.log(` Full data object for position ${row.id}:`, dataObj);
                 }
                 
                 // Simplified data processing - just return the raw data for now
@@ -2826,16 +2826,16 @@ app.get('/api/vehicle/:deviceId/obd', async (req, res) => {
 
                 return processedData;
             } catch (error) {
-                console.error(`❌ Error processing OBD data for position ${row.id}:`, error);
+                console.error(` Error processing OBD data for position ${row.id}:`, error);
                 return null;
             }
         }).filter(item => item !== null);
         
-        console.log(`✅ Processed ${processedData.length} OBD records with FMB003 mapping`);
+        console.log(` Processed ${processedData.length} OBD records with FMB003 mapping`);
         
         // Debug: Show sample of processed data
         if (processedData.length > 0) {
-            console.log('🔍 Sample processed OBD record:', {
+            console.log(' Sample processed OBD record:', {
                 id: processedData[0].id,
                 createdAt: processedData[0].createdAt,
                 data: processedData[0].data
@@ -2851,7 +2851,7 @@ app.get('/api/vehicle/:deviceId/obd', async (req, res) => {
             dateRange: { startDate, endDate }
         };
         
-        console.log('📤 Sending OBD response:', {
+        console.log(' Sending OBD response:', {
             success: response.success,
             count: response.count,
             positionsLength: response.positions.length,
@@ -2861,7 +2861,7 @@ app.get('/api/vehicle/:deviceId/obd', async (req, res) => {
         res.json(response);
         
     } catch (error) {
-        console.error('❌ Error loading OBD data:', error);
+        console.error(' Error loading OBD data:', error);
         
         // Check if it's a timeout error
         if (error.message && error.message.includes('timeout')) {
@@ -2882,22 +2882,22 @@ app.get('/api/vehicle/:deviceId/obd', async (req, res) => {
 
 // Simple test endpoint
 app.get('/api/test-simple', async (req, res) => {
-    console.log('🧪 Simple test endpoint called');
+    console.log(' Simple test endpoint called');
     res.json({ message: 'Test endpoint working', timestamp: new Date() });
 });
 
 // Database connection test endpoint
 app.get('/api/test-db', async (req, res) => {
     try {
-        console.log('🧪 Testing database connection...');
+        console.log(' Testing database connection...');
         
         // Test simple query
         const result = await pool.query('SELECT NOW() as current_time');
-        console.log('✅ Database query successful:', result.rows[0]);
+        console.log(' Database query successful:', result.rows[0]);
         
         // Test position table query
         const positionResult = await pool.query('SELECT COUNT(*) as count FROM position WHERE "deviceId" = 528');
-        console.log('✅ Position count query successful:', positionResult.rows[0]);
+        console.log(' Position count query successful:', positionResult.rows[0]);
         
         res.json({
             success: true,
@@ -2907,7 +2907,7 @@ app.get('/api/test-db', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Database test error:', error);
+        console.error(' Database test error:', error);
         res.status(500).json({
             success: false,
             message: 'Database connection failed',
@@ -2920,7 +2920,7 @@ app.get('/api/test-db', async (req, res) => {
 app.get('/api/debug/position/:deviceId', async (req, res) => {
     try {
         const deviceId = req.params.deviceId;
-        console.log(`🔍 Debugging position data for device ${deviceId}`);
+        console.log(` Debugging position data for device ${deviceId}`);
         
         const query = `
             SELECT id, data, "createdAt", rpm, ignition
@@ -2933,7 +2933,7 @@ app.get('/api/debug/position/:deviceId', async (req, res) => {
         `;
         
         const result = await pool.query(query, [deviceId]);
-        console.log(`🔍 Found ${result.rows.length} positions for device ${deviceId}`);
+        console.log(` Found ${result.rows.length} positions for device ${deviceId}`);
         
         const debugData = result.rows.map(row => {
             try {
@@ -2967,7 +2967,7 @@ app.get('/api/debug/position/:deviceId', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Error in debug endpoint:', error);
+        console.error(' Error in debug endpoint:', error);
         res.status(500).json({
             success: false,
             message: 'Debug failed',
@@ -2980,7 +2980,7 @@ app.get('/api/debug/position/:deviceId', async (req, res) => {
 app.get('/api/debug/filters/:deviceId', async (req, res) => {
     try {
         const deviceId = req.params.deviceId;
-        console.log(`🔍 Checking filter counts for device ${deviceId}`);
+        console.log(` Checking filter counts for device ${deviceId}`);
         
         // Calculate date range for last 7 days
         const endDate = new Date();
@@ -2990,7 +2990,7 @@ app.get('/api/debug/filters/:deviceId', async (req, res) => {
         const startDateStr = startDate.toISOString().split('T')[0];
         const endDateStr = endDate.toISOString().split('T')[0];
         
-        console.log(`📅 Date range: ${startDateStr} to ${endDateStr}`);
+        console.log(` Date range: ${startDateStr} to ${endDateStr}`);
         
         // Query 1: Ignition = True AND RPM > 0
         const query1 = `
@@ -3031,7 +3031,7 @@ app.get('/api/debug/filters/:deviceId', async (req, res) => {
         const result3 = await pool.query(query3, [deviceId, startDateStr, endDateStr]);
         const totalCount = result3.rows[0].count;
         
-        console.log(`📊 Results for device ${deviceId}:`);
+        console.log(` Results for device ${deviceId}:`);
         console.log(`   - Total positions: ${totalCount}`);
         console.log(`   - Ignition = True AND RPM > 0: ${ignitionAndRpmCount}`);
         console.log(`   - Only RPM > 0: ${rpmOnlyCount}`);
@@ -3048,7 +3048,7 @@ app.get('/api/debug/filters/:deviceId', async (req, res) => {
         });
         
     } catch (error) {
-        console.error('❌ Error in filter debug endpoint:', error);
+        console.error(' Error in filter debug endpoint:', error);
         res.status(500).json({
             success: false,
             message: 'Filter debug failed',
@@ -3062,7 +3062,7 @@ app.get('/api/vehicle/:deviceId/test-obd', async (req, res) => {
     
     // Add specific search for RPM 1673
     try {
-        console.log('🔍 Searching for position with RPM 1673...');
+        console.log(' Searching for position with RPM 1673...');
         const rpmSearchQuery = `
             SELECT id, data, "createdAt"
             FROM position
@@ -3075,10 +3075,10 @@ app.get('/api/vehicle/:deviceId/test-obd', async (req, res) => {
         `;
         
         const rpmResult = await pool.query(rpmSearchQuery, [req.params.deviceId]);
-        console.log(`🔍 Found ${rpmResult.rows.length} positions with RPM 1673`);
+        console.log(` Found ${rpmResult.rows.length} positions with RPM 1673`);
         
         if (rpmResult.rows.length > 0) {
-            console.log(`🔍 Found ${rpmResult.rows.length} positions with RPM data`);
+            console.log(` Found ${rpmResult.rows.length} positions with RPM data`);
             
             rpmResult.rows.forEach((row, index) => {
                 try {
@@ -3086,7 +3086,7 @@ app.get('/api/vehicle/:deviceId/test-obd', async (req, res) => {
                     const obdElements = dataObj.IOelement?.Elements || {};
                     const rpmValue = obdElements['36'];
                     
-                    console.log(`🔍 Position ${index + 1}:`, {
+                    console.log(` Position ${index + 1}:`, {
                         id: row.id,
                         createdAt: row.createdAt,
                         rpm: rpmValue
@@ -3094,33 +3094,33 @@ app.get('/api/vehicle/:deviceId/test-obd', async (req, res) => {
                     
                     // Check if this is the RPM 1673 we're looking for
                     if (rpmValue === 1673) {
-                        console.log(`🎯 FOUND RPM 1673 in position ID: ${row.id}`);
+                        console.log(` FOUND RPM 1673 in position ID: ${row.id}`);
                     }
                 } catch (error) {
-                    console.log(`❌ Error parsing position ${row.id}:`, error.message);
+                    console.log(` Error parsing position ${row.id}:`, error.message);
                 }
             });
         }
     } catch (error) {
-        console.log('❌ RPM search failed:', error.message);
+        console.log(' RPM search failed:', error.message);
     }
     try {
         const { deviceId } = req.params;
         
-        console.log(`🔍 Testing OBD query for device ${deviceId}...`);
+        console.log(` Testing OBD query for device ${deviceId}...`);
         
         // First test basic database connectivity
-        console.log('🔌 Testing database connectivity...');
+        console.log(' Testing database connectivity...');
         try {
             const connectTest = await pool.query('SELECT NOW() as current_time');
-            console.log(`✅ Database connected successfully: ${connectTest.rows[0].current_time}`);
+            console.log(` Database connected successfully: ${connectTest.rows[0].current_time}`);
         } catch (connectErr) {
-            console.log(`❌ Database connection failed: ${connectErr.message}`);
+            console.log(` Database connection failed: ${connectErr.message}`);
             throw connectErr;
         }
         
         // Test OBD data structure
-        console.log('🔍 Testing OBD data structure...');
+        console.log(' Testing OBD data structure...');
         const obdStructureQuery = `
             SELECT data, "createdAt"
             FROM position
@@ -3133,18 +3133,18 @@ app.get('/api/vehicle/:deviceId/test-obd', async (req, res) => {
         
         try {
             const obdStructureResult = await pool.query(obdStructureQuery, [deviceId]);
-            console.log(`✅ OBD structure query found ${obdStructureResult.rows.length} records`);
+            console.log(` OBD structure query found ${obdStructureResult.rows.length} records`);
             
             if (obdStructureResult.rows.length > 0) {
-                console.log('🔍 First OBD record structure:', JSON.stringify(obdStructureResult.rows[0].data, null, 2));
-                console.log('🔍 Available OBD keys:', Object.keys(obdStructureResult.rows[0].data || {}));
+                console.log(' First OBD record structure:', JSON.stringify(obdStructureResult.rows[0].data, null, 2));
+                console.log(' Available OBD keys:', Object.keys(obdStructureResult.rows[0].data || {}));
             }
         } catch (obdErr) {
-            console.log(`❌ OBD structure query failed: ${obdErr.message}`);
+            console.log(` OBD structure query failed: ${obdErr.message}`);
         }
         
         // Check position table structure and size
-        console.log('📊 Checking position table status...');
+        console.log(' Checking position table status...');
         try {
             // Check table size
             const sizeQuery = `
@@ -3157,7 +3157,7 @@ app.get('/api/vehicle/:deviceId/test-obd', async (req, res) => {
             `;
             const sizeResult = await pool.query(sizeQuery);
             if (sizeResult.rows.length > 0) {
-                console.log(`📏 Position table size: ${sizeResult.rows[0].size} (${sizeResult.rows[0].size_bytes} bytes)`);
+                console.log(` Position table size: ${sizeResult.rows[0].size} (${sizeResult.rows[0].size_bytes} bytes)`);
             }
             
             // Check indexes
@@ -3168,7 +3168,7 @@ app.get('/api/vehicle/:deviceId/test-obd', async (req, res) => {
                 AND (indexdef LIKE '%deviceId%' OR indexdef LIKE '%createdAt%')
             `;
             const indexResult = await pool.query(indexQuery);
-            console.log(`🔍 Found ${indexResult.rows.length} relevant indexes on position table:`);
+            console.log(` Found ${indexResult.rows.length} relevant indexes on position table:`);
             indexResult.rows.forEach(idx => {
                 console.log(`  - ${idx.indexname}: ${idx.indexdef}`);
             });
@@ -3181,14 +3181,14 @@ app.get('/api/vehicle/:deviceId/test-obd', async (req, res) => {
                 WHERE relation = 'position'::regclass
             `;
             const lockResult = await pool.query(lockQuery);
-            console.log(`🔒 Active locks on position table: ${lockResult.rows.length}`);
+            console.log(` Active locks on position table: ${lockResult.rows.length}`);
             
         } catch (metaErr) {
-            console.log(`⚠️ Could not check table metadata: ${metaErr.message}`);
+            console.log(` Could not check table metadata: ${metaErr.message}`);
         }
         
         // Let's test different query variations to find the issue
-        console.log('🧪 Testing Query 1: Basic position query (no filters)');
+        console.log(' Testing Query 1: Basic position query (no filters)');
         const basicQuery = `
             SELECT id, "deviceId", "createdAt", speed
             FROM position 
@@ -3197,7 +3197,7 @@ app.get('/api/vehicle/:deviceId/test-obd', async (req, res) => {
             LIMIT 10
         `;
     } catch (error) {
-        console.error('❌ Error fetching vehicle analytics:', error);
+        console.error(' Error fetching vehicle analytics:', error);
         res.status(500).json({
             success: false,
             error: error.message
@@ -3212,7 +3212,7 @@ app.post('/api/vehicle/:deviceId/ai-section', async (req, res) => {
         const { prompt, section } = req.body;
         const { lang = 'en' } = req.query;
         
-        console.log(`🧪 Generating AI section "${section}" for device ${deviceId}...`);
+        console.log(` Generating AI section "${section}" for device ${deviceId}...`);
         
         if (!prompt || !section) {
             return res.status(400).json({
@@ -3330,7 +3330,7 @@ app.post('/api/vehicle/:deviceId/ai-section', async (req, res) => {
             LIMIT 15
         `;
         
-        console.log('📊 Fetching vehicle and OBD data...');
+        console.log(' Fetching vehicle and OBD data...');
         
         const [vehicleResult, obdResult, testResult, pidCheckResult, pidSampleResult] = await Promise.all([
             pool.query(vehicleQuery, [deviceId]),
@@ -3353,36 +3353,36 @@ app.post('/api/vehicle/:deviceId/ai-section', async (req, res) => {
         const pidCheckData = pidCheckResult.rows[0];
         const pidSampleData = pidSampleResult.rows;
         
-        console.log('🔍 DATABASE ANALYSIS RESULTS:');
+        console.log(' DATABASE ANALYSIS RESULTS:');
         console.log(`  - Total records (last 7 days): ${testData.total_records}`);
         console.log(`  - Records with ignition=true: ${testData.ignition_true_records}`);
         console.log(`  - Records with ignition=true AND rpm>0: ${testData.ignition_true_rpm_positive}`);
         console.log(`  - Records with valid OBD data: ${testData.valid_data_records}`);
         console.log(`  - Date range: ${testData.earliest_record} to ${testData.latest_record}`);
         
-        console.log('🔍 PID 43, 44, 46, 47 ANALYSIS:');
-        console.log('📊 PID 43 (Distance Traveled MIL On):');
+        console.log(' PID 43, 44, 46, 47 ANALYSIS:');
+        console.log(' PID 43 (Distance Traveled MIL On):');
         console.log(`  - Total records with PID 43: ${pidCheckData.pid43_records}`);
         console.log(`  - Records with PID 43 > 0: ${pidCheckData.pid43_positive}`);
         console.log(`  - Average PID 43 value: ${pidCheckData.pid43_avg || 'N/A'}`);
         console.log(`  - Min PID 43 value: ${pidCheckData.pid43_min || 'N/A'}`);
         console.log(`  - Max PID 43 value: ${pidCheckData.pid43_max || 'N/A'}`);
         
-        console.log('📊 PID 44 (Relative Fuel Rail Pressure):');
+        console.log(' PID 44 (Relative Fuel Rail Pressure):');
         console.log(`  - Total records with PID 44: ${pidCheckData.pid44_records}`);
         console.log(`  - Records with PID 44 > 0: ${pidCheckData.pid44_positive}`);
         console.log(`  - Average PID 44 value: ${pidCheckData.pid44_avg || 'N/A'}`);
         console.log(`  - Min PID 44 value: ${pidCheckData.pid44_min || 'N/A'}`);
         console.log(`  - Max PID 44 value: ${pidCheckData.pid44_max || 'N/A'}`);
         
-        console.log('📊 PID 46 (Commanded EGR):');
+        console.log(' PID 46 (Commanded EGR):');
         console.log(`  - Total records with PID 46: ${pidCheckData.pid46_records}`);
         console.log(`  - Records with PID 46 > 0: ${pidCheckData.pid46_positive}`);
         console.log(`  - Average PID 46 value: ${pidCheckData.pid46_avg || 'N/A'}`);
         console.log(`  - Min PID 46 value: ${pidCheckData.pid46_min || 'N/A'}`);
         console.log(`  - Max PID 46 value: ${pidCheckData.pid46_max || 'N/A'}`);
         
-        console.log('📊 PID 47 (EGR Error):');
+        console.log(' PID 47 (EGR Error):');
         console.log(`  - Total records with PID 47: ${pidCheckData.pid47_records}`);
         console.log(`  - Records with PID 47 > 0: ${pidCheckData.pid47_positive}`);
         console.log(`  - Average PID 47 value: ${pidCheckData.pid47_avg || 'N/A'}`);
@@ -3390,7 +3390,7 @@ app.post('/api/vehicle/:deviceId/ai-section', async (req, res) => {
         console.log(`  - Max PID 47 value: ${pidCheckData.pid47_max || 'N/A'}`);
         
         if (pidSampleData.length > 0) {
-            console.log('🔍 SAMPLE RECORDS WITH PID 43, 44, 46, 47 > 0:');
+            console.log(' SAMPLE RECORDS WITH PID 43, 44, 46, 47 > 0:');
             pidSampleData.forEach((record, index) => {
                 console.log(`  Record ${index + 1}:`);
                 console.log(`    - Date: ${record.createdAt}`);
@@ -3404,14 +3404,14 @@ app.post('/api/vehicle/:deviceId/ai-section', async (req, res) => {
                 console.log(`    - Ignition: ${record.ignition}`);
             });
         } else {
-            console.log('🔍 NO RECORDS FOUND with PID 43, 44, 46, 47 > 0');
+            console.log(' NO RECORDS FOUND with PID 43, 44, 46, 47 > 0');
         }
         
-        console.log(`📊 Found ${obdData.length} OBD records for analysis (last 7 days, ignition=true)`);
+        console.log(` Found ${obdData.length} OBD records for analysis (last 7 days, ignition=true)`);
         
         // Debug: Check what we actually have
         if (obdData.length > 0) {
-            console.log('🔍 Sample record structure:');
+            console.log(' Sample record structure:');
             console.log('  - createdAt:', obdData[0].createdAt);
             console.log('  - ignition:', obdData[0].ignition);
             console.log('  - rpm:', obdData[0].rpm);
@@ -3464,16 +3464,16 @@ app.post('/api/vehicle/:deviceId/ai-section', async (req, res) => {
         
         try {
             if (section === 'criticalAlerts') {
-                console.log('🔍 DEBUG: About to call generateCriticalAlerts...');
+                console.log(' DEBUG: About to call generateCriticalAlerts...');
                 aiResponse = await generateCriticalAlerts(context, lang);
-                console.log('🔍 DEBUG: generateCriticalAlerts returned:', aiResponse);
+                console.log(' DEBUG: generateCriticalAlerts returned:', aiResponse);
             } else if (section === 'obdParameters') {
                 aiResponse = generateOBDParameters(context, lang);
             } else {
                 aiResponse = await generateAISectionResponse(prompt, context, lang, section);
             }
             
-            console.log(`✅ AI section "${section}" generated successfully`);
+            console.log(` AI section "${section}" generated successfully`);
             
             res.json({
                 success: true,
@@ -3482,7 +3482,7 @@ app.post('/api/vehicle/:deviceId/ai-section', async (req, res) => {
             });
             
         } catch (aiError) {
-            console.error(`❌ AI generation failed for section "${section}":`, aiError);
+            console.error(` AI generation failed for section "${section}":`, aiError);
             
             // Return fallback response
             const fallbackResponse = generateFallbackResponse(section, context, lang);
@@ -3496,7 +3496,7 @@ app.post('/api/vehicle/:deviceId/ai-section', async (req, res) => {
         }
         
     } catch (error) {
-        console.error('❌ Error generating AI section:', error);
+        console.error(' Error generating AI section:', error);
         res.status(500).json({
             success: false,
             error: error.message
@@ -3609,13 +3609,13 @@ function generateSpikeAnalysis(obdData) {
     
     // Debug: Log the first OBD record to see the structure
     if (obdData.length > 0) {
-        console.log('🔍 First OBD record structure:', JSON.stringify(obdData[0].data, null, 2));
-        console.log('🔍 Available OBD keys:', Object.keys(obdData[0].data || {}));
+        console.log(' First OBD record structure:', JSON.stringify(obdData[0].data, null, 2));
+        console.log(' Available OBD keys:', Object.keys(obdData[0].data || {}));
     }
     
-    console.log(`🔍 Processing ${obdData.length} OBD records for parameter extraction...`);
-    console.log(`🔍 FMB003 Mapping: Found ${obdParameters.length} OBD parameters to extract`);
-    console.log(`🔍 FMB003 OBD Parameters:`, obdParameters.map(p => `${p.id}:${p.name}`).join(', '));
+    console.log(` Processing ${obdData.length} OBD records for parameter extraction...`);
+    console.log(` FMB003 Mapping: Found ${obdParameters.length} OBD parameters to extract`);
+    console.log(` FMB003 OBD Parameters:`, obdParameters.map(p => `${p.id}:${p.name}`).join(', '));
     
     // Extract values from OBD data
     obdData.forEach(record => {
@@ -3626,7 +3626,7 @@ function generateSpikeAnalysis(obdData) {
             try {
                 data = JSON.parse(data);
             } catch (e) {
-                console.log('⚠️ Could not parse OBD data as JSON:', e.message);
+                console.log(' Could not parse OBD data as JSON:', e.message);
                 return;
             }
         }
@@ -3735,8 +3735,8 @@ function generateSpikeAnalysis(obdData) {
     // Calculate statistics for each parameter
     const spikeAnalysis = {};
     
-    console.log('🔍 Parameter extraction results:');
-    console.log(`🔍 Total parameters initialized: ${Object.keys(parameters).length}`);
+    console.log(' Parameter extraction results:');
+    console.log(` Total parameters initialized: ${Object.keys(parameters).length}`);
     
     // Ensure all parameters have proper structure before processing
     Object.keys(parameters).forEach(paramName => {
@@ -3751,7 +3751,7 @@ function generateSpikeAnalysis(obdData) {
     Object.entries(parameters).forEach(([paramName, paramData]) => {
         // Safety check: ensure paramData exists and has values property
         if (!paramData || !paramData.values) {
-            console.log(`  ❌ ${paramName}: Invalid parameter data structure - initializing...`);
+            console.log(`   ${paramName}: Invalid parameter data structure - initializing...`);
             parameters[paramName] = { values: [], unit: '', pid: '', description: '' };
             paramData = parameters[paramName];
         }
@@ -3769,21 +3769,21 @@ function generateSpikeAnalysis(obdData) {
                 unit: paramData.unit || ''
             };
             
-            console.log(`  ✅ ${paramName}: ${values.length} values, avg: ${spikeAnalysis[paramName].average}, min: ${spikeAnalysis[paramName].minSpike}, max: ${spikeAnalysis[paramName].maxSpike}`);
+            console.log(`   ${paramName}: ${values.length} values, avg: ${spikeAnalysis[paramName].average}, min: ${spikeAnalysis[paramName].minSpike}, max: ${spikeAnalysis[paramName].maxSpike}`);
         } else {
-            console.log(`  ❌ ${paramName}: 0 values (no data found)`);
+            console.log(`   ${paramName}: 0 values (no data found)`);
         }
     });
     
-    console.log(`🔍 Total parameters with data: ${Object.keys(spikeAnalysis).length}`);
-    console.log(`🔍 Expected FMB003 OBD parameters: 23`);
-    console.log(`🔍 Parameters found:`, Object.keys(spikeAnalysis).filter(key => {
+    console.log(` Total parameters with data: ${Object.keys(spikeAnalysis).length}`);
+    console.log(` Expected FMB003 OBD parameters: 23`);
+    console.log(` Parameters found:`, Object.keys(spikeAnalysis).filter(key => {
         const param = obdParameters.find(p => p.name.replace(/\s+/g, '').toLowerCase() === key);
         return param && param.category === 'obd';
     }).join(', '));
     
     // Debug: Show which parameters have zero values
-    console.log(`🔍 Parameters with zero values:`);
+    console.log(` Parameters with zero values:`);
     Object.entries(spikeAnalysis).forEach(([key, param]) => {
         if (param && param.average === 0 && param.minSpike === 0 && param.maxSpike === 0) {
             console.log(`  - ${key}: all values are zero`);
@@ -3842,30 +3842,30 @@ async function generateCriticalAlerts(context, lang) {
         absoluteloadvalue: { threshold: 80, name: 'Absolute Load Value' }
     };
     
-    console.log('🔍 Available spikeAnalysis keys:', Object.keys(spikeAnalysis));
-    console.log('🔍 SpikeAnalysis data:', spikeAnalysis);
-    console.log('🔍 Critical thresholds to check:', Object.keys(criticalThresholds));
-    console.log('🔍 CRITICAL DEBUG - Checking specific parameters:');
-    console.log('🔍 temp in spikeAnalysis:', spikeAnalysis.temp);
-    console.log('🔍 load in spikeAnalysis:', spikeAnalysis.load);
-    console.log('🔍 absoluteLoad in spikeAnalysis:', spikeAnalysis.absoluteLoad);
-    console.log('🔍 coolanttemperature in spikeAnalysis:', spikeAnalysis.coolanttemperature);
-    console.log('🔍 engineload in spikeAnalysis:', spikeAnalysis.engineload);
-    console.log('🔍 absoluteloadvalue in spikeAnalysis:', spikeAnalysis.absoluteloadvalue);
+    console.log(' Available spikeAnalysis keys:', Object.keys(spikeAnalysis));
+    console.log(' SpikeAnalysis data:', spikeAnalysis);
+    console.log(' Critical thresholds to check:', Object.keys(criticalThresholds));
+    console.log(' CRITICAL DEBUG - Checking specific parameters:');
+    console.log(' temp in spikeAnalysis:', spikeAnalysis.temp);
+    console.log(' load in spikeAnalysis:', spikeAnalysis.load);
+    console.log(' absoluteLoad in spikeAnalysis:', spikeAnalysis.absoluteLoad);
+    console.log(' coolanttemperature in spikeAnalysis:', spikeAnalysis.coolanttemperature);
+    console.log(' engineload in spikeAnalysis:', spikeAnalysis.engineload);
+    console.log(' absoluteloadvalue in spikeAnalysis:', spikeAnalysis.absoluteloadvalue);
     
     const criticalParams = [];
     
     // Check each parameter for critical conditions
     Object.entries(criticalThresholds).forEach(([key, config]) => {
         const data = spikeAnalysis[key];
-        console.log(`🔍 Checking parameter ${key}:`, data);
+        console.log(` Checking parameter ${key}:`, data);
         
         if (data) {
             const isCritical = config.isLower ? 
                 (data.maxSpike < config.threshold) : 
                 (data.maxSpike > config.threshold);
             
-            console.log(`🔍 ${key} - maxSpike: ${data.maxSpike}, threshold: ${config.threshold}, isLower: ${config.isLower}, isCritical: ${isCritical}`);
+            console.log(` ${key} - maxSpike: ${data.maxSpike}, threshold: ${config.threshold}, isLower: ${config.isLower}, isCritical: ${isCritical}`);
             
             if (isCritical) {
                 criticalParams.push({
@@ -3878,10 +3878,10 @@ async function generateCriticalAlerts(context, lang) {
                     threshold: config.threshold,
                     isLower: config.isLower || false
                 });
-                console.log(`🚨 CRITICAL PARAMETER FOUND: ${key} - ${config.name}`);
+                console.log(` CRITICAL PARAMETER FOUND: ${key} - ${config.name}`);
             }
         } else {
-            console.log(`⚠️ Parameter ${key} not found in spikeAnalysis`);
+            console.log(` Parameter ${key} not found in spikeAnalysis`);
         }
     });
     
@@ -3896,7 +3896,7 @@ async function generateCriticalAlerts(context, lang) {
     
     // If no critical parameters found, return analysis of normal parameters
     if (top3Critical.length === 0) {
-        console.log('🔍 No critical parameters found, analyzing normal parameters...');
+        console.log(' No critical parameters found, analyzing normal parameters...');
         
         // Find the 3 most significant parameters (even if not critical)
         const significantParams = [];
@@ -3920,7 +3920,7 @@ async function generateCriticalAlerts(context, lang) {
         const top3Significant = significantParams.slice(0, 3);
         
         if (top3Significant.length > 0) {
-            console.log('🔍 Found significant parameters for analysis:', top3Significant.map(p => p.parameter));
+            console.log(' Found significant parameters for analysis:', top3Significant.map(p => p.parameter));
             return JSON.stringify(top3Significant.map(param => ({
                 parameter: param.parameter,
                 values: param.values,
@@ -3931,7 +3931,7 @@ async function generateCriticalAlerts(context, lang) {
         }
         
         // If no significant parameters either, return analysis of basic parameters
-        console.log('🔍 No significant parameters found, returning basic analysis...');
+        console.log(' No significant parameters found, returning basic analysis...');
         return JSON.stringify([
             {
                 parameter: isItalian ? 'Analisi Generale' : 'General Analysis',
@@ -3948,8 +3948,8 @@ async function generateCriticalAlerts(context, lang) {
     const vehicleInfo = `${vehicle.year} ${vehicle.brand} ${vehicle.model}`;
     
     const criticalAlertsPrompt = isItalian ? 
-        `Analizza i 3 parametri OBD più critici per questo veicolo ${vehicleInfo}. Per ogni parametro critico, fornisci un'analisi tecnica dettagliata: 1) Nome del parametro e valori (min, max, media), 2) Spiegazione tecnica di cosa sta succedendo al veicolo e perché, 3) Problemi specifici e dettagliati che questi valori potrebbero causare (es. "Temperatura liquido di raffreddamento a 107°C indica rischio di surriscaldamento del motore che può causare danni ai cilindri, alla testata e al sistema di lubrificazione"), 4) Soluzioni specifiche e raccomandazioni tecniche dettagliate (es. "Programmare controllo urgente del sistema di raffreddamento: verificare termostato, pompa acqua, livello liquido, ventole e radiatori. Controllare anche pressione sistema e possibili perdite"). Sii specifico sui componenti da controllare e le azioni da intraprendere. Formato JSON con campi: parameter, values, explanation, problems, solutions.` :
-        `Analyze the 3 most critical OBD parameters for this vehicle ${vehicleInfo}. For each critical parameter, provide a detailed technical analysis: 1) Parameter name and values (min, max, average), 2) Technical explanation of what is happening to the vehicle and why, 3) Specific and detailed problems these values could cause (e.g. "Coolant temperature at 107°C indicates engine overheating risk that can cause cylinder, head gasket and lubrication system damage"), 4) Specific solutions and detailed technical recommendations (e.g. "Schedule urgent cooling system check: verify thermostat, water pump, coolant level, fans and radiators. Also check system pressure and possible leaks"). Be specific about components to check and actions to take. JSON format with fields: parameter, values, explanation, problems, solutions.`;
+        `Analizza i 3 parametri OBD pi critici per questo veicolo ${vehicleInfo}. Per ogni parametro critico, fornisci un'analisi tecnica dettagliata: 1) Nome del parametro e valori (min, max, media), 2) Spiegazione tecnica di cosa sta succedendo al veicolo e perch, 3) Problemi specifici e dettagliati che questi valori potrebbero causare (es. "Temperatura liquido di raffreddamento a 107C indica rischio di surriscaldamento del motore che pu causare danni ai cilindri, alla testata e al sistema di lubrificazione"), 4) Soluzioni specifiche e raccomandazioni tecniche dettagliate (es. "Programmare controllo urgente del sistema di raffreddamento: verificare termostato, pompa acqua, livello liquido, ventole e radiatori. Controllare anche pressione sistema e possibili perdite"). Sii specifico sui componenti da controllare e le azioni da intraprendere. Formato JSON con campi: parameter, values, explanation, problems, solutions.` :
+        `Analyze the 3 most critical OBD parameters for this vehicle ${vehicleInfo}. For each critical parameter, provide a detailed technical analysis: 1) Parameter name and values (min, max, average), 2) Technical explanation of what is happening to the vehicle and why, 3) Specific and detailed problems these values could cause (e.g. "Coolant temperature at 107C indicates engine overheating risk that can cause cylinder, head gasket and lubrication system damage"), 4) Specific solutions and detailed technical recommendations (e.g. "Schedule urgent cooling system check: verify thermostat, water pump, coolant level, fans and radiators. Also check system pressure and possible leaks"). Be specific about components to check and actions to take. JSON format with fields: parameter, values, explanation, problems, solutions.`;
     
     // Add parameter data to prompt
     const parameterData = top3Critical.map(param => {
@@ -3989,7 +3989,7 @@ async function generateCriticalAlerts(context, lang) {
             const parsed = JSON.parse(content);
             return JSON.stringify(parsed);
         } catch (parseError) {
-            console.warn('⚠️ Failed to parse AI response as JSON, using fallback');
+            console.warn(' Failed to parse AI response as JSON, using fallback');
             // Return fallback with basic structure
             return JSON.stringify(top3Critical.map(param => ({
                 parameter: param.parameter,
@@ -4001,7 +4001,7 @@ async function generateCriticalAlerts(context, lang) {
         }
         
     } catch (error) {
-        console.warn('⚠️ Failed to generate critical alerts with AI:', error.message);
+        console.warn(' Failed to generate critical alerts with AI:', error.message);
         // Return fallback response
         return JSON.stringify(top3Critical.map(param => ({
             parameter: param.parameter,
@@ -4023,14 +4023,14 @@ function generateOBDParameters(context, lang) {
         // Standard OBD Parameters (PID 30-52)
         dtc: spikeAnalysis.dtc || { average: 0, minSpike: 0, maxSpike: 0, unit: '' },
         load: spikeAnalysis.load || { average: 0, minSpike: 0, maxSpike: 0, unit: '%' },
-        temp: spikeAnalysis.temp || { average: 0, minSpike: 0, maxSpike: 0, unit: '°C' },
+        temp: spikeAnalysis.temp || { average: 0, minSpike: 0, maxSpike: 0, unit: 'C' },
         fuelTrim: spikeAnalysis.fuelTrim || { average: 0, minSpike: 0, maxSpike: 0, unit: '%' },
         fuelRailPressure: spikeAnalysis.fuelRailPressure || { average: 0, minSpike: 0, maxSpike: 0, unit: 'kPa' },
         map: spikeAnalysis.map || { average: 0, minSpike: 0, maxSpike: 0, unit: 'kPa' },
         rpm: spikeAnalysis.rpm || { average: 0, minSpike: 0, maxSpike: 0, unit: 'rpm' },
         speed: spikeAnalysis.speed || { average: 0, minSpike: 0, maxSpike: 0, unit: 'km/h' },
-        timing: spikeAnalysis.timing || { average: 0, minSpike: 0, maxSpike: 0, unit: '°' },
-        airTemp: spikeAnalysis.airTemp || { average: 0, minSpike: 0, maxSpike: 0, unit: '°C' },
+        timing: spikeAnalysis.timing || { average: 0, minSpike: 0, maxSpike: 0, unit: '' },
+        airTemp: spikeAnalysis.airTemp || { average: 0, minSpike: 0, maxSpike: 0, unit: 'C' },
         maf: spikeAnalysis.maf || { average: 0, minSpike: 0, maxSpike: 0, unit: 'g/sec' },
         throttle: spikeAnalysis.throttle || { average: 0, minSpike: 0, maxSpike: 0, unit: '%' },
         runTime: spikeAnalysis.runTime || { average: 0, minSpike: 0, maxSpike: 0, unit: 's' },
@@ -4065,8 +4065,8 @@ function generateOBDParameters(context, lang) {
         }
     });
     
-    console.log(`🔍 Parameters with real data: ${parametersWithData} out of ${totalAvailableParameters} total`);
-    console.log(`🔍 Filtered parameters: ${Object.keys(filteredParameters).join(', ')}`);
+    console.log(` Parameters with real data: ${parametersWithData} out of ${totalAvailableParameters} total`);
+    console.log(` Filtered parameters: ${Object.keys(filteredParameters).join(', ')}`);
     
     // Add footer information with actual count
     const footerInfo = {
@@ -4092,59 +4092,59 @@ async function generateAISectionResponse(prompt, context, lang, section) {
     const responses = {
         enginePerformance: isItalian ?
             `Analisi prestazioni motore per ${vehicle.brand} ${vehicle.model} ${vehicle.year}:\n\n` +
-            `• Stato generale: Le prestazioni del motore sono ottimali con RPM medi di ${obdData.spikeAnalysis?.rpm?.average || 0} giri/min\n` +
-            `• Carico motore: Media del ${obdData.spikeAnalysis?.load?.average || 0}% con picchi fino al ${obdData.spikeAnalysis?.load?.maxSpike || 0}%\n` +
-            `• Temperatura: Media di ${obdData.spikeAnalysis?.temp?.average || 0}°C, ben controllata\n` +
-            `• Efficienza: Il motore opera in condizioni ottimali di temperatura e carico\n` +
-            `• Raccomandazioni: Continuare la manutenzione programmata, monitorare la temperatura in estate` :
+            ` Stato generale: Le prestazioni del motore sono ottimali con RPM medi di ${obdData.spikeAnalysis?.rpm?.average || 0} giri/min\n` +
+            ` Carico motore: Media del ${obdData.spikeAnalysis?.load?.average || 0}% con picchi fino al ${obdData.spikeAnalysis?.load?.maxSpike || 0}%\n` +
+            ` Temperatura: Media di ${obdData.spikeAnalysis?.temp?.average || 0}C, ben controllata\n` +
+            ` Efficienza: Il motore opera in condizioni ottimali di temperatura e carico\n` +
+            ` Raccomandazioni: Continuare la manutenzione programmata, monitorare la temperatura in estate` :
             `Engine performance analysis for ${vehicle.year} ${vehicle.brand} ${vehicle.model}:\n\n` +
-            `• Overall status: Engine performance is optimal with average RPM of ${obdData.spikeAnalysis?.rpm?.average || 0} rpm\n` +
-            `• Engine load: Average of ${obdData.spikeAnalysis?.load?.average || 0}% with peaks up to ${obdData.spikeAnalysis?.load?.maxSpike || 0}%\n` +
-            `• Temperature: Average of ${obdData.spikeAnalysis?.temp?.average || 0}°C, well controlled\n` +
-            `• Efficiency: Engine operates in optimal temperature and load conditions\n` +
-            `• Recommendations: Continue scheduled maintenance, monitor temperature in summer`,
+            ` Overall status: Engine performance is optimal with average RPM of ${obdData.spikeAnalysis?.rpm?.average || 0} rpm\n` +
+            ` Engine load: Average of ${obdData.spikeAnalysis?.load?.average || 0}% with peaks up to ${obdData.spikeAnalysis?.load?.maxSpike || 0}%\n` +
+            ` Temperature: Average of ${obdData.spikeAnalysis?.temp?.average || 0}C, well controlled\n` +
+            ` Efficiency: Engine operates in optimal temperature and load conditions\n` +
+            ` Recommendations: Continue scheduled maintenance, monitor temperature in summer`,
 
         fuelSystem: isItalian ?
             `Analisi sistema carburante per ${vehicle.brand} ${vehicle.model}:\n\n` +
-            `• Sistema di iniezione: Funzionamento normale con pressione media di ${obdData.spikeAnalysis?.fuelRailPressure?.average || 0} kPa\n` +
-            `• Miscela aria-carburante: Ottimale con correzione carburante media del ${obdData.spikeAnalysis?.fuelTrim?.average || 0}%\n` +
-            `• Efficienza: Sistema di alimentazione efficiente e ben calibrato\n` +
-            `• Raccomandazioni: Sostituire filtro carburante ogni 30.000 km, verificare pressione iniettori` :
+            ` Sistema di iniezione: Funzionamento normale con pressione media di ${obdData.spikeAnalysis?.fuelRailPressure?.average || 0} kPa\n` +
+            ` Miscela aria-carburante: Ottimale con correzione carburante media del ${obdData.spikeAnalysis?.fuelTrim?.average || 0}%\n` +
+            ` Efficienza: Sistema di alimentazione efficiente e ben calibrato\n` +
+            ` Raccomandazioni: Sostituire filtro carburante ogni 30.000 km, verificare pressione iniettori` :
             `Fuel system analysis for ${vehicle.brand} ${vehicle.model}:\n\n` +
-            `• Injection system: Normal operation with average pressure of ${obdData.spikeAnalysis?.fuelRailPressure?.average || 0} kPa\n` +
-            `• Air-fuel mixture: Optimal with average fuel trim of ${obdData.spikeAnalysis?.fuelTrim?.average || 0}%\n` +
-            `• Efficiency: Fuel delivery system is efficient and well calibrated\n` +
-            `• Recommendations: Replace fuel filter every 30,000 km, check injector pressure`,
+            ` Injection system: Normal operation with average pressure of ${obdData.spikeAnalysis?.fuelRailPressure?.average || 0} kPa\n` +
+            ` Air-fuel mixture: Optimal with average fuel trim of ${obdData.spikeAnalysis?.fuelTrim?.average || 0}%\n` +
+            ` Efficiency: Fuel delivery system is efficient and well calibrated\n` +
+            ` Recommendations: Replace fuel filter every 30,000 km, check injector pressure`,
 
         airIntake: isItalian ?
             `Analisi sistema aspirazione per ${vehicle.brand} ${vehicle.model}:\n\n` +
-            `• Flusso aria: Qualità ottimale con temperatura media di ${obdData.spikeAnalysis?.airTemp?.average || 0}°C\n` +
-            `• Controllo farfalla: Risposta ottimale con posizione media del ${obdData.spikeAnalysis?.throttle?.average || 0}%\n` +
-            `• Pressione aspirazione: Media di ${obdData.spikeAnalysis?.map?.average || 0} kPa, ben controllata\n` +
-            `• Raccomandazioni: Sostituire filtro aria ogni 15.000 km, verificare sensori MAP` :
+            ` Flusso aria: Qualit ottimale con temperatura media di ${obdData.spikeAnalysis?.airTemp?.average || 0}C\n` +
+            ` Controllo farfalla: Risposta ottimale con posizione media del ${obdData.spikeAnalysis?.throttle?.average || 0}%\n` +
+            ` Pressione aspirazione: Media di ${obdData.spikeAnalysis?.map?.average || 0} kPa, ben controllata\n` +
+            ` Raccomandazioni: Sostituire filtro aria ogni 15.000 km, verificare sensori MAP` :
             `Air intake analysis for ${vehicle.brand} ${vehicle.model}:\n\n` +
-            `• Airflow: Optimal quality with average temperature of ${obdData.spikeAnalysis?.airTemp?.average || 0}°C\n` +
-            `• Throttle control: Optimal response with average position of ${obdData.spikeAnalysis?.throttle?.average || 0}%\n` +
-            `• Intake pressure: Average of ${obdData.spikeAnalysis?.map?.average || 0} kPa, well controlled\n` +
-            `• Recommendations: Replace air filter every 15,000 km, check MAP sensors`,
+            ` Airflow: Optimal quality with average temperature of ${obdData.spikeAnalysis?.airTemp?.average || 0}C\n` +
+            ` Throttle control: Optimal response with average position of ${obdData.spikeAnalysis?.throttle?.average || 0}%\n` +
+            ` Intake pressure: Average of ${obdData.spikeAnalysis?.map?.average || 0} kPa, well controlled\n` +
+            ` Recommendations: Replace air filter every 15,000 km, check MAP sensors`,
 
         operationalMetrics: isItalian ?
             `Analisi metriche operative per ${vehicle.brand} ${vehicle.model}:\n\n` +
-            `• Stato diagnostico: ${obdData.spikeAnalysis?.dtc?.average || 0} codici di errore attivi\n` +
-            `• Velocità media: ${obdData.spikeAnalysis?.speed?.average || 0} km/h\n` +
-            `• Tensione sistema: ${obdData.spikeAnalysis?.voltage?.average || 0}V, stabile\n` +
-            `• Pattern utilizzo: Guida normale con accelerazioni moderate\n` +
-            `• Raccomandazioni: Controllo diagnostico completo ogni 6 mesi` :
+            ` Stato diagnostico: ${obdData.spikeAnalysis?.dtc?.average || 0} codici di errore attivi\n` +
+            ` Velocit media: ${obdData.spikeAnalysis?.speed?.average || 0} km/h\n` +
+            ` Tensione sistema: ${obdData.spikeAnalysis?.voltage?.average || 0}V, stabile\n` +
+            ` Pattern utilizzo: Guida normale con accelerazioni moderate\n` +
+            ` Raccomandazioni: Controllo diagnostico completo ogni 6 mesi` :
             `Operational metrics analysis for ${vehicle.brand} ${vehicle.model}:\n\n` +
-            `• Diagnostic status: ${obdData.spikeAnalysis?.dtc?.average || 0} active error codes\n` +
-            `• Average speed: ${obdData.spikeAnalysis?.speed?.average || 0} km/h\n` +
-            `• System voltage: ${obdData.spikeAnalysis?.voltage?.average || 0}V, stable\n` +
-            `• Usage pattern: Normal driving with moderate accelerations\n` +
-            `• Recommendations: Complete diagnostic check every 6 months`,
+            ` Diagnostic status: ${obdData.spikeAnalysis?.dtc?.average || 0} active error codes\n` +
+            ` Average speed: ${obdData.spikeAnalysis?.speed?.average || 0} km/h\n` +
+            ` System voltage: ${obdData.spikeAnalysis?.voltage?.average || 0}V, stable\n` +
+            ` Usage pattern: Normal driving with moderate accelerations\n` +
+            ` Recommendations: Complete diagnostic check every 6 months`,
 
         vehicleHealth: isItalian ? 
-            `Il veicolo ${vehicle.brand} ${vehicle.model} del ${vehicle.year} mostra uno stato di salute generale eccellente. I parametri OBD indicano un funzionamento ottimale del motore con temperature controllate (${obdData.spikeAnalysis?.temp?.average || 0}°C) e carico motore bilanciato (${obdData.spikeAnalysis?.load?.average || 0}%). Nessun segnale di stress meccanico o termico anomalo.` :
-            `The ${vehicle.year} ${vehicle.brand} ${vehicle.model} shows excellent overall health status. OBD parameters indicate optimal engine operation with controlled temperatures (${obdData.spikeAnalysis?.temp?.average || 0}°C) and balanced engine load (${obdData.spikeAnalysis?.load?.average || 0}%). No signs of abnormal mechanical or thermal stress.`,
+            `Il veicolo ${vehicle.brand} ${vehicle.model} del ${vehicle.year} mostra uno stato di salute generale eccellente. I parametri OBD indicano un funzionamento ottimale del motore con temperature controllate (${obdData.spikeAnalysis?.temp?.average || 0}C) e carico motore bilanciato (${obdData.spikeAnalysis?.load?.average || 0}%). Nessun segnale di stress meccanico o termico anomalo.` :
+            `The ${vehicle.year} ${vehicle.brand} ${vehicle.model} shows excellent overall health status. OBD parameters indicate optimal engine operation with controlled temperatures (${obdData.spikeAnalysis?.temp?.average || 0}C) and balanced engine load (${obdData.spikeAnalysis?.load?.average || 0}%). No signs of abnormal mechanical or thermal stress.`,
         
         maintenance: isItalian ?
             `Raccomandazioni di manutenzione specifiche per ${vehicle.brand} ${vehicle.model}:\n\n` +
@@ -4162,30 +4162,30 @@ async function generateAISectionResponse(prompt, context, lang, section) {
         
         performance: isItalian ?
             `Analisi prestazioni ${vehicle.brand} ${vehicle.model}:\n\n` +
-            `• Efficienza carburante: Ottimale con velocità media di ${obdData.spikeAnalysis?.speed?.average || 0} km/h\n` +
-            `• Risposta motore: Eccellente con RPM medi di ${obdData.spikeAnalysis?.rpm?.average || 0} giri/min\n` +
-            `• Consumi: Contenuti grazie alla guida efficiente\n` +
-            `• Miglioramenti: Mantenere stile di guida moderato, verificare pressione pneumatici` :
+            ` Efficienza carburante: Ottimale con velocit media di ${obdData.spikeAnalysis?.speed?.average || 0} km/h\n` +
+            ` Risposta motore: Eccellente con RPM medi di ${obdData.spikeAnalysis?.rpm?.average || 0} giri/min\n` +
+            ` Consumi: Contenuti grazie alla guida efficiente\n` +
+            ` Miglioramenti: Mantenere stile di guida moderato, verificare pressione pneumatici` :
             `Performance analysis for ${vehicle.brand} ${vehicle.model}:\n\n` +
-            `• Fuel efficiency: Optimal with average speed of ${obdData.spikeAnalysis?.speed?.average || 0} km/h\n` +
-            `• Engine response: Excellent with average RPM of ${obdData.spikeAnalysis?.rpm?.average || 0} rpm\n` +
-            `• Consumption: Contained thanks to efficient driving\n` +
-            `• Improvements: Maintain moderate driving style, check tire pressure`,
+            ` Fuel efficiency: Optimal with average speed of ${obdData.spikeAnalysis?.speed?.average || 0} km/h\n` +
+            ` Engine response: Excellent with average RPM of ${obdData.spikeAnalysis?.rpm?.average || 0} rpm\n` +
+            ` Consumption: Contained thanks to efficient driving\n` +
+            ` Improvements: Maintain moderate driving style, check tire pressure`,
         
         potentialIssues: isItalian ?
             `Monitoraggio potenziali problemi per ${vehicle.brand} ${vehicle.model}:\n\n` +
-            `• Temperatura motore: Attualmente ${obdData.spikeAnalysis?.temp?.average || 0}°C (normale)\n` +
-            `• Pressione carburante: ${obdData.spikeAnalysis?.fuelRailPressure?.average || 0} kPa (stabile)\n` +
-            `• Codici errore: ${obdData.spikeAnalysis?.dtc?.average || 0} attivi (normale)\n` +
-            `• Raccomandazioni: Nessun problema critico rilevato, continuare monitoraggio` :
+            ` Temperatura motore: Attualmente ${obdData.spikeAnalysis?.temp?.average || 0}C (normale)\n` +
+            ` Pressione carburante: ${obdData.spikeAnalysis?.fuelRailPressure?.average || 0} kPa (stabile)\n` +
+            ` Codici errore: ${obdData.spikeAnalysis?.dtc?.average || 0} attivi (normale)\n` +
+            ` Raccomandazioni: Nessun problema critico rilevato, continuare monitoraggio` :
             `Potential issues monitoring for ${vehicle.brand} ${vehicle.model}:\n\n` +
-            `• Engine temperature: Currently ${obdData.spikeAnalysis?.temp?.average || 0}°C (normal)\n` +
-            `• Fuel pressure: ${obdData.spikeAnalysis?.fuelRailPressure?.average || 0} kPa (stable)\n` +
-            `• Error codes: ${obdData.spikeAnalysis?.dtc?.average || 0} active (normal)\n` +
-            `• Recommendations: No critical issues detected, continue monitoring`,
+            ` Engine temperature: Currently ${obdData.spikeAnalysis?.temp?.average || 0}C (normal)\n` +
+            ` Fuel pressure: ${obdData.spikeAnalysis?.fuelRailPressure?.average || 0} kPa (stable)\n` +
+            ` Error codes: ${obdData.spikeAnalysis?.dtc?.average || 0} active (normal)\n` +
+            ` Recommendations: No critical issues detected, continue monitoring`,
         
         opportunities: isItalian ?
-            `Opportunità di servizio per ${vehicle.brand} ${vehicle.model}:\n\n` +
+            `Opportunit di servizio per ${vehicle.brand} ${vehicle.model}:\n\n` +
             `1) Controllo completo sistema OBD e diagnostica avanzata\n` +
             `2) Ottimizzazione prestazioni motore e calibrazione iniettori\n` +
             `3) Servizio sistema di raffreddamento e verifica termostato\n` +
@@ -4207,13 +4207,13 @@ async function generateAISectionResponse(prompt, context, lang, section) {
     // If not found, return a default analysis based on the section name
     const defaultResponse = isItalian ? 
         `Analisi ${section} per ${vehicle.brand} ${vehicle.model} ${vehicle.year}:\n\n` +
-        `• Stato generale: Analisi in corso\n` +
-        `• Parametri OBD: Dati disponibili\n` +
-        `• Raccomandazioni: Controllo regolare consigliato` :
+        ` Stato generale: Analisi in corso\n` +
+        ` Parametri OBD: Dati disponibili\n` +
+        ` Raccomandazioni: Controllo regolare consigliato` :
         `${section} analysis for ${vehicle.year} ${vehicle.brand} ${vehicle.model}:\n\n` +
-        `• Overall status: Analysis in progress\n` +
-        `• OBD parameters: Data available\n` +
-        `• Recommendations: Regular monitoring advised`;
+        ` Overall status: Analysis in progress\n` +
+        ` OBD parameters: Data available\n` +
+        ` Recommendations: Regular monitoring advised`;
     
     return defaultResponse;
 }
@@ -4228,7 +4228,7 @@ app.get('/api/vehicle-groups/:dealerId', async (req, res) => {
     try {
         const { dealerId } = req.params;
         
-        console.log(`📋 Loading vehicle groups for dealer ${dealerId}...`);
+        console.log(` Loading vehicle groups for dealer ${dealerId}...`);
         
         // Use Supabase instead of PostgreSQL for vehicle groups
         const { data: groups, error } = await supabaseAdmin
@@ -4259,7 +4259,7 @@ app.get('/api/vehicle-groups/:dealerId', async (req, res) => {
             vehicle_count: group.vehicle_group_members ? group.vehicle_group_members.length : 0
         }));
         
-        console.log(`✅ Found ${processedGroups.length} vehicle groups for dealer ${dealerId}`);
+        console.log(` Found ${processedGroups.length} vehicle groups for dealer ${dealerId}`);
         
         res.json({
             success: true,
@@ -4285,7 +4285,7 @@ app.get('/api/vehicle-analysis/:dealerId', async (req, res) => {
     try {
         const { dealerId } = req.params;
         
-        console.log(`🤖 Starting AI analysis for dealer ${dealerId}...`);
+        console.log(` Starting AI analysis for dealer ${dealerId}...`);
         
         // Get all certificates for the dealer (using the same query as certificates page)
         const certificatesQuery = `
@@ -4297,7 +4297,7 @@ app.get('/api/vehicle-analysis/:dealerId', async (req, res) => {
                 c.active, c."createdAt", c."updatedAt", c."dealerId"
             FROM certificate c
             
-            -- CORRECT DATA FLOW: Certificate → Device → Vehicle (INNER JOINs to ensure data exists)
+            -- CORRECT DATA FLOW: Certificate  Device  Vehicle (INNER JOINs to ensure data exists)
             INNER JOIN device d ON c."deviceId" = d.id
             INNER JOIN vehicle v ON d."vehicleId" = v.id
             
@@ -4305,15 +4305,15 @@ app.get('/api/vehicle-analysis/:dealerId', async (req, res) => {
             ORDER BY c."deviceId", c.version DESC
         `;
         
-        console.log(`🔍 Executing certificates query for dealer ${dealerId}...`);
-        console.log(`🔍 Query: ${certificatesQuery}`);
+        console.log(` Executing certificates query for dealer ${dealerId}...`);
+        console.log(` Query: ${certificatesQuery}`);
         
         const certificatesResult = await pool.query(certificatesQuery, [dealerId]);
         const certificates = certificatesResult.rows;
         
-        console.log(`✅ Found ${certificates.length} certificates for analysis`);
+        console.log(` Found ${certificates.length} certificates for analysis`);
         
-        console.log(`📊 Analyzing ${certificates.length} vehicles for AI suggestions...`);
+        console.log(` Analyzing ${certificates.length} vehicles for AI suggestions...`);
         
         if (certificates.length === 0) {
             return res.json({
@@ -4332,7 +4332,7 @@ app.get('/api/vehicle-analysis/:dealerId', async (req, res) => {
         // Generate AI suggestions
         const suggestions = generateAIGroupSuggestions(analysis, dealerId);
         
-        console.log(`🤖 Generated ${suggestions.length} AI group suggestions`);
+        console.log(` Generated ${suggestions.length} AI group suggestions`);
         
         res.json({
             success: true,
@@ -4371,7 +4371,7 @@ app.post('/api/vehicle-groups', async (req, res) => {
             });
         }
         
-        console.log(`📋 Creating vehicle group "${name}" for dealer ${dealerId}...`);
+        console.log(` Creating vehicle group "${name}" for dealer ${dealerId}...`);
         
         // Use Supabase instead of PostgreSQL
         const { data: newGroup, error } = await supabaseAdmin
@@ -4391,7 +4391,7 @@ app.post('/api/vehicle-groups', async (req, res) => {
             throw error;
         }
         
-        console.log(`✅ Created vehicle group "${name}" with ID ${newGroup.id}`);
+        console.log(` Created vehicle group "${name}" with ID ${newGroup.id}`);
         
         res.json({
             success: true,
@@ -4415,7 +4415,7 @@ app.put('/api/vehicle-groups/:groupId', async (req, res) => {
         const { groupId } = req.params;
         const { name, description, color, icon, is_active } = req.body;
         
-        console.log(`📋 Updating vehicle group ${groupId}...`);
+        console.log(` Updating vehicle group ${groupId}...`);
         
         // Use Supabase instead of PostgreSQL
         const updateData = {};
@@ -4443,7 +4443,7 @@ app.put('/api/vehicle-groups/:groupId', async (req, res) => {
             throw error;
         }
         
-        console.log(`✅ Updated vehicle group "${updatedGroup.name}"`);
+        console.log(` Updated vehicle group "${updatedGroup.name}"`);
         
         res.json({
             success: true,
@@ -4466,7 +4466,7 @@ app.delete('/api/vehicle-groups/:groupId', async (req, res) => {
     try {
         const { groupId } = req.params;
         
-        console.log(`📋 Deleting vehicle group ${groupId}...`);
+        console.log(` Deleting vehicle group ${groupId}...`);
         
         // Use Supabase instead of PostgreSQL
         const { data: deletedGroup, error } = await supabaseAdmin
@@ -4487,7 +4487,7 @@ app.delete('/api/vehicle-groups/:groupId', async (req, res) => {
             throw error;
         }
         
-        console.log(`✅ Deleted vehicle group "${deletedGroup.name}"`);
+        console.log(` Deleted vehicle group "${deletedGroup.name}"`);
         
         res.json({
             success: true,
@@ -4510,7 +4510,7 @@ app.get('/api/vehicle-groups/:groupId/vehicles', async (req, res) => {
     try {
         const { groupId } = req.params;
         
-        console.log(`📋 Loading vehicles for group ${groupId}...`);
+        console.log(` Loading vehicles for group ${groupId}...`);
         
         // Use Supabase to get vehicle IDs first
         const { data: members, error } = await supabaseAdmin
@@ -4546,7 +4546,7 @@ app.get('/api/vehicle-groups/:groupId/vehicles', async (req, res) => {
             }));
         }
         
-        console.log(`✅ Found ${vehicles.length} vehicles in group ${groupId}`);
+        console.log(` Found ${vehicles.length} vehicles in group ${groupId}`);
         
         res.json({
             success: true,
@@ -4580,7 +4580,7 @@ app.post('/api/vehicle-groups/:groupId/vehicles', async (req, res) => {
             });
         }
         
-        console.log(`📋 Adding vehicle ${vehicleId} to group ${groupId}...`);
+        console.log(` Adding vehicle ${vehicleId} to group ${groupId}...`);
         
         // Use Supabase instead of PostgreSQL
         const { data: newMember, error } = await supabaseAdmin
@@ -4604,7 +4604,7 @@ app.post('/api/vehicle-groups/:groupId/vehicles', async (req, res) => {
             throw error;
         }
         
-        console.log(`✅ Added vehicle ${vehicleId} to group ${groupId}`);
+        console.log(` Added vehicle ${vehicleId} to group ${groupId}`);
         
         res.json({
             success: true,
@@ -4627,7 +4627,7 @@ app.delete('/api/vehicle-groups/:groupId/vehicles/:vehicleId', async (req, res) 
     try {
         const { groupId, vehicleId } = req.params;
         
-        console.log(`📋 Removing vehicle ${vehicleId} from group ${groupId}...`);
+        console.log(` Removing vehicle ${vehicleId} from group ${groupId}...`);
         
         // Use Supabase instead of PostgreSQL
         const { data: deletedMember, error } = await supabaseAdmin
@@ -4649,7 +4649,7 @@ app.delete('/api/vehicle-groups/:groupId/vehicles/:vehicleId', async (req, res) 
             throw error;
         }
         
-        console.log(`✅ Removed vehicle ${vehicleId} from group ${groupId}`);
+        console.log(` Removed vehicle ${vehicleId} from group ${groupId}`);
         
         res.json({
             success: true,
@@ -4689,7 +4689,7 @@ function generateFallbackResponse(section, context, lang) {
             'Analisi dei potenziali problemi non disponibile al momento.' :
             'Potential issues analysis not available at this time.',
         opportunities: lang === 'it' ?
-            'Analisi delle opportunità non disponibile al momento.' :
+            'Analisi delle opportunit non disponibile al momento.' :
             'Opportunities analysis not available at this time.',
         obdParameters: JSON.stringify(generateDefaultOBDParameters())
     };
@@ -4723,7 +4723,7 @@ function generateDefaultOBDParameters() {
 
 // Analyze vehicles for group patterns
 function analyzeVehiclesForGroups(certificates) {
-    console.log('🔍 Starting vehicle analysis for AI grouping...');
+    console.log(' Starting vehicle analysis for AI grouping...');
     
     const analysis = {
         byBrand: {},
@@ -4796,7 +4796,7 @@ function analyzeVehiclesForGroups(certificates) {
     analysis.statistics.cities = Array.from(analysis.statistics.cities);
     analysis.statistics.installationPoints = Array.from(analysis.statistics.installationPoints);
     
-    console.log('📊 Vehicle analysis completed:', {
+    console.log(' Vehicle analysis completed:', {
         totalVehicles: analysis.statistics.totalVehicles,
         brands: analysis.statistics.brands.length,
         fuelTypes: analysis.statistics.fuelTypes.length,
@@ -4808,7 +4808,7 @@ function analyzeVehiclesForGroups(certificates) {
 
 // Generate AI group suggestions based on analysis
 function generateAIGroupSuggestions(analysis, dealerId) {
-    console.log('🤖 Generating AI group suggestions...');
+    console.log(' Generating AI group suggestions...');
     
     const suggestions = [];
     const colors = ['#FF5733', '#33FF57', '#3357FF', '#F3FF33', '#FF33F3', '#33FFF3', '#FF8C33', '#8C33FF'];
@@ -4944,7 +4944,7 @@ function generateAIGroupSuggestions(analysis, dealerId) {
     // Limit to top 10 suggestions
     const topSuggestions = suggestions.slice(0, 10);
     
-    console.log(`🤖 Generated ${topSuggestions.length} AI suggestions`);
+    console.log(` Generated ${topSuggestions.length} AI suggestions`);
     topSuggestions.forEach(suggestion => {
         console.log(`   - ${suggestion.name}: ${suggestion.vehicleCount} vehicles (confidence: ${(suggestion.confidence * 100).toFixed(1)}%)`);
     });
@@ -4954,7 +4954,7 @@ function generateAIGroupSuggestions(analysis, dealerId) {
 
 // Start the server
 app.listen(PORT, () => {
-    console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📱 Service Hub Portal is ready!`);
-    console.log(`🌐 Open http://localhost:${PORT} in your browser`);
+    console.log(` Server running on port ${PORT}`);
+    console.log(` Service Hub Portal is ready!`);
+    console.log(` Open http://localhost:${PORT} in your browser`);
 });
