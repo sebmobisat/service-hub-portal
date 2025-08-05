@@ -24,12 +24,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('./')); // Serve static files from current directory
 
-// Health check endpoint for Railway
+// Health check endpoint for Railway (simple, no database dependency)
 app.get('/health', (req, res) => {
     res.status(200).json({ 
         status: 'OK', 
         timestamp: new Date().toISOString(),
-        service: 'Service Hub Portal'
+        service: 'Service Hub Portal',
+        uptime: process.uptime()
     });
 });
 
@@ -45,6 +46,12 @@ app.get('/startup', (req, res) => {
         timestamp: new Date().toISOString(),
         uptime: process.uptime()
     });
+});
+
+// Simple ping endpoint for Railway
+app.get('/ping', (req, res) => {
+    console.log('Ping received at:', new Date().toISOString());
+    res.status(200).send('pong');
 });
 
 // Database configuration from environment variables
@@ -4979,5 +4986,7 @@ function generateAIGroupSuggestions(analysis, dealerId) {
 app.listen(PORT, () => {
     console.log(` Server running on port ${PORT}`);
     console.log(` Service Hub Portal is ready!`);
+    console.log(` Health check available at: http://localhost:${PORT}/health`);
+    console.log(` Ping endpoint available at: http://localhost:${PORT}/ping`);
     console.log(` Open http://localhost:${PORT} in your browser`);
 });
