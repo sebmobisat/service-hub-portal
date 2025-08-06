@@ -874,18 +874,37 @@ class I18nManager {
         const langEN = document.getElementById('lang-en');
         
         if (langIT && langEN) {
-            // Reset both buttons to default state
-            langEN.className = 'w-10 h-10 rounded-full text-sm font-medium hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center';
-            langIT.className = 'w-10 h-10 rounded-full text-sm font-medium hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center';
+            // Check if we're on the settings page (different styling)
+            const isSettingsPage = window.location.pathname.includes('settings');
             
-            // Set active button based on current language
-            if (this.currentLanguage === 'en') {
-                langEN.className = 'w-10 h-10 rounded-full text-sm font-medium bg-primary text-white transition-all duration-300 flex items-center justify-center';
-            } else if (this.currentLanguage === 'it') {
-                langIT.className = 'w-10 h-10 rounded-full text-sm font-medium bg-primary text-white transition-all duration-300 flex items-center justify-center';
+            if (isSettingsPage) {
+                // Settings page buttons - different styling
+                const baseClass = 'px-4 py-2 rounded-lg text-white transition-colors';
+                
+                // Reset both buttons to default state
+                langEN.className = `${baseClass} bg-gray-600 hover:bg-gray-700`;
+                langIT.className = `${baseClass} bg-gray-600 hover:bg-gray-700`;
+                
+                // Set active button based on current language
+                if (this.currentLanguage === 'en') {
+                    langEN.className = `${baseClass} bg-green-600 hover:bg-green-700`;
+                } else if (this.currentLanguage === 'it') {
+                    langIT.className = `${baseClass} bg-green-600 hover:bg-green-700`;
+                }
+            } else {
+                // Header buttons - original styling
+                langEN.className = 'w-10 h-10 rounded-full text-sm font-medium hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center';
+                langIT.className = 'w-10 h-10 rounded-full text-sm font-medium hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center';
+                
+                // Set active button based on current language
+                if (this.currentLanguage === 'en') {
+                    langEN.className = 'w-10 h-10 rounded-full text-sm font-medium bg-primary text-white transition-all duration-300 flex items-center justify-center';
+                } else if (this.currentLanguage === 'it') {
+                    langIT.className = 'w-10 h-10 rounded-full text-sm font-medium bg-primary text-white transition-all duration-300 flex items-center justify-center';
+                }
             }
             
-            console.log('Language buttons updated. Current language:', this.currentLanguage);
+            console.log('Language buttons updated. Current language:', this.currentLanguage, 'Page:', window.location.pathname);
         }
     }
     
@@ -930,22 +949,28 @@ class I18nManager {
      * Initialize i18n system
      */
     init() {
+        console.log('🌐 I18nManager initializing with language:', this.currentLanguage);
+        
         // Apply current language immediately
         document.documentElement.lang = this.currentLanguage;
         
         // Wait for DOM to be ready, then update UI
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
+                console.log('🌐 DOM loaded, updating i18n...');
                 this.updatePageMeta();
                 this.updateAllTranslations();
                 this.updateLanguageButtons();
                 this.setupLanguageButtons();
+                console.log('🌐 I18n initialization complete');
             });
         } else {
+            console.log('🌐 DOM already ready, updating i18n immediately...');
             this.updatePageMeta();
             this.updateAllTranslations();
             this.updateLanguageButtons();
             this.setupLanguageButtons();
+            console.log('🌐 I18n initialization complete');
         }
     }
 
