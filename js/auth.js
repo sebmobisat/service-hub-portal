@@ -37,19 +37,23 @@ class AuthManager {
                 this.currentStep = 'pin';
                 
                 // Show success message with dealer info
-                this.showMessage(
-                    `Welcome ${data.dealer.name} from ${data.dealer.companyName}! 
-                     PIN sent to your email address.`, 
-                    'success'
-                );
-                
-                // Development mode - show PIN in console
-                if (data.developmentPin) {
-                    console.log(`Development PIN: ${data.developmentPin}`);
+                if (data.emailSent) {
                     this.showMessage(
-                        `Development Mode: Your PIN is ${data.developmentPin}`, 
-                        'info'
+                        `Welcome ${data.dealer.name} from ${data.dealer.companyName}! 
+                         PIN sent to your email address. Please check your inbox.`, 
+                        'success'
                     );
+                } else {
+                    // Fallback: show PIN on screen if email failed
+                    this.showMessage(
+                        `Welcome ${data.dealer.name} from ${data.dealer.companyName}! 
+                         PIN: ${data.pin}`, 
+                        'success'
+                    );
+                    
+                    if (data.emailError) {
+                        console.warn('Email sending failed:', data.emailError);
+                    }
                 }
                 
                 return { success: true, dealer: data.dealer };

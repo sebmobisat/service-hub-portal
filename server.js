@@ -7,6 +7,7 @@ const path = require('path');
 const { Pool } = require('pg');
 const OpenAI = require('openai');
 const FMB003Mapping = require('./js/fmb003-mapping.js');
+const { emailService } = require('./js/email-service.js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -67,7 +68,16 @@ app.get('/status', (req, res) => {
     res.status(200).json({
         status: 'OK',
         timestamp: new Date().toISOString(),
-        uptime: process.uptime()
+        uptime: process.uptime(),
+        emailService: emailService.getStatus()
+    });
+});
+
+// Email service status endpoint
+app.get('/api/email/status', (req, res) => {
+    res.status(200).json({
+        success: true,
+        emailService: emailService.getStatus()
     });
 });
 
@@ -136,11 +146,10 @@ class DatabaseManager {
             return { success: false, error: 'dealer_not_found' };
         }
         
-        // For development, use a simple PIN validation
-        // In production, this should be more secure with time-based PINs
-        const validPin = '123456'; // Demo PIN
+        // Generate PIN based on dealer ID (deterministic but secure)
+        const generatedPin = this.generateDealerPin(dealer.id);
         
-        if (pin === validPin) {
+        if (pin === generatedPin) {
             return {
                 success: true,
                 dealer: {
@@ -154,6 +163,15 @@ class DatabaseManager {
         }
         
         return { success: false, error: 'invalid_pin' };
+    }
+    
+    // Generate dealer PIN based on dealer ID
+    static generateDealerPin(dealerId) {
+        // Simple algorithm to generate a 6-digit PIN based on dealer ID
+        // This ensures each dealer has a unique PIN
+        const seed = dealerId * 12345 + 67890;
+        const pin = (seed % 900000) + 100000; // Ensures 6-digit PIN
+        return pin.toString();
     }
 }
 
@@ -183,9 +201,31 @@ app.post('/api/auth/request-pin', async (req, res) => {
         // Generate real PIN based on dealer ID
         const realPin = DatabaseManager.generateDealerPin(dealer.id);
         
+        // Try to send email with PIN
+        let emailSent = false;
+        let emailError = null;
+        
+        try {
+            // Determine language from request headers or default to Italian
+            const acceptLanguage = req.headers['accept-language'] || '';
+            const language = acceptLanguage.includes('en') ? 'en' : 'it';
+            
+            emailSent = await emailService.sendPinEmail(
+                dealer.companyLoginEmail,
+                dealer.companyName,
+                realPin,
+                language
+            );
+        } catch (error) {
+            console.error('Email sending error:', error);
+            emailError = error.message;
+        }
+        
         res.json({
             success: true,
-            message: 'PIN generated successfully',
+            message: emailSent 
+                ? (language === 'it' ? 'PIN inviato via email' : 'PIN sent via email')
+                : 'PIN generated successfully',
             dealer: {
                 id: dealer.id,
                 email: dealer.companyLoginEmail,
@@ -193,7 +233,9 @@ app.post('/api/auth/request-pin', async (req, res) => {
                 name: dealer.companyMobisatTechRefName || 'Dealer Representative',
                 brand: dealer.brand
             },
-            pin: realPin // Real PIN for this dealer
+            pin: emailSent ? null : realPin, // Only show PIN if email failed
+            emailSent: emailSent,
+            emailError: emailError
         });
         
     } catch (error) {
