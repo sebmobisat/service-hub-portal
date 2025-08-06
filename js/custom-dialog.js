@@ -6,7 +6,19 @@
 class CustomDialog {
     constructor() {
         this.dialogId = 'custom-dialog';
-        this.createDialogElement();
+        this.initialized = false;
+        this.init();
+    }
+
+    /**
+     * Initialize the dialog when DOM is ready
+     */
+    init() {
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.createDialogElement());
+        } else {
+            this.createDialogElement();
+        }
     }
 
     /**
@@ -17,6 +29,13 @@ class CustomDialog {
         const existingDialog = document.getElementById(this.dialogId);
         if (existingDialog) {
             existingDialog.remove();
+        }
+
+        // Check if document.body exists
+        if (!document.body) {
+            console.warn('Document body not ready, retrying in 100ms');
+            setTimeout(() => this.createDialogElement(), 100);
+            return;
         }
 
         // Create dialog container
@@ -129,15 +148,20 @@ class CustomDialog {
         }, 300);
     }
 
-    /**
-     * Show confirmation dialog
-     * @param {string} title - Dialog title
-     * @param {string} message - Dialog message
-     * @param {string} confirmText - Confirm button text
-     * @param {string} cancelText - Cancel button text
-     * @returns {Promise<boolean>} - True if confirmed, false if cancelled
-     */
-    confirm(title, message, confirmText = 'Conferma', cancelText = 'Annulla') {
+                    /**
+                 * Show confirmation dialog
+                 * @param {string} title - Dialog title
+                 * @param {string} message - Dialog message
+                 * @param {string} confirmText - Confirm button text
+                 * @param {string} cancelText - Cancel button text
+                 * @returns {Promise<boolean>} - True if confirmed, false if cancelled
+                 */
+                confirm(title, message, confirmText = 'Conferma', cancelText = 'Annulla') {
+                    // Ensure dialog is ready
+                    if (!document.getElementById(this.dialogId)) {
+                        console.warn('Dialog not ready, creating now...');
+                        this.createDialogElement();
+                    }
         return new Promise((resolve) => {
             const titleElement = document.getElementById('dialog-title');
             const messageElement = document.getElementById('dialog-message');
