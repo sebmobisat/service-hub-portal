@@ -197,11 +197,27 @@ class DatabaseManager {
             return { success: false, error: 'pin_not_found' };
         }
         
-        // Check if PIN has expired
+        // Check if PIN has expired with detailed debugging
         const now = new Date();
-        const expiresAt = new Date(storedPinData.expires_at);
+        
+        // Fix timezone issue: ensure expires_at is treated as UTC
+        let expiresAt;
+        if (storedPinData.expires_at.endsWith('Z')) {
+            expiresAt = new Date(storedPinData.expires_at);
+        } else {
+            // If no 'Z' suffix, treat as UTC by adding it
+            expiresAt = new Date(storedPinData.expires_at + 'Z');
+        }
+        
+        console.log(`🔍 PIN Validation Debug:`);
+        console.log(`   Current time: ${now.toISOString()}`);
+        console.log(`   Expires at (raw): ${storedPinData.expires_at}`);
+        console.log(`   Expires at (fixed): ${expiresAt.toISOString()}`);
+        console.log(`   Time difference (ms): ${expiresAt.getTime() - now.getTime()}`);
+        console.log(`   Is expired: ${now > expiresAt}`);
         
         if (now > expiresAt) {
+            console.log(`❌ PIN expired! Current: ${now.toISOString()}, Expires: ${expiresAt.toISOString()}`);
             return { success: false, error: 'pin_expired' };
         }
         

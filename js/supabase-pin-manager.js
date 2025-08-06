@@ -19,7 +19,9 @@ class SupabasePinManager {
         const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes from now
         
         console.log(`🔐 Attempting to store PIN for dealer ${dealerId} in Supabase...`);
+        console.log(`📅 Current time: ${new Date().toISOString()}`);
         console.log(`📅 Expires at: ${expiresAt.toISOString()}`);
+        console.log(`📅 Time difference (ms): ${expiresAt.getTime() - Date.now()}`);
         
         try {
             const { data, error } = await supabaseAdmin
@@ -27,7 +29,7 @@ class SupabasePinManager {
                 .upsert({
                     dealer_id: dealerId,
                     pin: pin.toString(),
-                    expires_at: expiresAt.toISOString(),
+                    expires_at: expiresAt.toISOString(), // This ensures 'Z' suffix
                     attempts: 0
                 }, {
                     onConflict: 'dealer_id'
