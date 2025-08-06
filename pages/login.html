@@ -58,7 +58,6 @@
                         <button 
                             type="button" 
                             id="togglePin" 
-                            onclick="togglePin()"
                             class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
                         >
                             👁️
@@ -72,7 +71,7 @@
                         <input type="checkbox" id="rememberMe" class="rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500">
                         <span class="ml-2">Remember me</span>
                     </label>
-                    <button type="button" id="forgotPin" onclick="showForgotModal()" class="text-sm text-blue-400 hover:text-blue-300">
+                    <button type="button" id="forgotPin" class="text-sm text-blue-400 hover:text-blue-300">
                         Forgot PIN?
                     </button>
                 </div>
@@ -114,7 +113,7 @@
                     <div>Phone: +39 02 1234 5678</div>
                 </div>
                 <div class="flex space-x-3">
-                    <button id="closeForgotModal" onclick="hideForgotModal()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg">
+                    <button id="closeForgotModal" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg">
                         Close
                     </button>
                     <a href="mailto:support@servicehub.portal" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-center">
@@ -248,7 +247,10 @@
                 if (result.success) {
                     // Login successful - use auth guard to handle redirect
                     if (window.authGuard) {
-                        window.authGuard.handleSuccessfulLogin(result.userData);
+                        window.authGuard.handleSuccessfulLogin({
+                            token: result.token,
+                            ...result.dealer
+                        });
                     } else {
                         // Fallback redirect
                         setTimeout(() => {
