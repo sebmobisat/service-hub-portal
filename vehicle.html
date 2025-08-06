@@ -1418,13 +1418,14 @@
             if (storedVehicleData && certificateIdParam) {
                 try {
                     const vehicleData = JSON.parse(storedVehicleData);
+                    console.log('📦 Found stored vehicle data in sessionStorage');
     
                     return {
                         certificateId: certificateIdParam,
                         vehicleData: vehicleData
                     };
                 } catch (error) {
-                    console.error('Error parsing stored vehicleData:', error);
+                    console.error('❌ Error parsing stored vehicleData:', error);
                     sessionStorage.removeItem('vehiclePageData');
                 }
             }
@@ -1442,23 +1443,28 @@
         async function loadVehicleData() {
             try {
                 const params = getUrlParams();
+                console.log('🔍 Loading vehicle data with params:', params);
                 
                 if (params.vehicleData) {
+                    // Case 1: We have vehicle data from URL or sessionStorage
                     vehicleData = params.vehicleData.vehicle;
                     certificateData = params.vehicleData;
                     // Make certificateData globally accessible for tabs
                     window.certificateData = certificateData;
                     displayVehicleData();
+                    console.log('✅ Vehicle data loaded from stored data');
                 } else if (params.certificateId) {
-                    // Load certificate data from API
+                    // Case 2: We have certificateId, load from API
+                    console.log('🔄 Loading certificate data from API for ID:', params.certificateId);
                     await loadCertificateData(params.certificateId);
                 } else {
-                    console.error('No vehicle data or certificate ID provided');
-                    showError('No vehicle data available');
+                    // Case 3: No data available
+                    console.error('❌ No vehicle data or certificate ID provided');
+                    showError('Nessun dato veicolo disponibile. Torna alla pagina dei certificati.');
                 }
             } catch (error) {
-                console.error('Error loading vehicle data:', error);
-                showError('Failed to load vehicle data');
+                console.error('❌ Error loading vehicle data:', error);
+                showError('Errore nel caricamento dei dati. Riprova più tardi.');
             }
         }
 
@@ -1509,24 +1515,41 @@
         // Load certificate data from API
         async function loadCertificateData(certificateId) {
             try {
+                console.log('🔄 Making API call to load certificate:', certificateId);
                 const response = await secureApiCall(`/api/certificates/${certificateId}`);
+                
                 if (response && response.ok) {
                     const data = await response.json();
+                    console.log('📊 API response received:', data);
+                    
                     if (data.success && data.certificate) {
                         certificateData = data.certificate;
                         vehicleData = data.certificate.vehicle;
                         // Make certificateData globally accessible for tabs
                         window.certificateData = certificateData;
                         displayVehicleData();
+                        console.log('✅ Certificate data loaded successfully');
                     } else {
-                        showError('Certificate not found');
+                        console.error('❌ Certificate not found in API response');
+                        showError('Certificato non trovato. Verifica che l\'ID sia corretto.');
                     }
                 } else {
-                    showError('Failed to load certificate data');
+                    console.error('❌ API call failed with status:', response?.status);
+                    if (response?.status === 401) {
+                        showError('Sessione scaduta. Effettua nuovamente il login.');
+                    } else if (response?.status === 404) {
+                        showError('Certificato non trovato. Verifica che l\'ID sia corretto.');
+                    } else {
+                        showError('Errore nel caricamento del certificato. Riprova più tardi.');
+                    }
                 }
             } catch (error) {
-                console.error('Error loading certificate data:', error);
-                showError('Failed to load certificate data');
+                console.error('❌ Error loading certificate data:', error);
+                if (error.message.includes('authentication')) {
+                    showError('Sessione scaduta. Effettua nuovamente il login.');
+                } else {
+                    showError('Errore di connessione. Verifica la tua connessione internet.');
+                }
             }
         }
 
@@ -5191,9 +5214,19 @@ _La prevenzione è sempre più conveniente!_ 💪`;
             }
         });
         
-        // Clean up sessionStorage when leaving the page
+        // Clean up sessionStorage when leaving the page (but keep it for refresh)
         window.addEventListener('beforeunload', function() {
-            sessionStorage.removeItem('vehiclePageData');
+            // Don't remove sessionStorage on refresh - only on actual navigation away
+            // This allows data to persist during page refresh
+        });
+        
+        // Clean up sessionStorage when actually navigating away (not on refresh)
+        window.addEventListener('pagehide', function(event) {
+            // Only remove if it's not a page refresh
+            if (event.persisted === false) {
+                sessionStorage.removeItem('vehiclePageData');
+                console.log('🧹 Cleaned up sessionStorage on navigation away');
+            }
         });
         document.addEventListener('DOMContentLoaded', async function() {
             // STEP 0: 🛡️ SECURITY CHECK - MUST BE FIRST
