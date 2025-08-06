@@ -1,6 +1,14 @@
 // Service Hub Portal - Node.js Backend Server
 // Authentication server with database integration and EmailJS
 
+// Load environment variables
+require('dotenv').config();
+
+// Load local environment variables for development
+if (process.env.NODE_ENV === 'development') {
+    require('dotenv').config({ path: '.env.local' });
+}
+
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
