@@ -8,6 +8,7 @@ const { Pool } = require('pg');
 const OpenAI = require('openai');
 const FMB003Mapping = require('./js/fmb003-mapping.js');
 const { emailService } = require('./js/email-service.js');
+const { SupabasePinManager } = require('./js/supabase-pin-manager.js');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -79,6 +80,41 @@ app.get('/api/email/status', (req, res) => {
         success: true,
         emailService: emailService.getStatus()
     });
+});
+
+// Database status endpoint (dual database setup)
+app.get('/api/database/status', async (req, res) => {
+    try {
+        const supabaseStatus = await SupabasePinManager.testConnection();
+        const pinStats = await SupabasePinManager.getPinStats();
+        
+        res.status(200).json({
+            success: true,
+            databases: {
+                postgresql: {
+                    status: 'readonly',
+                    description: 'Existing Mobisat database (read-only)',
+                    tables: ['dealer', 'certificate', 'vehicle', 'etc...']
+                },
+                supabase: {
+                    status: supabaseStatus.success ? 'connected' : 'error',
+                    description: 'New database for PIN storage and future features',
+                    error: supabaseStatus.error || null,
+                    pinStats: pinStats
+                }
+            },
+            dualDatabaseSetup: {
+                description: 'PostgreSQL (read) + Supabase (write)',
+                pinStorage: 'Supabase',
+                dealerData: 'PostgreSQL'
+            }
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
 });
 
 // Database configuration from environment variables
@@ -186,70 +222,24 @@ class DatabaseManager {
         return { success: false, error: 'invalid_pin' };
     }
     
-    // Generate secure random PIN
+    // Generate secure random PIN (delegated to SupabasePinManager)
     static generateSecurePin() {
-        // Generate a cryptographically secure random 6-digit PIN
-        const min = 100000;
-        const max = 999999;
-        return Math.floor(Math.random() * (max - min + 1)) + min;
+        return SupabasePinManager.generateSecurePin();
     }
 
-    // Store PIN in database with expiration
+    // Store PIN in Supabase with expiration
     static async storePin(dealerId, pin) {
-        const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes from now
-        
-        const query = `
-            INSERT INTO dealer_pins (dealer_id, pin, expires_at, created_at)
-            VALUES ($1, $2, $3, NOW())
-            ON CONFLICT (dealer_id) 
-            DO UPDATE SET 
-                pin = $2, 
-                expires_at = $3, 
-                created_at = NOW(),
-                attempts = 0
-        `;
-        
-        try {
-            await this.executeQuery(query, [dealerId, pin, expiresAt]);
-            return true;
-        } catch (error) {
-            console.error('Error storing PIN:', error);
-            return false;
-        }
+        return await SupabasePinManager.storePin(dealerId, pin);
     }
 
-    // Get and validate PIN from database
+    // Get and validate PIN from Supabase
     static async getStoredPin(dealerId) {
-        const query = `
-            SELECT pin, expires_at, attempts
-            FROM dealer_pins 
-            WHERE dealer_id = $1
-        `;
-        
-        try {
-            const results = await this.executeQuery(query, [dealerId]);
-            return results.length > 0 ? results[0] : null;
-        } catch (error) {
-            console.error('Error getting stored PIN:', error);
-            return null;
-        }
+        return await SupabasePinManager.getStoredPin(dealerId);
     }
 
-    // Increment PIN attempts
+    // Increment PIN attempts in Supabase
     static async incrementPinAttempts(dealerId) {
-        const query = `
-            UPDATE dealer_pins 
-            SET attempts = attempts + 1
-            WHERE dealer_id = $1
-        `;
-        
-        try {
-            await this.executeQuery(query, [dealerId]);
-            return true;
-        } catch (error) {
-            console.error('Error incrementing PIN attempts:', error);
-            return false;
-        }
+        return await SupabasePinManager.incrementPinAttempts(dealerId);
     }
 }
 
