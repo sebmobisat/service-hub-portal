@@ -466,6 +466,108 @@ app.get('/api/certificates/test', async (req, res) => {
     }
 });
 
+// GET /api/certificates/certificate/:certificateId - Get a single certificate by ID (MUST BE FIRST)
+app.get('/api/certificates/certificate/:certificateId', async (req, res) => {
+    try {
+        const certificateId = parseInt(req.params.certificateId);
+        
+        if (!certificateId || isNaN(certificateId)) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'invalid_certificate_id',
+                message: 'Invalid certificate ID provided'
+            });
+        }
+        
+        console.log(`🔍 Fetching certificate with ID: ${certificateId}`);
+        
+        const query = `
+            SELECT DISTINCT ON (c."deviceId") 
+                c.id, c."deviceId", c.imei, c.serial, c.vehicle, c.client, 
+                c."installationPoint", c."installerName", 
+                c."clientReceiveDocumentsAgreement", c."userAgreement", 
+                c."vcrAgreement", c."vcrCallingAgreement", c.version, 
+                c.active, c."createdAt", c."updatedAt", c."dealerId",
+                
+                -- Vehicle data
+                v.id as vehicle_id,
+                v.vin,
+                v.plate as license_plate,
+                v.brand,
+                v.model,
+                v.year,
+                v."fuelType" as fuel_type,
+                
+                -- Odometer from vehicle table (converted from meters to kilometers)
+                ROUND(v.odometer::numeric / 1000, 0) AS odometer
+                
+            FROM certificate c
+            
+            -- JOIN with device and vehicle tables
+            INNER JOIN device d ON c."deviceId" = d.id
+            INNER JOIN vehicle v ON d."vehicleId" = v.id
+            
+            WHERE c.id = $1 
+            ORDER BY c."deviceId", c.version DESC
+        `;
+        
+        const result = await DatabaseManager.executeQuery(query, [certificateId]);
+        
+        if (result.length === 0) {
+            console.log(`❌ Certificate with ID ${certificateId} not found`);
+            return res.status(404).json({
+                success: false,
+                error: 'certificate_not_found',
+                message: 'Certificate not found'
+            });
+        }
+        
+        const certificate = result[0];
+        
+        // Format the certificate data to match the expected structure
+        const formattedCertificate = {
+            id: certificate.id,
+            deviceId: certificate.deviceId,
+            imei: certificate.imei,
+            serial: certificate.serial,
+            createdAt: certificate.createdAt,
+            updatedAt: certificate.updatedAt,
+            dealerId: certificate.dealerId,
+            active: certificate.active,
+            version: certificate.version,
+            vehicle: {
+                id: certificate.vehicle_id,
+                vin: certificate.vin,
+                plate: certificate.license_plate,
+                brand: certificate.brand,
+                model: certificate.model,
+                year: certificate.year,
+                fuelType: certificate.fuel_type,
+                odometer: certificate.odometer
+            },
+            client: certificate.client,
+            installationPoint: certificate.installationPoint,
+            installerName: certificate.installerName
+        };
+        
+        console.log(`✅ Certificate ${certificateId} found and formatted`);
+        
+        res.json({
+            success: true,
+            certificate: formattedCertificate,
+            message: 'Certificate loaded successfully'
+        });
+        
+    } catch (error) {
+        console.error('❌ Error fetching certificate:', error);
+        res.status(500).json({
+            success: false,
+            error: 'server_error',
+            message: 'Failed to fetch certificate'
+        });
+    }
+});
+
 // GET /api/certificates/:dealerId - Get certificates for a specific dealer ONLY
 app.get('/api/certificates/:dealerId', async (req, res) => {
     try {
@@ -587,7 +689,7 @@ app.get('/api/certificates/simple', async (req, res) => {
     try {
         console.log(' Loading all certificates...');
         
-                                   // Use the SAME smart odometer query but for ALL certificates (no dealer filter)
+                                   // Use simple odometer logic from vehicle table for ALL certificates (no dealer filter)
           const query = `
               SELECT c.id, c."deviceId", c.imei, c.serial, c.vehicle, c.client, 
                      c."installationPoint", c."installerName", 
@@ -595,32 +697,16 @@ app.get('/api/certificates/simple', async (req, res) => {
                      c."vcrAgreement", c."vcrCallingAgreement", c.version, 
                      c.active, c."createdAt", c."updatedAt", c."dealerId",
                      
-                     -- Smart Odometer Logic: OBD first, GPS fallback (converted from meters to kilometers)
-                     CASE 
-                         WHEN d."realOdometer" IS NOT NULL AND d."realOdometer" > 0 
-                         THEN ROUND(d."realOdometer"::numeric / 1000, 0)
-                         ELSE ROUND(p.odometer::numeric / 1000, 0)
-                     END AS odometer
+                     -- Odometer from vehicle table (converted from meters to kilometers)
+                     ROUND(v.odometer::numeric / 1000, 0) AS odometer
                      
               FROM certificate c
               
-                            -- JOIN with device table for real OBD odometer
-               LEFT JOIN device d ON c."deviceId" = d.id
-               
-               -- JOIN with position table for GPS-calculated odometer (fallback)
-               -- CRITICAL: Using deviceId instead of IMEI to prevent data contamination
-               -- This ensures we only get position data from the current active device,
-               -- not from previously inactive devices that might have shared the same IMEI
-               LEFT JOIN (
-                   SELECT DISTINCT ON ("deviceId") 
-                          "deviceId", 
-                          odometer
-                   FROM position 
-                   WHERE "deviceId" IS NOT NULL
-                   ORDER BY "deviceId", id DESC
-               ) p ON c."deviceId" = p."deviceId"
-               
-               ORDER BY c.id DESC
+              -- JOIN with device and vehicle tables
+              INNER JOIN device d ON c."deviceId" = d.id
+              INNER JOIN vehicle v ON d."vehicleId" = v.id
+              
+              ORDER BY c.id DESC
           `;
         
         const result = await pool.query(query);

@@ -413,9 +413,7 @@
                                 <div>
                                     <span class="font-bold text-gray-900 dark:text-white" data-i18n="vehicle.odometer">Odometer</span><span class="font-bold text-gray-900 dark:text-white">: </span><span id="vehicleOdometer" class="text-gray-600 dark:text-gray-300">- km</span>
                                 </div>
-                                <div>
-                                    <span class="font-bold text-gray-900 dark:text-white" data-i18n="vehicle.color">Color</span><span class="font-bold text-gray-900 dark:text-white">: </span><span id="vehicleColor" class="text-gray-600 dark:text-gray-300">-</span>
-                                </div>
+
                             </div>
                         </div>
                         
@@ -1492,8 +1490,7 @@
             // Technical details
             document.getElementById('vehicleFuelType').textContent = vehicleData.fuelType || '-';
             document.getElementById('vehicleOdometer').textContent = 
-                certificateData.odometer ? `${certificateData.odometer} km` : '- km';
-            document.getElementById('vehicleColor').textContent = vehicleData.color || '-';
+                vehicleData.odometer ? `${vehicleData.odometer} km` : '- km';
 
             // Device information
             document.getElementById('deviceId').textContent = certificateData.deviceId || '-';
@@ -1516,7 +1513,7 @@
         async function loadCertificateData(certificateId) {
             try {
                 console.log('🔄 Making API call to load certificate:', certificateId);
-                const response = await secureApiCall(`/api/certificates/${certificateId}`);
+                const response = await secureApiCall(`/api/certificates/certificate/${certificateId}`);
                 
                 if (response && response.ok) {
                     const data = await response.json();
