@@ -146,10 +146,31 @@ class DatabaseManager {
             return { success: false, error: 'dealer_not_found' };
         }
         
-        // Generate PIN based on dealer ID (deterministic but secure)
-        const generatedPin = this.generateDealerPin(dealer.id);
+        // Get stored PIN from database
+        const storedPinData = await this.getStoredPin(dealer.id);
         
-        if (pin === generatedPin) {
+        if (!storedPinData) {
+            return { success: false, error: 'pin_not_found' };
+        }
+        
+        // Check if PIN has expired
+        const now = new Date();
+        const expiresAt = new Date(storedPinData.expires_at);
+        
+        if (now > expiresAt) {
+            return { success: false, error: 'pin_expired' };
+        }
+        
+        // Check if too many attempts
+        if (storedPinData.attempts >= 3) {
+            return { success: false, error: 'too_many_attempts' };
+        }
+        
+        // Increment attempts
+        await this.incrementPinAttempts(dealer.id);
+        
+        // Validate PIN
+        if (pin === storedPinData.pin) {
             return {
                 success: true,
                 dealer: {
@@ -165,13 +186,70 @@ class DatabaseManager {
         return { success: false, error: 'invalid_pin' };
     }
     
-    // Generate dealer PIN based on dealer ID
-    static generateDealerPin(dealerId) {
-        // Simple algorithm to generate a 6-digit PIN based on dealer ID
-        // This ensures each dealer has a unique PIN
-        const seed = dealerId * 12345 + 67890;
-        const pin = (seed % 900000) + 100000; // Ensures 6-digit PIN
-        return pin.toString();
+    // Generate secure random PIN
+    static generateSecurePin() {
+        // Generate a cryptographically secure random 6-digit PIN
+        const min = 100000;
+        const max = 999999;
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    // Store PIN in database with expiration
+    static async storePin(dealerId, pin) {
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes from now
+        
+        const query = `
+            INSERT INTO dealer_pins (dealer_id, pin, expires_at, created_at)
+            VALUES ($1, $2, $3, NOW())
+            ON CONFLICT (dealer_id) 
+            DO UPDATE SET 
+                pin = $2, 
+                expires_at = $3, 
+                created_at = NOW(),
+                attempts = 0
+        `;
+        
+        try {
+            await this.executeQuery(query, [dealerId, pin, expiresAt]);
+            return true;
+        } catch (error) {
+            console.error('Error storing PIN:', error);
+            return false;
+        }
+    }
+
+    // Get and validate PIN from database
+    static async getStoredPin(dealerId) {
+        const query = `
+            SELECT pin, expires_at, attempts
+            FROM dealer_pins 
+            WHERE dealer_id = $1
+        `;
+        
+        try {
+            const results = await this.executeQuery(query, [dealerId]);
+            return results.length > 0 ? results[0] : null;
+        } catch (error) {
+            console.error('Error getting stored PIN:', error);
+            return null;
+        }
+    }
+
+    // Increment PIN attempts
+    static async incrementPinAttempts(dealerId) {
+        const query = `
+            UPDATE dealer_pins 
+            SET attempts = attempts + 1
+            WHERE dealer_id = $1
+        `;
+        
+        try {
+            await this.executeQuery(query, [dealerId]);
+            return true;
+        } catch (error) {
+            console.error('Error incrementing PIN attempts:', error);
+            return false;
+        }
     }
 }
 
@@ -198,8 +276,20 @@ app.post('/api/auth/request-pin', async (req, res) => {
         
         console.log(` Dealer found: ${dealer.companyName}`);
         
-        // Generate real PIN based on dealer ID
-        const realPin = DatabaseManager.generateDealerPin(dealer.id);
+        // Generate secure random PIN
+        const realPin = DatabaseManager.generateSecurePin();
+        
+        // Store PIN in database with expiration
+        const pinStored = await DatabaseManager.storePin(dealer.id, realPin);
+        
+        if (!pinStored) {
+            console.error('Failed to store PIN for dealer:', dealer.id);
+            return res.status(500).json({
+                success: false,
+                error: 'pin_storage_error',
+                message: 'Failed to generate PIN. Please try again.'
+            });
+        }
         
         // Try to send email with PIN
         let emailSent = false;

@@ -143,6 +143,10 @@ class AuthManager {
                         errorMessage = 'PIN has expired. Please request a new one.';
                         this.currentStep = 'email';
                         break;
+                    case 'pin_not_found':
+                        errorMessage = 'No PIN found. Please request a new PIN.';
+                        this.currentStep = 'email';
+                        break;
                     case 'invalid_pin':
                         const attemptsLeft = this.maxRetries - this.retryCount;
                         errorMessage = attemptsLeft > 0 
