@@ -86,6 +86,8 @@ class I18nManager {
                 'settings.system.connected': '✅ Connesso',
                 
                 // Certificate Page
+                'certificates.search.title': 'Ricerca e Filtri',
+                'certificates.search.description': 'Trova certificati usando diversi criteri',
                 'certificates.search.type': 'Cerca per:',
                 'certificates.search.select_type': 'Seleziona tipo di ricerca',
                 'certificates.search.global': 'Ricerca globale',
@@ -101,10 +103,12 @@ class I18nManager {
                 'certificates.search.clear': 'Cancella',
                 'certificates.filters.status': 'Stato:',
                 'certificates.filters.select': 'Seleziona',
+                'certificates.view.label': 'Visualizza:',
                 'certificates.view.cards': 'Schede',
                 'certificates.view.table': 'Tabella',
                 'certificates.action.refresh': 'Aggiorna',
                 'certificates.action.customize': 'Personalizza',
+                'certificates.active.title': 'Certificati Attivi',
                 'certificates.count': 'Totale: {count} certificati',
                 'certificates.loading': 'Caricamento certificati...',
                 'certificates.error': 'Errore nel caricamento certificati',
@@ -415,6 +419,8 @@ class I18nManager {
                 'settings.system.connected': '✅ Connected',
                 
                 // Certificate Page
+                'certificates.search.title': 'Search and Filters',
+                'certificates.search.description': 'Find certificates using different criteria',
                 'certificates.search.type': 'Search by:',
                 'certificates.search.select_type': 'Select search type',
                 'certificates.search.global': 'Global search',
@@ -430,10 +436,12 @@ class I18nManager {
                 'certificates.search.clear': 'Clear',
                 'certificates.filters.status': 'Status:',
                 'certificates.filters.select': 'Select',
+                'certificates.view.label': 'View:',
                 'certificates.view.cards': 'Cards',
                 'certificates.view.table': 'Table',
                 'certificates.action.refresh': 'Refresh',
                 'certificates.action.customize': 'Customize',
+                'certificates.active.title': 'Active Certificates',
                 'certificates.count': 'Total: {count} certificates',
                 'certificates.loading': 'Loading certificates...',
                 'certificates.error': 'Error loading certificates',
