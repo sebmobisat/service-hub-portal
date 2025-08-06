@@ -29,7 +29,9 @@ class I18nManager {
      * Get language from localStorage or default to 'en'
      */
     getStoredLanguage() {
-        return localStorage.getItem(this.storageKey) || 'en';
+        const stored = localStorage.getItem(this.storageKey);
+        console.log('Stored language:', stored);
+        return stored || 'en';
     }
 
     /**
@@ -732,6 +734,7 @@ class I18nManager {
             return;
         }
 
+        console.log('Changing language to:', lang);
         this.currentLanguage = lang;
         this.saveLanguage(lang);
         document.documentElement.lang = lang;
@@ -875,12 +878,14 @@ class I18nManager {
             langEN.className = 'w-10 h-10 rounded-full text-sm font-medium hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center';
             langIT.className = 'w-10 h-10 rounded-full text-sm font-medium hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center';
             
-            // Set active button
+            // Set active button based on current language
             if (this.currentLanguage === 'en') {
-                langEN.className += ' bg-primary text-white';
-            } else {
-                langIT.className += ' bg-primary text-white';
+                langEN.className = 'w-10 h-10 rounded-full text-sm font-medium bg-primary text-white transition-all duration-300 flex items-center justify-center';
+            } else if (this.currentLanguage === 'it') {
+                langIT.className = 'w-10 h-10 rounded-full text-sm font-medium bg-primary text-white transition-all duration-300 flex items-center justify-center';
             }
+            
+            console.log('Language buttons updated. Current language:', this.currentLanguage);
         }
     }
     
