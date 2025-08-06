@@ -204,11 +204,12 @@ app.post('/api/auth/request-pin', async (req, res) => {
         // Try to send email with PIN
         let emailSent = false;
         let emailError = null;
+        let language = 'it'; // Default to Italian
         
         try {
             // Determine language from request headers or default to Italian
             const acceptLanguage = req.headers['accept-language'] || '';
-            const language = acceptLanguage.includes('en') ? 'en' : 'it';
+            language = acceptLanguage.includes('en') ? 'en' : 'it';
             
             emailSent = await emailService.sendPinEmail(
                 dealer.companyLoginEmail,
