@@ -18,6 +18,9 @@ class SupabasePinManager {
     static async storePin(dealerId, pin) {
         const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes from now
         
+        console.log(`🔐 Attempting to store PIN for dealer ${dealerId} in Supabase...`);
+        console.log(`📅 Expires at: ${expiresAt.toISOString()}`);
+        
         try {
             const { data, error } = await supabaseAdmin
                 .from('dealer_pins')
@@ -31,14 +34,26 @@ class SupabasePinManager {
                 });
             
             if (error) {
-                console.error('Error storing PIN in Supabase:', error);
+                console.error('❌ Error storing PIN in Supabase:', error);
+                console.error('Error details:', {
+                    code: error.code,
+                    message: error.message,
+                    details: error.details,
+                    hint: error.hint
+                });
                 return false;
             }
             
-            console.log(`PIN stored in Supabase for dealer ${dealerId}`);
+            console.log(`✅ PIN stored successfully in Supabase for dealer ${dealerId}`);
+            console.log(`📊 Supabase response data:`, data);
             return true;
         } catch (error) {
-            console.error('Error storing PIN in Supabase:', error);
+            console.error('❌ Exception storing PIN in Supabase:', error);
+            console.error('Exception details:', {
+                name: error.name,
+                message: error.message,
+                stack: error.stack
+            });
             return false;
         }
     }

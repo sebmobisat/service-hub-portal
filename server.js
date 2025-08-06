@@ -269,16 +269,26 @@ app.post('/api/auth/request-pin', async (req, res) => {
         // Generate secure random PIN
         const realPin = DatabaseManager.generateSecurePin();
         
-        // Store PIN in database with expiration
+        // Store PIN in Supabase with expiration
+        console.log(`🔄 Storing PIN ${realPin} for dealer ${dealer.id} in Supabase...`);
         const pinStored = await DatabaseManager.storePin(dealer.id, realPin);
         
         if (!pinStored) {
-            console.error('Failed to store PIN for dealer:', dealer.id);
-            return res.status(500).json({
-                success: false,
-                error: 'pin_storage_error',
-                message: 'Failed to generate PIN. Please try again.'
-            });
+            console.error('❌ Failed to store PIN for dealer:', dealer.id);
+            console.error('🔍 This could be due to:');
+            console.error('   - Supabase connection issues');
+            console.error('   - Missing dealer_pins table');
+            console.error('   - Permission issues');
+            console.error('   - Network connectivity problems');
+            
+            // Fallback: Show PIN on screen instead of failing completely
+            console.log('🔄 Using fallback mode: PIN will be shown on screen');
+            console.log(`⚠️  WARNING: PIN ${realPin} for dealer ${dealer.id} not stored in database!`);
+            
+            // Continue with the request but show PIN on screen
+            // This ensures the system doesn't completely break
+        } else {
+            console.log(`✅ PIN ${realPin} stored successfully for dealer ${dealer.id}`);
         }
         
         // Try to send email with PIN
@@ -302,22 +312,24 @@ app.post('/api/auth/request-pin', async (req, res) => {
             emailError = error.message;
         }
         
-        res.json({
-            success: true,
-            message: emailSent 
-                ? (language === 'it' ? 'PIN inviato via email' : 'PIN sent via email')
-                : 'PIN generated successfully',
-            dealer: {
-                id: dealer.id,
-                email: dealer.companyLoginEmail,
-                companyName: dealer.companyName,
-                name: dealer.companyMobisatTechRefName || 'Dealer Representative',
-                brand: dealer.brand
-            },
-            pin: emailSent ? null : realPin, // Only show PIN if email failed
-            emailSent: emailSent,
-            emailError: emailError
-        });
+                        res.json({
+                    success: true,
+                    message: emailSent 
+                        ? (language === 'it' ? 'PIN inviato via email' : 'PIN sent via email')
+                        : 'PIN generated successfully',
+                    dealer: {
+                        id: dealer.id,
+                        email: dealer.companyLoginEmail,
+                        companyName: dealer.companyName,
+                        name: dealer.companyMobisatTechRefName || 'Dealer Representative',
+                        brand: dealer.brand
+                    },
+                    pin: (emailSent && pinStored) ? null : realPin, // Show PIN if email failed OR storage failed
+                    emailSent: emailSent,
+                    emailError: emailError,
+                    pinStored: pinStored, // Add this for debugging
+                    fallbackMode: !pinStored // Indicate if we're in fallback mode
+                });
         
     } catch (error) {
         console.error('Request PIN error:', error);
