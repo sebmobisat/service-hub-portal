@@ -7,6 +7,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <!-- Authentication Configuration -->
+    <script src="/js/auth-config.js"></script>
+    <!-- Custom Dialog -->
+    <script src="/js/custom-dialog.js"></script>
 </head>
 <body class="min-h-screen theme-transition">
     <!-- Sidebar -->
@@ -246,15 +251,34 @@
         }
 
         // Logout function
-        function logout() {
-            if (confirm(t('message.logout_confirm'))) {
-                localStorage.clear();
-                window.location.href = '/pages/login.html';
+        async function logout() {
+            const confirmed = await window.customDialog.confirm(
+                'Conferma Logout',
+                t('message.logout_confirm'),
+                'Esci',
+                'Annulla'
+            );
+            
+            if (confirmed) {
+                // Use auth manager if available, otherwise clear localStorage
+                if (window.authManager) {
+                    window.authManager.clearAuthData();
+                    window.authManager.redirectToLogout();
+                } else {
+                    localStorage.clear();
+                    window.location.href = '/pages/login.html';
+                }
             }
         }
 
         // Initialize page when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication first
+            if (window.authManager && !window.authManager.isAuthenticated()) {
+                window.authManager.redirectToLogin();
+                return;
+            }
+            
             // Load dealer info
             loadDealerInfo();
         });

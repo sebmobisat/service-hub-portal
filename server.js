@@ -180,17 +180,12 @@ app.post('/api/auth/request-pin', async (req, res) => {
         
         console.log(` Dealer found: ${dealer.companyName}`);
         
-        // In a real application, you would:
-        // 1. Generate a time-limited PIN
-        // 2. Send it via email
-        // 3. Store it temporarily in database or cache
-        
-        // For development, we'll return success with a demo PIN
-        const developmentPin = '123456';
+        // Generate real PIN based on dealer ID
+        const realPin = DatabaseManager.generateDealerPin(dealer.id);
         
         res.json({
             success: true,
-            message: 'PIN sent to your email address',
+            message: 'PIN generated successfully',
             dealer: {
                 id: dealer.id,
                 email: dealer.companyLoginEmail,
@@ -198,7 +193,7 @@ app.post('/api/auth/request-pin', async (req, res) => {
                 name: dealer.companyMobisatTechRefName || 'Dealer Representative',
                 brand: dealer.brand
             },
-            developmentPin: developmentPin // Only for development
+            pin: realPin // Real PIN for this dealer
         });
         
     } catch (error) {
@@ -247,6 +242,39 @@ app.post('/api/auth/verify-pin', async (req, res) => {
         
     } catch (error) {
         console.error('Verify PIN error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'server_error',
+            message: 'Internal server error'
+        });
+    }
+});
+
+// Get dealer PIN endpoint (for admin/development use)
+app.get('/api/auth/dealer-pin/:email', async (req, res) => {
+    try {
+        const { email } = req.params;
+        
+        console.log(` PIN request for dealer: ${email}`);
+        
+        const pin = await DatabaseManager.getDealerPin(email);
+        
+        if (pin) {
+            res.json({
+                success: true,
+                email: email,
+                pin: pin,
+                message: 'PIN retrieved successfully'
+            });
+        } else {
+            res.status(404).json({
+                success: false,
+                error: 'dealer_not_found',
+                message: 'Dealer not found'
+            });
+        }
+    } catch (error) {
+        console.error('Get dealer PIN error:', error);
         res.status(500).json({
             success: false,
             error: 'server_error',

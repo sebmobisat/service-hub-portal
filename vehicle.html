@@ -19,6 +19,11 @@
         }
     </script>
     
+    <!-- Authentication Configuration -->
+    <script src="/js/auth-config.js"></script>
+    <!-- Custom Dialog -->
+    <script src="/js/custom-dialog.js"></script>
+    
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     
@@ -1309,24 +1314,31 @@
 
         // 🛡️ SECURITY FUNCTIONS - Added for authentication
         function checkAuthenticationStatus() {
+            if (window.authManager) {
+                return window.authManager.requireAuth();
+            }
+            
+            // Fallback for older browsers
             const token = localStorage.getItem('servicehub-auth-token') || sessionStorage.getItem('servicehub-auth-token');
             const user = localStorage.getItem('servicehub-user') || sessionStorage.getItem('servicehub-user');
             
             if (!token || !user) {
-                // Only show security warnings in production or when explicitly enabled
-                if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-                    console.warn('⚠️ SECURITY WARNING: User not authenticated - data access should be restricted');
-                    console.warn('⚠️ Token:', !!token, 'User:', !!user);
-                }
+                // Redirect to login immediately if not authenticated
+                console.warn('🚫 Access denied: User not authenticated');
+                window.location.href = '/pages/login.html';
                 return false;
             }
             
-
             return true;
         }
         
         // 🔐 Secure API call with fallback for backward compatibility
         async function secureApiCall(url, options = {}) {
+            if (window.authManager) {
+                return window.authManager.secureApiCall(url, options);
+            }
+            
+            // Fallback for older browsers
             const token = localStorage.getItem('servicehub-auth-token') || sessionStorage.getItem('servicehub-auth-token');
             
             // Default headers
@@ -1379,21 +1391,25 @@
             const certificateIdParam = params.get('certificateId');
             
             if (vehicleDataParam) {
-                // Parse the complex data
-                const vehicleData = JSON.parse(decodeURIComponent(vehicleDataParam));
-                const certificateId = vehicleData.id;
-                
-                if (certificateId) {
-                    // 🧹 AUTO-CLEAN URL: Replace complex URL with simple one
-                    // Store vehicleData in sessionStorage before cleaning URL
-                    sessionStorage.setItem('vehiclePageData', JSON.stringify(vehicleData));
-                    const cleanUrl = `${window.location.pathname}?certificateId=${certificateId}`;
-                    window.history.replaceState({}, document.title, cleanUrl);
+                try {
+                    // Parse the complex data
+                    const vehicleData = JSON.parse(decodeURIComponent(vehicleDataParam));
+                    const certificateId = vehicleData.id;
                     
-                    return {
-                        certificateId: certificateId.toString(),
-                        vehicleData: vehicleData
-                    };
+                    if (certificateId) {
+                        // 🧹 AUTO-CLEAN URL: Replace complex URL with simple one
+                        // Store vehicleData in sessionStorage before cleaning URL
+                        sessionStorage.setItem('vehiclePageData', JSON.stringify(vehicleData));
+                        const cleanUrl = `${window.location.pathname}?certificateId=${certificateId}`;
+                        window.history.replaceState({}, document.title, cleanUrl);
+                        
+                        return {
+                            certificateId: certificateId.toString(),
+                            vehicleData: vehicleData
+                        };
+                    }
+                } catch (error) {
+                    console.error('Error parsing vehicleData parameter:', error);
                 }
             }
             
@@ -1434,9 +1450,8 @@
                     window.certificateData = certificateData;
                     displayVehicleData();
                 } else if (params.certificateId) {
-                    // For now, redirect back to dashboard if only certificate ID is provided
-    
-                    showError('Please access this page from the certificates list');
+                    // Load certificate data from API
+                    await loadCertificateData(params.certificateId);
                 } else {
                     console.error('No vehicle data or certificate ID provided');
                     showError('No vehicle data available');
@@ -1491,6 +1506,30 @@
             // Note: Analytics, Client and Throttle data will be loaded when user clicks on their respective tabs
         }
 
+        // Load certificate data from API
+        async function loadCertificateData(certificateId) {
+            try {
+                const response = await secureApiCall(`/api/certificates/${certificateId}`);
+                if (response && response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.certificate) {
+                        certificateData = data.certificate;
+                        vehicleData = data.certificate.vehicle;
+                        // Make certificateData globally accessible for tabs
+                        window.certificateData = certificateData;
+                        displayVehicleData();
+                    } else {
+                        showError('Certificate not found');
+                    }
+                } else {
+                    showError('Failed to load certificate data');
+                }
+            } catch (error) {
+                console.error('Error loading certificate data:', error);
+                showError('Failed to load certificate data');
+            }
+        }
+
         // Load vehicle image
         async function loadVehicleImage() {
             if (!vehicleData || typeof window.vehicleImageService === 'undefined') return;
@@ -1508,13 +1547,41 @@
 
         // Show error message
         function showError(message) {
-            document.getElementById('vehicleTitle').textContent = 'Error';
-            document.getElementById('vehicleSubtitle').textContent = message;
+            console.error('Error:', message);
+            
+            // Create error display
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4';
+            errorDiv.innerHTML = `
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <strong>Errore:</strong> ${message}
+                </div>
+            `;
+            
+            // Insert at the top of the container
+            const container = document.querySelector('.container');
+            if (container) {
+                container.insertBefore(errorDiv, container.firstChild);
+            }
+            
+            // Also update title and subtitle
+            const titleElement = document.getElementById('vehicleTitle');
+            const subtitleElement = document.getElementById('vehicleSubtitle');
+            if (titleElement) titleElement.textContent = 'Errore';
+            if (subtitleElement) subtitleElement.textContent = message;
         }
 
         // Logout function
-        function logout() {
-            if (confirm(window.i18n.t('message.logout_confirm'))) {
+        async function logout() {
+            const confirmed = await window.customDialog.confirm(
+                'Conferma Logout',
+                window.i18n.t('message.logout_confirm'),
+                'Esci',
+                'Annulla'
+            );
+            
+            if (confirmed) {
                 localStorage.removeItem('authData');
                 window.location.href = '/login.html';
             }
@@ -5129,6 +5196,12 @@ _La prevenzione è sempre più conveniente!_ 💪`;
             sessionStorage.removeItem('vehiclePageData');
         });
         document.addEventListener('DOMContentLoaded', async function() {
+            // STEP 0: 🛡️ SECURITY CHECK - MUST BE FIRST
+            const isAuthenticated = checkAuthenticationStatus();
+            if (!isAuthenticated) {
+                return; // Stop execution if not authenticated
+            }
+            
             // STEP 1: Initialize theme and translations with error handling
             try {
                 if (window.themeManager) {
@@ -5144,17 +5217,6 @@ _La prevenzione è sempre più conveniente!_ 💪`;
                 }
             } catch (error) {
                 console.error('❌ Error initializing I18N system:', error);
-            }
-            
-            // STEP 1.5: 🛡️ SECURITY CHECK (non-blocking for now)
-            const isAuthenticated = checkAuthenticationStatus();
-            if (!isAuthenticated) {
-                // Only show security alerts in production
-                if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-                    console.warn('🚨 SECURITY ALERT: Page loaded without proper authentication!');
-                    console.warn('🚨 This should be restricted in production environment');
-                }
-                // For now, continue loading but log security warnings
             }
             
             // STEP 2: Update header logo

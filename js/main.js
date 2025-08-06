@@ -350,6 +350,12 @@ function initializeAuthentication() {
     if (currentUser) {
         updateUserDisplay();
     }
+    
+    // Set up logout button event listener
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
 }
 
 // Check if current page is login page
@@ -365,10 +371,20 @@ function redirectToLogin() {
 }
 
 // Handle logout
-function handleLogout() {
-    if (confirm(currentLanguage === 'en' ? 'Are you sure you want to logout?' : 'Sei sicuro di voler uscire?')) {
+async function handleLogout() {
+    const title = currentLanguage === 'en' ? 'Confirm Logout' : 'Conferma Logout';
+    const message = currentLanguage === 'en' ? 'Are you sure you want to logout?' : 'Sei sicuro di voler uscire?';
+    const confirmText = currentLanguage === 'en' ? 'Logout' : 'Esci';
+    const cancelText = currentLanguage === 'en' ? 'Cancel' : 'Annulla';
+    
+    const confirmed = await window.customDialog.confirm(title, message, confirmText, cancelText);
+    
+    if (confirmed) {
+        // Clear all authentication data
         localStorage.removeItem('servicehub-user');
         localStorage.removeItem('servicehub-auth-token');
+        sessionStorage.removeItem('servicehub-auth-token');
+        localStorage.removeItem('servicehub-remember');
         currentUser = null;
         
         // Redirect to login

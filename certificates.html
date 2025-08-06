@@ -11,6 +11,11 @@
     <script src="/js/vehicleImageService.js"></script>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     
+    <!-- Authentication Configuration -->
+    <script src="/js/auth-config.js"></script>
+    <!-- Custom Dialog -->
+    <script src="/js/custom-dialog.js"></script>
+    
     <style>
         /* Certificate Cards Theme Support */
         .certificate-card {
@@ -2768,12 +2773,19 @@
         }
 
         // Logout function
-        function logout() {
-             if (confirm(t('message.logout_confirm'))) {
-                 localStorage.clear();
-                 window.location.href = '/pages/login.html';
-             }
-         }
+        async function logout() {
+            const confirmed = await window.customDialog.confirm(
+                'Conferma Logout',
+                t('message.logout_confirm'),
+                'Esci',
+                'Annulla'
+            );
+            
+            if (confirmed) {
+                localStorage.clear();
+                window.location.href = '/pages/login.html';
+            }
+        }
 
                  // Initialize table headers with translations
          function initializeTableHeaders() {

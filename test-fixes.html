@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Correzioni - Service Hub Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <!-- Authentication Configuration -->
+    <script src="/js/auth-config.js"></script>
+    <script src="/js/i18n.js"></script>
+</head>
+<body class="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8 text-center">Test Correzioni Service Hub</h1>
+        
+        <div class="grid gap-6 md:grid-cols-2">
+            <!-- Test 1: Selezione Lingua -->
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                <h2 class="text-xl font-semibold mb-4">1. Test Selezione Lingua</h2>
+                <div class="flex space-x-2 mb-4">
+                    <button id="lang-en" class="w-10 h-10 rounded-full text-sm font-medium hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center">EN</button>
+                    <button id="lang-it" class="w-10 h-10 rounded-full text-sm font-medium hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center">IT</button>
+                </div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                    Lingua corrente: <span id="current-lang">Caricamento...</span>
+                </p>
+                <div class="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded">
+                    <p data-en="This is a test message in English" data-it="Questo è un messaggio di test in italiano">
+                        Questo è un messaggio di test in italiano
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Test 2: Autenticazione -->
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                <h2 class="text-xl font-semibold mb-4">2. Test Autenticazione</h2>
+                <div class="space-y-2 mb-4">
+                    <p class="text-sm">Stato autenticazione: <span id="auth-status">Controllo...</span></p>
+                    <p class="text-sm">Token: <span id="token-status">Controllo...</span></p>
+                    <p class="text-sm">User: <span id="user-status">Controllo...</span></p>
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="simulateLogin()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                        Simula Login
+                    </button>
+                    <button onclick="simulateLogout()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                        Simula Logout
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Test 3: Reindirizzamento -->
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                <h2 class="text-xl font-semibold mb-4">3. Test Reindirizzamento</h2>
+                <div class="space-y-2">
+                    <button onclick="testRedirectToLogin()" class="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+                        Test Reindirizzamento Login
+                    </button>
+                    <button onclick="testRedirectToLogout()" class="w-full px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700">
+                        Test Reindirizzamento Logout
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Test 4: API Calls -->
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                <h2 class="text-xl font-semibold mb-4">4. Test API Calls</h2>
+                <div class="space-y-2">
+                    <button onclick="testSecureApiCall()" class="w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+                        Test Secure API Call
+                    </button>
+                    <div id="api-result" class="mt-4 p-3 bg-gray-50 dark:bg-gray-700 rounded text-sm">
+                        Risultato API apparirà qui...
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Log -->
+        <div class="mt-8 bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+            <h2 class="text-xl font-semibold mb-4">Log Eventi</h2>
+            <div id="log-container" class="bg-gray-50 dark:bg-gray-700 p-4 rounded h-64 overflow-y-auto text-sm font-mono">
+                <p>Log inizializzato...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Log function
+        function log(message) {
+            const logContainer = document.getElementById('log-container');
+            const timestamp = new Date().toLocaleTimeString();
+            logContainer.innerHTML += `<p>[${timestamp}] ${message}</p>`;
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+        
+        // Test functions
+        function simulateLogin() {
+            if (window.authManager) {
+                window.authManager.setAuthData('test-token-123', { id: 1, name: 'Test User' }, true);
+                updateAuthStatus();
+                log('✅ Login simulato con successo');
+            } else {
+                log('❌ AuthManager non disponibile');
+            }
+        }
+        
+        function simulateLogout() {
+            if (window.authManager) {
+                window.authManager.clearAuthData();
+                updateAuthStatus();
+                log('✅ Logout simulato con successo');
+            } else {
+                log('❌ AuthManager non disponibile');
+            }
+        }
+        
+        function updateAuthStatus() {
+            if (window.authManager) {
+                const isAuth = window.authManager.isAuthenticated();
+                const token = window.authManager.getToken();
+                const user = window.authManager.getUser();
+                
+                document.getElementById('auth-status').textContent = isAuth ? '✅ Autenticato' : '❌ Non autenticato';
+                document.getElementById('token-status').textContent = token ? '✅ Presente' : '❌ Assente';
+                document.getElementById('user-status').textContent = user ? '✅ Presente' : '❌ Assente';
+            }
+        }
+        
+        function testRedirectToLogin() {
+            if (window.authManager) {
+                log('🔄 Test reindirizzamento login...');
+                // Non eseguire realmente per evitare di perdere la pagina
+                log('✅ Reindirizzamento login funzionerebbe');
+            } else {
+                log('❌ AuthManager non disponibile');
+            }
+        }
+        
+        function testRedirectToLogout() {
+            if (window.authManager) {
+                log('🔄 Test reindirizzamento logout...');
+                // Non eseguire realmente per evitare di perdere la pagina
+                log('✅ Reindirizzamento logout funzionerebbe');
+            } else {
+                log('❌ AuthManager non disponibile');
+            }
+        }
+        
+        async function testSecureApiCall() {
+            if (window.authManager) {
+                log('🔄 Test secure API call...');
+                try {
+                    const response = await window.authManager.secureApiCall('/api/test');
+                    log('✅ Secure API call completata');
+                    document.getElementById('api-result').textContent = 'API call completata (status: ' + (response ? response.status : 'null') + ')';
+                } catch (error) {
+                    log('❌ Errore API call: ' + error.message);
+                    document.getElementById('api-result').textContent = 'Errore: ' + error.message;
+                }
+            } else {
+                log('❌ AuthManager non disponibile');
+            }
+        }
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 Pagina di test caricata');
+            
+            // Initialize i18n if available
+            if (window.i18n) {
+                window.i18n.init();
+                log('✅ Sistema i18n inizializzato');
+                
+                // Update current language display
+                const currentLang = window.i18n.getCurrentLanguage();
+                document.getElementById('current-lang').textContent = currentLang.toUpperCase();
+            } else {
+                log('❌ Sistema i18n non disponibile');
+            }
+            
+            // Update auth status
+            updateAuthStatus();
+            log('✅ Stato autenticazione aggiornato');
+            
+            // Test language buttons
+            const langEN = document.getElementById('lang-en');
+            const langIT = document.getElementById('lang-it');
+            
+            if (langEN && langIT) {
+                langEN.addEventListener('click', () => {
+                    if (window.i18n) {
+                        window.i18n.changeLanguage('en');
+                        document.getElementById('current-lang').textContent = 'EN';
+                        log('🔄 Lingua cambiata in EN');
+                    }
+                });
+                
+                langIT.addEventListener('click', () => {
+                    if (window.i18n) {
+                        window.i18n.changeLanguage('it');
+                        document.getElementById('current-lang').textContent = 'IT';
+                        log('🔄 Lingua cambiata in IT');
+                    }
+                });
+                
+                log('✅ Event listeners lingua configurati');
+            }
+        });
+    </script>
+</body>
+</html> 

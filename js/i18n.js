@@ -732,6 +732,8 @@ class I18nManager {
             return;
         }
 
+        this.currentLanguage = lang;
+        this.saveLanguage(lang);
         document.documentElement.lang = lang;
         
         // Update page title and meta tags
@@ -865,16 +867,19 @@ class I18nManager {
      * Update language buttons state
      */
     updateLanguageButtons() {
-        const langIT = document.getElementById('langIT');
-        const langEN = document.getElementById('langEN');
+        const langIT = document.getElementById('lang-it');
+        const langEN = document.getElementById('lang-en');
         
         if (langIT && langEN) {
+            // Reset both buttons to default state
+            langEN.className = 'w-10 h-10 rounded-full text-sm font-medium hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center';
+            langIT.className = 'w-10 h-10 rounded-full text-sm font-medium hover:bg-primary hover:text-white transition-all duration-300 flex items-center justify-center';
+            
+            // Set active button
             if (this.currentLanguage === 'en') {
-                langEN.className = 'px-4 py-2 rounded-lg bg-green-600 text-white transition-colors hover:bg-green-700';
-                langIT.className = 'px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700 transition-colors';
+                langEN.className += ' bg-primary text-white';
             } else {
-                langEN.className = 'px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700 transition-colors';
-                langIT.className = 'px-4 py-2 rounded-lg bg-green-600 text-white transition-colors hover:bg-green-700';
+                langIT.className += ' bg-primary text-white';
             }
         }
     }
@@ -929,11 +934,29 @@ class I18nManager {
                 this.updatePageMeta();
                 this.updateAllTranslations();
                 this.updateLanguageButtons();
+                this.setupLanguageButtons();
             });
         } else {
             this.updatePageMeta();
             this.updateAllTranslations();
             this.updateLanguageButtons();
+            this.setupLanguageButtons();
+        }
+    }
+
+    /**
+     * Setup language button event listeners
+     */
+    setupLanguageButtons() {
+        const langIT = document.getElementById('lang-it');
+        const langEN = document.getElementById('lang-en');
+        
+        if (langIT) {
+            langIT.addEventListener('click', () => this.changeLanguage('it'));
+        }
+        
+        if (langEN) {
+            langEN.addEventListener('click', () => this.changeLanguage('en'));
         }
     }
 
