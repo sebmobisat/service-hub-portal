@@ -48,6 +48,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('./')); // Serve static files from current directory
 
+// Normalize legacy/mistyped login routes
+app.get(['/@login.html', '/login.html', '/@login', '/login'], (req, res) => {
+    return res.redirect('/pages/login.html');
+});
+
 // Health check endpoint for Railway (simple, no database dependency)
 app.get('/health', (req, res) => {
     res.status(200).json({ 
