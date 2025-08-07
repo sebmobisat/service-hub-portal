@@ -67,13 +67,8 @@
   - Chiusura tramite ESC o click esterno
   - Testi personalizzabili per titolo, messaggio e pulsanti
 
-### 🧪 Pagina di Test
-- **File**: `test-custom-dialog.html` (nuovo)
-- **Funzionalità**:
-  - Test del componente dialog personalizzato
-  - Verifica del supporto per temi
-  - Dimostrazione delle diverse configurazioni
-  - Log dei risultati dei test
+### 🧪 Pagina di Test (rimossa)
+- La precedente pagina di test del dialog (`test-custom-dialog.html`) è stata rimossa in quanto non necessaria in produzione.
 
 ## Come Testare le Correzioni
 
@@ -101,20 +96,12 @@
 3. Verifica che i dati si ricarichino correttamente
 
 ### 5. Test Dialog Personalizzato
-1. Vai alla pagina `/test-custom-dialog.html`
-2. Testa i diversi pulsanti per verificare il funzionamento del dialog
-3. Prova a cambiare tema per verificare l'adattamento del dialog
-4. Testa la chiusura tramite ESC e click esterno
+Le verifiche del dialog avvengono ora direttamente nelle pagine principali; non esiste più una pagina di test separata.
 
 ## File di Test
 
-### `test-custom-dialog.html`
-Pagina dedicata per testare il componente dialog personalizzato con:
-- Test del dialog di logout in italiano
-- Test del dialog di logout in inglese
-- Test con messaggi personalizzati
-- Toggle del tema per verificare l'adattamento
-- Log dei risultati dei test
+### (Pagina di test rimossa)
+La pagina `test-custom-dialog.html` è stata rimossa.
 
 ## File Modificati
 
@@ -132,7 +119,6 @@ Pagina dedicata per testare il componente dialog personalizzato con:
 
 ### File di Supporto
 - `logout.html` - Ridotto tempo di reindirizzamento
-- `test-custom-dialog.html` - Nuova pagina di test
 
 ## Note Importanti
 

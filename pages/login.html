@@ -3,57 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Service Hub Portal</title>
+    <title data-i18n="meta.login.title">Login - Service Hub Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- I18n System -->
+    <script src="../js/i18n.js"></script>
+    
+    <!-- IP Geolocation Service -->
+    <script src="../js/ip-geolocation.js"></script>
+    
+    
+    
+    <style>
+        .bg-primary { background-color: #3B82F6; }
+        .text-primary { color: #3B82F6; }
+        .hover\:bg-primary:hover { background-color: #2563EB; }
+    </style>
 </head>
 
 <body class="min-h-screen bg-gray-900 flex items-center justify-center p-4">
     
     <!-- Login Container -->
     <div class="w-full max-w-md">
-        
+
         <!-- Logo and Title -->
         <div class="text-center mb-8">
-                         <div class="mb-4">
-                 <img src="../images/serviceHub.png" alt="Service Hub" class="h-16 mx-auto" onerror="this.outerHTML='<div class=&quot;w-16 h-16 bg-blue-600 rounded-lg mx-auto flex items-center justify-center&quot;><span class=&quot;text-white font-bold text-2xl&quot;>SH</span></div>'">
-             </div>
-            <h1 class="text-3xl font-bold text-white mb-2">Service Hub Portal</h1>
-            <p class="text-blue-300">Advanced Telematics Platform</p>
+            <div class="mb-4">
+                <img src="../images/serviceHub.png" alt="Service Hub" class="h-16 mx-auto" onerror="this.outerHTML='<div class=&quot;w-16 h-16 bg-blue-600 rounded-lg mx-auto flex items-center justify-center&quot;><span class=&quot;text-white font-bold text-2xl&quot;>SH</span></div>'">
+            </div>
+            <h1 id="pageTitle" class="text-3xl font-bold text-white mb-2">Service Hub Portal</h1>
+            <p id="pageSubtitle" class="text-blue-300">Advanced Telematics Platform</p>
         </div>
         
         <!-- Login Form -->
         <div class="bg-gray-800 rounded-xl p-8 shadow-2xl border border-gray-700">
             
-            <form id="loginForm" class="space-y-6" onsubmit="handleLogin(event)">
+                        <form id="loginForm" class="space-y-6" onsubmit="handleLogin(event)">
                 
-                <!-- Email Field -->
-                <div>
-                    <label for="email" class="block text-sm font-medium text-white mb-2">
-                        Email Address
+                
+                
+                <!-- Dynamic Input Field -->
+                <div id="contactField">
+                    <label for="contactInput" class="block text-sm font-medium text-white mb-2" id="contactLabel">
+                        Indirizzo Email
                     </label>
-                    <input 
-                        type="email" 
-                        id="email" 
-                        name="email" 
-                        required
-                        class="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="dealer@company.com"
-                    >
+                    
+                    <!-- Email Input -->
+                    <div id="emailInputContainer">
+                        <input 
+                            type="email" 
+                            id="emailInput" 
+                            name="contact"
+                            required
+                            class="w-full px-4 py-3 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            placeholder="dealer@azienda.it"
+                        >
+                    </div>
+                    
+                    
                 </div>
                 
-                <!-- PIN Field -->
-                <div>
-                    <label for="pin" class="block text-sm font-medium text-white mb-2">
-                        Access PIN
+                <!-- PIN Field (Hidden by default) -->
+                <div id="pinField" style="display: none;">
+                    <label for="pin" class="block text-sm font-medium text-white mb-2" id="pinLabel">
+                        Codice PIN
                     </label>
                     <div class="relative">
-                                                 <input 
+                        <input 
                              type="password" 
                              id="pin" 
                              name="pin" 
                              maxlength="6"
-                             class="w-full px-4 py-3 pr-12 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                             placeholder="Enter PIN"
+                             class="w-full px-4 py-3 pr-12 rounded-lg bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-center text-2xl tracking-widest"
+                             placeholder="000000"
                          >
                         <button 
                             type="button" 
@@ -63,26 +85,20 @@
                             👁️
                         </button>
                     </div>
+                    <div class="text-center mt-2">
+                        <p class="text-gray-400 text-sm" id="pinInstructions">
+                            Controlla la tua email per il PIN a 6 cifre
+                        </p>
+                    </div>
                 </div>
                 
-                <!-- Remember Me and Forgot PIN -->
-                <div class="flex items-center justify-between">
-                    <label class="flex items-center text-sm text-white">
-                        <input type="checkbox" id="rememberMe" class="rounded border-gray-600 bg-gray-700 text-blue-500 focus:ring-blue-500">
-                        <span class="ml-2">Remember me</span>
-                    </label>
-                    <button type="button" id="forgotPin" class="text-sm text-blue-400 hover:text-blue-300">
-                        Forgot PIN?
-                    </button>
-                </div>
-                
-                <!-- Login Button -->
+                <!-- Submit Button -->
                 <button 
                     type="submit" 
-                    id="loginButton"
+                    id="submitButton"
                     class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
-                    Access System
+                    Invia PIN
                 </button>
                 
             </form>
@@ -97,7 +113,10 @@
         
         <!-- Footer -->
         <div class="text-center mt-6 text-sm text-gray-400">
-            <p>Authorized personnel only. All access is monitored.</p>
+            <p data-en="Authorized personnel only. All access is monitored." 
+               data-it="Solo personale autorizzato. Tutti gli accessi sono monitorati.">
+                Authorized personnel only. All access is monitored.
+            </p>
         </div>
         
     </div>
@@ -106,17 +125,24 @@
     <div id="forgotPinModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
         <div class="bg-gray-800 rounded-xl p-6 max-w-md w-full border border-gray-700">
             <div class="text-center space-y-4">
-                <h3 class="text-lg font-semibold text-white">PIN Recovery</h3>
-                <p class="text-gray-300">Contact your system administrator for PIN recovery assistance.</p>
+                <h3 class="text-lg font-semibold text-white" 
+                    data-en="PIN Recovery" data-it="Recupero PIN">PIN Recovery</h3>
+                <p class="text-gray-300" 
+                   data-en="Contact your system administrator for PIN recovery assistance." 
+                   data-it="Contatta l'amministratore di sistema per assistenza nel recupero del PIN.">
+                    Contact your system administrator for PIN recovery assistance.
+                </p>
                 <div class="space-y-2 text-sm text-blue-300">
                     <div>Email: support@servicehub.portal</div>
                     <div>Phone: +39 02 1234 5678</div>
                 </div>
                 <div class="flex space-x-3">
-                    <button id="closeForgotModal" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg">
+                    <button id="closeForgotModal" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white py-2 px-4 rounded-lg"
+                            data-en="Close" data-it="Chiudi">
                         Close
                     </button>
-                    <a href="mailto:support@servicehub.portal" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-center">
+                    <a href="mailto:support@servicehub.portal" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg text-center"
+                       data-en="Contact Support" data-it="Contatta Supporto">
                         Contact Support
                     </a>
                 </div>
@@ -129,163 +155,372 @@
     <script src="../js/auth-guard.js"></script>
     
     <script>
-        let currentStep = 'email'; // 'email', 'pin'
+        let currentStep = 'contact'; // 'contact', 'pin'
+        
+        let userLocation = null;
+        let currentLanguage = 'it'; // Default to Italian
+        
+        // Translations
+        const translations = {
+            it: {
+                pageTitle: 'Service Hub Portal',
+                pageSubtitle: 'Piattaforma Telematica Avanzata',
+                deliveryLabel: 'Come vuoi ricevere il tuo PIN?',
+                emailOption: 'Email',
+                whatsappOption: 'WhatsApp', 
+                emailDesc: 'Ricevi il PIN via email',
+                whatsappDesc: 'Ricevi il PIN via WhatsApp',
+                emailLabel: 'Indirizzo Email',
+                phoneLabel: 'Numero di Telefono',
+                pinLabel: 'Codice PIN',
+                submitButtonContact: 'Invia PIN',
+                submitButtonPin: 'Accedi',
+                pinInstructionsEmail: 'Controlla la tua email per il PIN a 6 cifre',
+                pinInstructionsWhatsApp: 'Controlla il tuo WhatsApp per il PIN a 6 cifre',
+                errorEmailRequired: 'Inserisci il tuo indirizzo email',
+                errorEmailInvalid: 'Inserisci un indirizzo email valido',
+                errorPhoneRequired: 'Inserisci il tuo numero di telefono',
+                errorPhoneInvalid: 'Inserisci un numero di telefono valido',
+                errorPinRequired: 'Inserisci il codice PIN',
+                errorPinInvalid: 'Il PIN deve essere di 6 cifre',
+                successPinSent: 'PIN inviato con successo!',
+                errorSendPin: 'Invio del PIN non riuscito. Riprova.',
+                pinGenerated: 'PIN generato. Inseriscilo qui sotto.',
+                successLogin: 'Accesso effettuato! Reindirizzamento...',
+                sending: 'Invio...',
+                verifying: 'Verifica...'
+            },
+            en: {
+                pageTitle: 'Service Hub Portal',
+                pageSubtitle: 'Advanced Telematics Platform',
+                deliveryLabel: 'How would you like to receive your PIN?',
+                emailOption: 'Email',
+                whatsappOption: 'WhatsApp',
+                emailDesc: 'Receive PIN via email',
+                whatsappDesc: 'Receive PIN via WhatsApp',
+                emailLabel: 'Email Address',
+                phoneLabel: 'Phone Number',
+                pinLabel: 'PIN Code',
+                submitButtonContact: 'Send PIN',
+                submitButtonPin: 'Login',
+                pinInstructionsEmail: 'Check your email for the 6-digit PIN',
+                pinInstructionsWhatsApp: 'Check your WhatsApp for the 6-digit PIN',
+                errorEmailRequired: 'Please enter your email address',
+                errorEmailInvalid: 'Please enter a valid email address',
+                errorPhoneRequired: 'Please enter your phone number',
+                errorPhoneInvalid: 'Please enter a valid phone number',
+                errorPinRequired: 'Please enter your PIN',
+                errorPinInvalid: 'PIN must be 6 digits',
+                successPinSent: 'PIN sent successfully!',
+                errorSendPin: 'Failed to send PIN. Please try again.',
+                pinGenerated: 'PIN generated. Please enter it below.',
+                successLogin: 'Login successful! Redirecting...',
+                sending: 'Sending...',
+                verifying: 'Verifying...'
+            }
+        };
+        
+        function t(key) {
+            return translations[currentLanguage][key] || translations.en[key] || key;
+        }
         
         function togglePin() {
             const pinField = document.getElementById('pin');
             pinField.type = pinField.type === 'password' ? 'text' : 'password';
         }
         
-        function showForgotModal() {
-            document.getElementById('forgotPinModal').classList.remove('hidden');
+        async function detectUserLocation() {
+            try {
+                if (window.ipGeoService) {
+                    userLocation = await window.ipGeoService.getUserLocation();
+                    if (userLocation && userLocation.country === 'IT') {
+                        currentLanguage = 'it';
+                    } else {
+                        currentLanguage = 'en';
+                    }
+                    // Sync global i18n language so data-it/data-en elements update correctly
+                    if (window.i18n && typeof window.i18n.changeLanguage === 'function') {
+                        window.i18n.changeLanguage(currentLanguage);
+                    } else if (typeof window.changeLanguage === 'function') {
+                        window.changeLanguage(currentLanguage);
+                    }
+                    updateLanguageDisplay();
+                    
+                }
+            } catch (error) {
+                
+                currentLanguage = 'en';
+                if (window.i18n && typeof window.i18n.changeLanguage === 'function') {
+                    window.i18n.changeLanguage(currentLanguage);
+                } else if (typeof window.changeLanguage === 'function') {
+                    window.changeLanguage(currentLanguage);
+                }
+                updateLanguageDisplay();
+            }
         }
         
-        function hideForgotModal() {
-            document.getElementById('forgotPinModal').classList.add('hidden');
+        
+        function updateLanguageDisplay() {
+            // Update all text elements
+            document.getElementById('pageTitle').textContent = t('pageTitle');
+            document.getElementById('pageSubtitle').textContent = t('pageSubtitle');
+            document.getElementById('contactLabel').textContent = t('emailLabel');
+            document.getElementById('pinLabel').textContent = t('pinLabel');
+            
+            // Update placeholders
+            const emailInput = document.getElementById('emailInput');
+            if (currentLanguage === 'it') {
+                emailInput.placeholder = 'dealer@azienda.it';
+            } else {
+                emailInput.placeholder = 'dealer@company.com';
+            }
+            
+            updateSubmitButton();
+            updatePinInstructions();
+
+            // Update bilingual elements using data-it/data-en attributes
+            if (window.forceUpdateBilingualElements) {
+                window.forceUpdateBilingualElements(document);
+            } else {
+                document.querySelectorAll('[data-it],[data-en]').forEach(el => {
+                    const it = el.getAttribute('data-it');
+                    const en = el.getAttribute('data-en');
+                    el.textContent = currentLanguage === 'it' ? (it || el.textContent) : (en || el.textContent);
+                });
+            }
         }
         
-                 function updateUI() {
-             const emailField = document.getElementById('email');
-             const pinField = document.getElementById('pin');
-             const loginButton = document.getElementById('loginButton');
-             const forgotPinButton = document.getElementById('forgotPin');
-             const formTitle = document.querySelector('h1');
-             const formSubtitle = document.querySelector('p.text-blue-300');
-             
-             if (currentStep === 'email') {
-                 // Step 1: Email validation
-                 emailField.style.display = 'block';
-                 emailField.required = true;
-                 pinField.parentNode.parentNode.style.display = 'none';
-                 pinField.required = false;
-                 loginButton.textContent = 'Send PIN';
-                 forgotPinButton.style.display = 'none';
-                 formTitle.textContent = 'Service Hub Portal';
-                 formSubtitle.textContent = 'Enter your dealer email to receive a PIN';
-                 
-                 // Re-enable and focus email field
-                 emailField.disabled = false;
-                 emailField.focus();
-                 
-             } else if (currentStep === 'pin') {
-                 // Step 2: PIN verification
-                 emailField.style.display = 'none';
-                 emailField.required = false;
-                 pinField.parentNode.parentNode.style.display = 'block';
-                 pinField.required = true;
-                 loginButton.textContent = 'Verify PIN';
-                 forgotPinButton.style.display = 'inline-block';
-                 formTitle.textContent = 'Enter PIN Code';
-                 formSubtitle.textContent = 'Check your email for the 6-digit PIN';
-                 
-                 // Clear and focus PIN field
-                 pinField.value = '';
-                 pinField.focus();
-             }
-             
-             // Reset button state
-             loginButton.disabled = false;
-         }
+        function updateSubmitButton() {
+            const button = document.getElementById('submitButton');
+            if (currentStep === 'contact') {
+                button.textContent = t('submitButtonContact');
+            } else {
+                button.textContent = t('submitButtonPin');
+            }
+        }
+        
+        function updatePinInstructions() {
+            const instructions = document.getElementById('pinInstructions');
+            instructions.textContent = t('pinInstructionsEmail');
+        }
+        
+        function updateContactField() {
+            const emailContainer = document.getElementById('emailInputContainer');
+            const contactLabel = document.getElementById('contactLabel');
+            const emailInput = document.getElementById('emailInput');
+            emailContainer.style.display = 'block';
+            contactLabel.textContent = t('emailLabel');
+            emailInput.required = true;
+        }
+        
+        function showPinField() {
+            document.getElementById('pinField').style.display = 'block';
+            document.getElementById('pin').focus();
+            currentStep = 'pin';
+            updateSubmitButton();
+            updatePinInstructions();
+        }
+        
+        function hidePinField() {
+            document.getElementById('pinField').style.display = 'none';
+            currentStep = 'contact';
+            updateSubmitButton();
+        }
         
         async function handleLogin(e) {
             e.preventDefault();
             
-            const emailField = document.getElementById('email');
-            const pinField = document.getElementById('pin');
-            const loginButton = document.getElementById('loginButton');
+            const submitButton = document.getElementById('submitButton');
             
-            if (currentStep === 'email') {
-                // Step 1: Validate email and request PIN
-                const email = emailField.value.trim();
+            if (currentStep === 'contact') {
+                // Step 1: Send PIN
+                let contact = '';
+                let isValid = false;
                 
-                if (!email) {
-                    authManager.showMessage('Please enter your email address', 'error');
+                contact = document.getElementById('emailInput').value.trim();
+                if (!contact) {
+                    showMessage(t('errorEmailRequired'), 'error');
                     return;
                 }
-                
-                if (!isValidEmail(email)) {
-                    authManager.showMessage('Please enter a valid email address', 'error');
+                if (!isValidEmail(contact)) {
+                    showMessage(t('errorEmailInvalid'), 'error');
                     return;
                 }
+                isValid = true;
                 
-                // Disable button and show loading
-                loginButton.disabled = true;
-                loginButton.textContent = 'Validating...';
+                if (!isValid) return;
                 
-                const result = await authManager.requestPin(email);
+                // Show loading state
+                submitButton.disabled = true;
+                submitButton.textContent = t('sending');
                 
-                if (result.success) {
-                    // Move to PIN step
-                    currentStep = 'pin';
-                    updateUI();
-                } else {
-                    // Reset button state
-                    loginButton.disabled = false;
-                    loginButton.textContent = 'Send PIN';
+                try {
+                    // Call real API to send PIN
+                    const requestData = {
+                        email: contact,
+                        method: 'email',
+                        phone: null
+                    };
+                    
+                    
+                    
+                    const response = await fetch('/api/auth/request-pin', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept-Language': currentLanguage === 'it' ? 'it-IT,it;q=0.9' : 'en-US,en;q=0.9',
+                        },
+                        body: JSON.stringify(requestData)
+                    });
+                    
+                    const result = await response.json();
+                    
+                    
+                    if (result.success) {
+                        if (result.pin) {
+                            const pinInput = document.getElementById('pin');
+                            if (pinInput && /^\d{6}$/.test(result.pin)) {
+                                pinInput.value = result.pin;
+                            }
+                            showMessage(t('pinGenerated'), 'success');
+                        } else {
+                            showMessage(t('successPinSent'), 'success');
+                        }
+                        showPinField();
+                    } else {
+                        
+                        let localizedError = t('errorSendPin');
+                        switch (result.error) {
+                            case 'email_required':
+                                localizedError = t('errorEmailRequired');
+                                break;
+                            case 'dealer_not_found':
+                                localizedError = currentLanguage === 'it' ? 'Dealer non trovato' : 'Dealer not found';
+                                break;
+                            case 'request_in_progress':
+                                localizedError = currentLanguage === 'it' ? 'Richiesta già in corso. Attendere.' : 'A request is already in progress. Please wait.';
+                                break;
+                            case 'duplicate_request':
+                                localizedError = currentLanguage === 'it' ? 'Attendi prima di richiedere un altro PIN' : 'Please wait before requesting another PIN';
+                                break;
+                            default:
+                                if (result.message) localizedError = result.message;
+                        }
+                        showMessage(localizedError, 'error');
+                    }
+                    
+                } catch (error) {
+                    
+                    showMessage('Network error. Please try again.', 'error');
+                } finally {
+                    submitButton.disabled = false;
+                    updateSubmitButton();
                 }
                 
             } else if (currentStep === 'pin') {
                 // Step 2: Verify PIN
-                const pin = pinField.value.trim();
+                const pin = document.getElementById('pin').value.trim();
                 
                 if (!pin) {
-                    authManager.showMessage('Please enter the PIN code', 'error');
+                    showMessage(t('errorPinRequired'), 'error');
                     return;
                 }
                 
                 if (pin.length !== 6 || !/^\d{6}$/.test(pin)) {
-                    authManager.showMessage('PIN must be exactly 6 digits', 'error');
+                    showMessage(t('errorPinInvalid'), 'error');
                     return;
                 }
                 
-                // Disable button and show loading
-                loginButton.disabled = true;
-                loginButton.textContent = 'Verifying...';
+                // Show loading state
+                submitButton.disabled = true;
+                submitButton.textContent = t('verifying');
                 
-                const result = await authManager.verifyPin(pin);
-                
-                if (result.success) {
-                    // Login successful - use auth guard to handle redirect
-                    if (window.authGuard) {
-                        window.authGuard.handleSuccessfulLogin({
-                            token: result.token,
-                            ...result.dealer
-                        });
-                    } else {
-                        // Fallback redirect
-                        setTimeout(() => {
+                try {
+                    // Call real API to verify PIN
+                    const response = await fetch('/api/auth/verify-pin', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            email: document.getElementById('emailInput').value.trim(), // Always use email for verification
+                            pin: pin
+                        })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        showMessage(t('successLogin'), 'success');
+                        
+                        // Store auth info in the format expected by Auth Guard
+                        try {
+                            if (window.authGuard && typeof window.authGuard.handleSuccessfulLogin === 'function') {
+                                window.authGuard.handleSuccessfulLogin({
+                                    token: result.token,
+                                    id: result.dealer.id,
+                                    email: result.dealer.email,
+                                    companyName: result.dealer.companyName,
+                                    name: result.dealer.name
+                                });
+                            } else {
+                                if (result.token) {
+                                    localStorage.setItem('servicehub-auth-token', result.token);
+                                }
+                                const userPayload = {
+                                    id: result.dealer.id,
+                                    email: result.dealer.email,
+                                    companyName: result.dealer.companyName,
+                                    name: result.dealer.name,
+                                    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+                                };
+                                localStorage.setItem('servicehub-user', JSON.stringify(userPayload));
+                                // Redirect to dashboard
+                                window.location.href = '../index.html';
+                            }
+                        } catch (e) {
+                            
                             window.location.href = '../index.html';
-                        }, 2000);
-                    }
-                } else {
-                    // Check if we need to go back to email step
-                    if (result.error === 'pin_expired' || result.error === 'too_many_attempts') {
-                        currentStep = 'email';
-                        updateUI();
-                        // Clear email field to allow re-entry
-                        emailField.value = '';
+                        }
                     } else {
-                        // Reset button state for retry
-                        loginButton.disabled = false;
-                        loginButton.textContent = 'Verify PIN';
+                        showMessage(result.message || 'Invalid PIN', 'error');
+                        document.getElementById('pin').value = '';
+                        document.getElementById('pin').focus();
                     }
+                    
+                } catch (error) {
+                    
+                    showMessage('Network error. Please try again.', 'error');
+                    document.getElementById('pin').value = '';
+                    document.getElementById('pin').focus();
+                } finally {
+                    submitButton.disabled = false;
+                    updateSubmitButton();
                 }
             }
         }
         
-        function resetToEmail() {
-            currentStep = 'email';
-            authManager.resetToEmailStep();
-            updateUI();
+        function showMessage(message, type) {
+            const errorDiv = document.getElementById('errorMessage');
+            const successDiv = document.getElementById('successMessage');
             
-            // Clear form fields
-            document.getElementById('email').value = '';
-            document.getElementById('pin').value = '';
+            // Hide both first
+            errorDiv.classList.add('hidden');
+            successDiv.classList.add('hidden');
             
-            // Clear messages
-            authManager.showMessage('', 'info');
-            document.getElementById('errorMessage').classList.add('hidden');
-            document.getElementById('successMessage').classList.add('hidden');
+            if (type === 'error') {
+                errorDiv.textContent = message;
+                errorDiv.classList.remove('hidden');
+            } else if (type === 'success') {
+                successDiv.textContent = message;
+                successDiv.classList.remove('hidden');
+            }
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                errorDiv.classList.add('hidden');
+                successDiv.classList.add('hidden');
+            }, 5000);
         }
         
         function isValidEmail(email) {
@@ -293,46 +528,24 @@
             return emailRegex.test(email);
         }
         
+        
+
         // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check if already authenticated
-            if (authManager.isAuthenticated()) {
-                window.location.href = '../index.html';
-                return;
-            }
+        document.addEventListener('DOMContentLoaded', async function() {
             
-            // Set up initial UI
-            currentStep = 'email';
-            updateUI();
             
             // Set up event listeners
             document.getElementById('loginForm').addEventListener('submit', handleLogin);
             document.getElementById('togglePin').addEventListener('click', togglePin);
-            document.getElementById('forgotPin').addEventListener('click', showForgotModal);
-            document.getElementById('closeForgotModal').addEventListener('click', hideForgotModal);
             
-            // Add "Start Over" button functionality
-            const startOverBtn = document.createElement('button');
-            startOverBtn.type = 'button';
-            startOverBtn.className = 'text-sm text-gray-400 hover:text-gray-300 mt-4';
-            startOverBtn.textContent = '← Start Over';
-            startOverBtn.onclick = resetToEmail;
-            startOverBtn.style.display = 'none';
-            startOverBtn.id = 'startOverBtn';
+            // Detect user location and set language
+            await detectUserLocation();
             
-            document.querySelector('.bg-gray-800').appendChild(startOverBtn);
+            // Initialize UI
+            updateContactField();
+            updateSubmitButton();
             
-            // Show start over button only in PIN step
-            const observer = new MutationObserver(() => {
-                startOverBtn.style.display = currentStep === 'pin' ? 'block' : 'none';
-            });
             
-            // Close modal on backdrop click
-            document.getElementById('forgotPinModal').addEventListener('click', function(e) {
-                if (e.target === document.getElementById('forgotPinModal')) {
-                    hideForgotModal();
-                }
-            });
         });
     </script>
     

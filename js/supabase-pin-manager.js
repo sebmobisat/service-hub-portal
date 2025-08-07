@@ -87,10 +87,26 @@ class SupabasePinManager {
     // Increment PIN attempts in Supabase
     static async incrementPinAttempts(dealerId) {
         try {
+            // First get current attempts
+            const { data: currentData, error: getError } = await supabaseAdmin
+                .from('dealer_pins')
+                .select('attempts')
+                .eq('dealer_id', dealerId)
+                .single();
+            
+            if (getError) {
+                console.error('Error getting current attempts from Supabase:', getError);
+                return false;
+            }
+            
+            const currentAttempts = currentData?.attempts || 0;
+            const newAttempts = currentAttempts + 1;
+            
+            // Update with new attempts count
             const { data, error } = await supabaseAdmin
                 .from('dealer_pins')
                 .update({ 
-                    attempts: supabaseAdmin.sql`attempts + 1`,
+                    attempts: newAttempts,
                     updated_at: new Date().toISOString()
                 })
                 .eq('dealer_id', dealerId);

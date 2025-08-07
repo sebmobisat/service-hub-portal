@@ -25,14 +25,19 @@ if not exist "node_modules" (
     )
 )
 
-echo Starting Service Hub Portal server...
+echo Starting Service Hub Portal server in PRODUCTION mode...
 echo.
-echo Frontend will be available at: http://localhost:3001
-echo API endpoints available at: http://localhost:3001/api
+echo Frontend will be available at: http://localhost:3000
+echo API endpoints available at: http://localhost:3000/api
 echo.
+echo Server will auto-restart when files change (nodemon)
 echo Press Ctrl+C to stop the server
 echo.
 
-node server.js
+REM Set production environment
+set NODE_ENV=production
+
+REM Start with nodemon for auto-restart
+npx nodemon server.js
 
 pause 

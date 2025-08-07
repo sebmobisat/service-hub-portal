@@ -12,6 +12,14 @@ class AuthManager {
 
     // Step 1: Request PIN by validating email and sending PIN
     async requestPin(email) {
+        // Prevent multiple simultaneous requests
+        if (this.isRequesting) {
+            console.log('Request already in progress, ignoring duplicate request');
+            return { success: false, error: 'request_in_progress' };
+        }
+        
+        this.isRequesting = true;
+        
         try {
             // Reset retry count for new email
             if (email !== this.currentEmail) {
@@ -80,6 +88,9 @@ class AuthManager {
             console.error('Request PIN error:', error);
             this.showMessage('Network error. Please check your connection and try again.', 'error');
             return { success: false, error: 'network_error' };
+        } finally {
+            // Reset the requesting flag
+            this.isRequesting = false;
         }
     }
 

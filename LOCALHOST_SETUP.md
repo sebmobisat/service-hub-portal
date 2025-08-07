@@ -70,19 +70,12 @@ For email functionality:
 
 ### 3. Test the Setup
 
-Run the test script to verify everything works:
-```bash
-node test-supabase-pin-system.js
-```
+Verifica il flusso direttamente dall'app (richiesta PIN e invio email). I vecchi script di test standalone sono stati rimossi.
 
 ## 🐛 Troubleshooting
 
 ### Issue: PINs not stored in database
-**Solution**: Check Supabase connection
-```bash
-# Test Supabase connection
-node test-supabase-pin-system.js
-```
+**Solution**: Controlla la connessione a Supabase e i log del server; gli script di test separati non sono più presenti.
 
 ### Issue: Emails not sent
 **Solution**: Check AWS SES configuration
@@ -167,7 +160,7 @@ When `DEBUG=true` is set, you'll see detailed logs:
 If you encounter issues:
 
 1. **Check the logs**: Look for error messages in the console
-2. **Run tests**: Use `node test-supabase-pin-system.js`
+2. **Run tests**: Esegui i test direttamente dal flusso dell'app (richiesta/validazione PIN).
 3. **Verify setup**: Follow the troubleshooting steps above
 4. **Check environment**: Ensure all variables are set correctly
 

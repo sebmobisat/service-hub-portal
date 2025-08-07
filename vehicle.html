@@ -25,7 +25,13 @@
     <script src="/js/custom-dialog.js"></script>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg">
+    <link rel="icon" type="image/png" href="/favicon/favicon-16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="/favicon/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/favicon/favicon-48x48.png" sizes="48x48">
+    <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" sizes="180x180">
+    <link rel="manifest" href="/favicon/manifest.json">
     
     <!-- Tailwind CSS -->
     <script>
@@ -500,7 +506,7 @@
                     
                     <!-- Summary Statistics -->
                         <div class="mb-6">
-                        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4" id="summaryStats">
+                        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2" id="summaryStats">
                             <!-- Summary cards will be populated here -->
                         </div>
                     </div>
@@ -2352,6 +2358,13 @@
             
             const stats = [
                 {
+                    title: 'Odometro',
+                    titleEn: 'Odometer',
+                    value: `${(certificateData?.odometer ?? certificateData?.vehicle?.odometer ?? 0).toLocaleString('it-IT')} km`,
+                    icon: 'M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3a1 1 0 011 1v5.59l3.3 3.3a1 1 0 01-1.42 1.42l-3.59-3.6a2 2 0 01-.59-1.41V6a1 1 0 011-1z',
+                    color: 'indigo'
+                },
+                {
                     title: 'Distanza Totale',
                     titleEn: 'Total Distance',
                     value: `${summaryData.total_distance_km || 0} km`,
@@ -2402,7 +2415,7 @@
                 
                 
                 return `
-                <div class="relative group">
+                <div class="relative group min-w-[120px]">
                     <!-- Modern Card for both light and dark mode -->
                     <div class="relative bg-white dark:bg-gradient-to-br dark:from-gray-800 dark:via-gray-700 dark:to-gray-900 rounded-2xl p-6 border border-gray-200 dark:border-gray-600/40 shadow-lg hover:border-${stat.color}-400/50 transition-all duration-300 hover:shadow-xl">
                         
@@ -2413,14 +2426,14 @@
                         <div class="relative flex flex-col items-center text-center space-y-4">
                             <!-- Modern icon -->
                             <div class="relative p-4 bg-gradient-to-br from-${stat.color}-500 to-${stat.color}-600 rounded-2xl shadow-lg transition-all duration-300">
-                                <svg class="w-8 h-8 text-white drop-shadow-sm" fill="currentColor" viewBox="0 0 24 24">
+                                <svg class="w-6 h-6 text-white drop-shadow-sm" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="${stat.icon}"/>
                                 </svg>
                         </div>
                             <!-- Text with adaptive colors -->
                             <div class="space-y-2">
                                 <p class="text-xs font-medium text-gray-600 dark:text-gray-300 uppercase tracking-wide" data-it="${stat.title}" data-en="${stat.titleEn}">${displayTitle}</p>
-                                <p class="text-2xl font-bold text-gray-900 dark:text-white">${stat.value}</p>
+                                <p class="text-xl font-bold text-gray-900 dark:text-white">${stat.value}</p>
                         </div>
                         </div>
                         

@@ -9,7 +9,13 @@
     <!-- Authentication Guard -->
     <script src="/js/auth-guard.js"></script>
     <script src="/js/vehicleImageService.js"></script>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg">
+    <link rel="icon" type="image/png" href="/favicon/favicon-16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="/favicon/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/favicon/favicon-48x48.png" sizes="48x48">
+    <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" sizes="180x180">
+    <link rel="manifest" href="/favicon/manifest.json">
     
     <!-- Authentication Configuration -->
     <script src="/js/auth-config.js"></script>
@@ -214,30 +220,15 @@
               max-width: 100%;
           }
           
-          /* Text truncation for long content */
+          /* Long text should wrap naturally instead of being cut */
           .certificate-card .field-value.long-text,
           .certificate-card .field-value-secondary.long-text {
-              overflow: hidden;
-              text-overflow: ellipsis;
-              white-space: nowrap;
-              max-width: 100%;
-          }
-          
-          .certificate-card .field-value.long-text:hover,
-          .certificate-card .field-value-secondary.long-text:hover {
               white-space: normal;
               overflow: visible;
-              background-color: rgba(0, 0, 0, 0.05);
-              padding: 2px 4px;
-              border-radius: 4px;
-              transition: all 0.2s ease;
-              position: relative;
-              z-index: 10;
-          }
-          
-          html.dark .certificate-card .field-value.long-text:hover,
-          html.dark .certificate-card .field-value-secondary.long-text:hover {
-              background-color: rgba(255, 255, 255, 0.1);
+              text-overflow: clip;
+              word-break: break-word;
+              overflow-wrap: anywhere;
+              max-width: 100%;
           }
           
           /* Responsive grid adjustments for better text fitting */
@@ -431,7 +422,7 @@
                                 <option value="brand" data-i18n="certificates.search.brand">Brand</option>
                                 <option value="model" data-i18n="certificates.search.model">Model</option>
                                 <option value="fuel" data-i18n="certificates.search.fuel">Fuel Type</option>
-                                <option value="transmission" data-i18n="certificates.search.transmission">Transmission</option>
+                                
                                 <option value="year" data-i18n="certificates.search.year">Year</option>
                             </select>
                         </div>
@@ -1340,9 +1331,9 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11v4"/>
                                         </svg>
                                     </div>
-                                    <div class="flex-1">
+                                    <div class="flex-1 min-w-0">
                                         <p class="field-label text-xs uppercase tracking-wide">Anno</p>
-                                        <p class="field-value font-bold text-lg">${cert.vehicleYear}</p>
+                                        <p class="field-value font-semibold text-base">${cert.vehicleYear}</p>
                                     </div>
                                 </div>`;
                         case 'vehiclePlate':
@@ -1356,9 +1347,9 @@
                                             <circle cx="20" cy="16" r="1" fill="currentColor"/>
                                         </svg>
                                     </div>
-                                    <div class="flex-1">
+                                    <div class="flex-1 min-w-0">
                                         <p class="field-label text-xs uppercase tracking-wide">${t('table.plate')}</p>
-                                        <p class="field-value long-text font-bold text-lg" title="${cert.vehiclePlate}">${cert.vehiclePlate}</p>
+                                        <p class="field-value long-text font-semibold text-base" title="${cert.vehiclePlate}">${cert.vehiclePlate}</p>
                                     </div>
                                 </div>`;
                         case 'odometer':
@@ -1371,9 +1362,9 @@
                                             <circle cx="12" cy="12" r="2" fill="currentColor"/>
                                         </svg>
                                     </div>
-                                    <div class="flex-1">
+                                    <div class="flex-1 min-w-0">
                                         <p class="field-label text-xs uppercase tracking-wide">${t('card.odometer')}</p>
-                                        <p class="field-value font-medium">${cert.odometer ? cert.odometer.toLocaleString('it-IT') + ' km' : 'N/A'}</p>
+                                        <p class="field-value text-sm font-medium">${cert.odometer ? cert.odometer.toLocaleString('it-IT') + ' km' : 'N/A'}</p>
                                     </div>
                                 </div>`;
                         case 'fuelType':
@@ -1385,9 +1376,9 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"/>
                                         </svg>
                                     </div>
-                                    <div class="flex-1">
+                                    <div class="flex-1 min-w-0">
                                         <p class="field-label text-xs uppercase tracking-wide">${t('table.fuel')}</p>
-                                        <p class="field-value-secondary">${cert.fuelType}</p>
+                                        <p class="field-value-secondary long-text text-sm">${cert.fuelType}</p>
                                     </div>
                                 </div>`;
                         case 'vin':
@@ -1398,7 +1389,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
                                         </svg>
                                     </div>
-                                    <div class="flex-1">
+                                    <div class="flex-1 min-w-0">
                                         <p class="field-label text-xs uppercase tracking-wide">${t('card.vin_number')}</p>
                                         <p class="field-value-secondary font-mono text-xs">${cert.vin || 'N/A'}</p>
                                     </div>
@@ -1433,7 +1424,7 @@
                                 </div>
                             </div>` : ''}
                         
-                        ${otherFields ? `<div class="grid grid-cols-2 gap-4">${otherFields}</div>` : ''}
+                        ${otherFields ? `<div class="grid grid-cols-1 gap-3">${otherFields}</div>` : ''}
                     </div>
                 </div>`;
         }
@@ -1948,7 +1939,7 @@
             brands: new Set(),
             models: new Set(),
             fuels: new Set(),
-            transmissions: new Set(),
+            
             years: new Set()
         };
         
@@ -1963,7 +1954,7 @@
             searchData.brands.clear();
             searchData.models.clear();
             searchData.fuels.clear();
-            searchData.transmissions.clear();
+            
             searchData.years.clear();
             
             // Extract unique values from certificates
@@ -1978,7 +1969,7 @@
                         if (vehicleData.brand) searchData.brands.add(vehicleData.brand);
                         if (vehicleData.model) searchData.models.add(vehicleData.model);
                         if (vehicleData.fuelType) searchData.fuels.add(vehicleData.fuelType);
-                        if (vehicleData.transmission) searchData.transmissions.add(vehicleData.transmission);
+                        
                         if (vehicleData.year) searchData.years.add(vehicleData.year);
                     }
                 } catch (e) {
@@ -2034,7 +2025,7 @@
                 
                 dynamicTextInput.focus();
                 
-            } else if (['brand', 'model', 'fuel', 'transmission', 'year'].includes(selectedType)) {
+            } else if (['brand', 'model', 'fuel', 'year'].includes(selectedType)) {
                 // Dropdown for predefined options
                 dynamicTextInput.style.display = 'none';
                 dynamicDropdownInput.style.display = 'block';
@@ -2063,8 +2054,7 @@
                 case 'fuel':
                     options = [...searchData.fuels].sort();
                     break;
-                case 'transmission':
-                    options = [...searchData.transmissions].sort();
+                
                     break;
                 case 'year':
                     options = [...searchData.years].sort((a, b) => b - a); // Descending
@@ -2099,7 +2089,7 @@
             // Get search value based on input type
             if (['global', 'client', 'plate', 'certificate', 'imei'].includes(searchType)) {
                 searchValue = dynamicTextInput ? dynamicTextInput.value.toLowerCase().trim() : '';
-            } else if (['brand', 'model', 'fuel', 'transmission', 'year'].includes(searchType)) {
+            } else if (['brand', 'model', 'fuel', 'year'].includes(searchType)) {
                 searchValue = dynamicDropdownInput ? dynamicDropdownInput.value : '';
             }
             
@@ -2134,7 +2124,7 @@
                                 vehicleData?.model,
                                 vehicleData?.plate,
                                 vehicleData?.fuelType,
-                                vehicleData?.transmission,
+                                
                                 vehicleData?.year?.toString(),
                                 cert.status
                             ].filter(Boolean).join(' ').toLowerCase();
@@ -2164,8 +2154,7 @@
                         case 'fuel':
                             return vehicleData?.fuelType === searchValue;
                             
-                        case 'transmission':
-                            return vehicleData?.transmission === searchValue;
+                        
                             
                         case 'year':
                             return vehicleData?.year?.toString() === searchValue;

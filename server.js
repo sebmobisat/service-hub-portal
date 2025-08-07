@@ -5,9 +5,7 @@
 require('dotenv').config();
 
 // Load local environment variables for development
-if (process.env.NODE_ENV === 'development') {
-    require('dotenv').config({ path: '.env.local' });
-}
+require('dotenv').config({ path: '.env.local' });
 
 const express = require('express');
 const cors = require('cors');
@@ -17,6 +15,16 @@ const OpenAI = require('openai');
 const FMB003Mapping = require('./js/fmb003-mapping.js');
 const { emailService } = require('./js/email-service.js');
 const { SupabasePinManager } = require('./js/supabase-pin-manager.js');
+
+// Initialize Twilio for WhatsApp (if credentials are available)
+let twilioClient = null;
+if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
+    const twilio = require('twilio');
+    twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+    console.log('Twilio client initialized for WhatsApp');
+} else {
+    console.log('Twilio credentials not provided - WhatsApp features will be disabled');
+}
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -269,13 +277,50 @@ class DatabaseManager {
 
 // API Routes
 
+// Rate limiting for PIN requests
+const pinRequestCache = new Map();
+const activeRequests = new Set(); // Track active requests to prevent duplicates
+
 // Authentication: Request PIN
 app.post('/api/auth/request-pin', async (req, res) => {
+    let email = null; // Declare email outside try block
     try {
-        const { email } = req.body;
+        const { email: reqEmail, method, phone } = req.body;
+        email = reqEmail; // Assign to outer variable
         
         if (!email) {
             return res.json({ success: false, error: 'email_required' });
+        }
+        
+        // Check for active requests for this email
+        if (activeRequests.has(email)) {
+            console.log(`🚫 Active request already in progress for email: ${email}`);
+            return res.json({ success: false, error: 'request_in_progress', message: 'A request is already in progress. Please wait.' });
+        }
+        
+        // Check for duplicate requests (within 5 seconds)
+        const now = Date.now();
+        const lastRequest = pinRequestCache.get(email);
+        if (lastRequest && (now - lastRequest) < 5000) {
+            console.log(`🚫 Duplicate PIN request blocked for email: ${email}`);
+            return res.json({ success: false, error: 'duplicate_request', message: 'Please wait before requesting another PIN' });
+        }
+        
+        // Mark this email as having an active request
+        activeRequests.add(email);
+        
+        // Store this request timestamp
+        pinRequestCache.set(email, now);
+        
+        // Validate delivery method
+        const deliveryMethod = method || 'email'; // Default to email
+        if (!['email', 'whatsapp'].includes(deliveryMethod)) {
+            return res.json({ success: false, error: 'invalid_delivery_method' });
+        }
+        
+        // Validate phone number if WhatsApp is selected
+        if (deliveryMethod === 'whatsapp' && !phone) {
+            return res.json({ success: false, error: 'phone_required' });
         }
         
         console.log(` PIN request for email: ${email}`);
@@ -315,9 +360,9 @@ app.post('/api/auth/request-pin', async (req, res) => {
             console.log(`✅ PIN ${realPin} stored successfully for dealer ${dealer.id}`);
         }
         
-        // Try to send email with PIN
-        let emailSent = false;
-        let emailError = null;
+        // Try to send PIN via selected method
+        let pinSent = false;
+        let sendError = null;
         let language = 'it'; // Default to Italian
         
         try {
@@ -325,21 +370,47 @@ app.post('/api/auth/request-pin', async (req, res) => {
             const acceptLanguage = req.headers['accept-language'] || '';
             language = acceptLanguage.includes('en') ? 'en' : 'it';
             
-            emailSent = await emailService.sendPinEmail(
-                dealer.companyLoginEmail,
-                dealer.companyName,
-                realPin,
-                language
-            );
+            if (deliveryMethod === 'whatsapp') {
+                // Send via WhatsApp
+                if (twilioClient) {
+                    console.log(`📱 Sending WhatsApp PIN to: ${phone}`);
+                    
+                    const message = language === 'it' 
+                        ? `🔐 *Service Hub Portal*\n\nIl tuo codice PIN di accesso è: *${realPin}*\n\nQuesto codice è valido per 10 minuti.\nNon condividere questo codice con nessuno.\n\nAccount: ${dealer.companyLoginEmail}\n\n---\nService Hub Portal\nPiattaforma Telematica Avanzata`
+                        : `🔐 *Service Hub Portal*\n\nYour access PIN code is: *${realPin}*\n\nThis code is valid for 10 minutes.\nDo not share this code with anyone.\n\nAccount: ${dealer.companyLoginEmail}\n\n---\nService Hub Portal\nAdvanced Telematics Platform`;
+                    
+                    const whatsappMessage = await twilioClient.messages.create({
+                        body: message,
+                        from: process.env.TWILIO_WHATSAPP_FROM,
+                        to: `whatsapp:${phone}`
+                    });
+                    
+                    pinSent = true;
+                    console.log(`✅ WhatsApp PIN sent successfully. Message SID: ${whatsappMessage.sid}`);
+                } else {
+                    console.error('❌ Twilio client not available for WhatsApp');
+                    sendError = 'WhatsApp service not available';
+                }
+            } else {
+                // Send via email
+                pinSent = await emailService.sendPinEmail(
+                    dealer.companyLoginEmail,
+                    dealer.companyName,
+                    realPin,
+                    language
+                );
+            }
         } catch (error) {
-            console.error('Email sending error:', error);
-            emailError = error.message;
+            console.error(`${deliveryMethod === 'whatsapp' ? 'WhatsApp' : 'Email'} sending error:`, error);
+            sendError = error.message;
         }
         
                         res.json({
                     success: true,
-                    message: emailSent 
-                        ? (language === 'it' ? 'PIN inviato via email' : 'PIN sent via email')
+                    message: pinSent 
+                        ? (language === 'it' 
+                            ? (deliveryMethod === 'whatsapp' ? 'PIN inviato via WhatsApp' : 'PIN inviato via email')
+                            : (deliveryMethod === 'whatsapp' ? 'PIN sent via WhatsApp' : 'PIN sent via email'))
                         : 'PIN generated successfully',
                     dealer: {
                         id: dealer.id,
@@ -348,9 +419,10 @@ app.post('/api/auth/request-pin', async (req, res) => {
                         name: dealer.companyMobisatTechRefName || 'Dealer Representative',
                         brand: dealer.brand
                     },
-                    pin: (emailSent && pinStored) ? null : realPin, // Show PIN if email failed OR storage failed
-                    emailSent: emailSent,
-                    emailError: emailError,
+                    pin: (pinSent && pinStored) ? null : realPin, // Show PIN if sending failed OR storage failed
+                    pinSent: pinSent,
+                    sendError: sendError,
+                    deliveryMethod: deliveryMethod,
                     pinStored: pinStored, // Add this for debugging
                     fallbackMode: !pinStored // Indicate if we're in fallback mode
                 });
@@ -362,6 +434,11 @@ app.post('/api/auth/request-pin', async (req, res) => {
             error: 'server_error',
             message: 'Internal server error'
         });
+    } finally {
+        // Always remove the email from active requests
+        if (email) {
+            activeRequests.delete(email);
+        }
     }
 });
 
@@ -834,6 +911,7 @@ app.get('/api/position/debug', async (req, res) => {
 });
 
 // Debug endpoint to trace odometer source for specific device
+// Deprecated debug endpoint: odometer must always come from vehicle.odometer
 app.get('/api/device/:deviceId/odometer-trace', async (req, res) => {
     try {
         const deviceId = parseInt(req.params.deviceId);
@@ -883,34 +961,21 @@ app.get('/api/device/:deviceId/odometer-trace', async (req, res) => {
          `;
          const positionResult = await pool.query(positionQuery, [deviceId]);
         
-        // Apply smart odometer logic
+        // Deprecated: smart odometer logic removed to avoid ambiguity.
+        // Always use odometer from vehicle table when displaying odometer values.
         let odometerValue = null;
-        let odometerSource = 'none';
+        let odometerSource = 'vehicle.odometer (authoritative)';
         let sourceDetails = {};
         
         const deviceData = deviceResult.rows[0] || null;
         const positionData = positionResult.rows[0] || null;
         
-                 if (deviceData && deviceData.realOdometer !== null && deviceData.realOdometer > 0) {
-             odometerValue = Math.round(deviceData.realOdometer / 1000); // Convert meters to kilometers
-             odometerSource = 'OBD (device.realOdometer)';
-             sourceDetails = {
-                 deviceId: deviceId,
-                 realOdometerRaw: deviceData.realOdometer,
-                 realOdometerKm: Math.round(deviceData.realOdometer / 1000),
-                 reason: 'OBD reading available and > 0 (converted from meters to km)'
-             };
-                  } else if (positionData && positionData.odometer !== null) {
-              odometerValue = Math.round(positionData.odometer / 1000); // Convert meters to kilometers
-              odometerSource = 'GPS (position.odometer)';
-              sourceDetails = {
-                  deviceId: deviceId,
-                  positionId: positionData.position_id,
-                  odometerRaw: positionData.odometer,
-                  odometerKm: Math.round(positionData.odometer / 1000),
-                  reason: 'OBD reading not available or zero, using GPS calculation from device-specific position data (by deviceId, not IMEI). Converted from meters to km.'
-              };
-          }
+        // Keep endpoint for dev diagnostics only: return current authoritative value from vehicle
+        const vehicleQuery = `SELECT odometer FROM vehicle v INNER JOIN device d ON d."vehicleId" = v.id WHERE d.id = $1 LIMIT 1`;
+        const vehicleResult = await pool.query(vehicleQuery, [deviceId]);
+        if (vehicleResult.rows.length > 0 && vehicleResult.rows[0].odometer != null) {
+            odometerValue = Math.round(Number(vehicleResult.rows[0].odometer) / 1000);
+        }
         
         res.json({
             success: true,
@@ -920,11 +985,11 @@ app.get('/api/device/:deviceId/odometer-trace', async (req, res) => {
             finalOdometerValue: odometerValue,
             odometerSource: odometerSource,
             sourceDetails: sourceDetails,
-                         debugInfo: {
-                 deviceTableData: deviceData,
-                 positionTableData: positionData,
-                 smartLogicApplied: 'Smart Odometer: OBD first, GPS fallback (using deviceId instead of IMEI to prevent inactive device data contamination). Values converted from meters to kilometers.'
-             }
+            debugInfo: {
+                note: 'Odometer source is vehicle.odometer (meters) -> converted to km',
+                deviceTableData: deviceData,
+                positionTableData: positionData
+            }
         });
         
     } catch (error) {
