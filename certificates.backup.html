@@ -641,6 +641,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-700">
                 <button onclick="resetCustomization()" class="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 transition-colors" data-i18n="customize.reset">
                     Ripristina Predefiniti
@@ -966,6 +967,7 @@
             </div>
         </div>
     </div>
+
     <!-- Theme System -->
     <script src="/js/theme.js"></script>
     <script src="/js/i18n.js"></script>
@@ -1006,78 +1008,6 @@
             attributeFilter: ['class']
         });
     </script>
-        
-        <!-- Bulk Contact Dialog (clean UI) -->
-        <div id="bulkContactDialog" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-            <div class="bg-gray-900 border border-gray-700 rounded-lg w-full max-w-4xl p-6">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold" data-i18n="contact.dialog.title">Comunicazione AI ai selezionati</h3>
-                    <button onclick="closeBulkContactDialog()" class="text-gray-400 hover:text-white">✕</button>
-                </div>
-
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                    <div class="space-y-5">
-                        <div>
-                            <p class="text-xs text-gray-400 mb-2" data-i18n="contact.channel">Canale</p>
-                            <div id="channelToggleGroup" class="flex gap-2">
-                                <button type="button" class="px-3 py-1.5 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-value="email">Email</button>
-                                <button type="button" class="px-3 py-1.5 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-value="whatsapp">WhatsApp</button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <p class="text-xs text-gray-400 mb-2" data-i18n="contact.style">Stile</p>
-                            <div id="styleToggleGroup" class="flex flex-wrap gap-2">
-                                <button type="button" class="px-3 py-1.5 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-value="formal" data-i18n="contact.style.formal">Formale</button>
-                                <button type="button" class="px-3 py-1.5 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-value="informal" data-i18n="contact.style.informal">Informale</button>
-                                <button type="button" class="px-3 py-1.5 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-value="professional" data-i18n="contact.style.professional">Professionale</button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <p class="text-xs text-gray-400 mb-2" data-i18n="contact.fields">Dati da includere</p>
-                            <div id="fieldsChipGroup" class="flex flex-wrap gap-2">
-                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="name">Cliente</button>
-                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="email">Email</button>
-                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="phone">Telefono</button>
-                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="brandModel">Veicolo</button>
-                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="plate">Targa</button>
-                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover-border-emerald-500" data-field="year">Anno</button>
-                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover-border-emerald-500" data-field="fuel">Carburante</button>
-                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover-border-emerald-500" data-field="km">Km</button>
-                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover-border-emerald-500" data-field="vin">VIN</button>
-                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover-border-emerald-500" data-field="serial">Serial</button>
-                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="ctaTagliando">CTA Tagliando</button>
-                                <button type="button" id="dealerSigChip" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="dealerSignature">Firma Dealer</button>
-                            </div>
-                            <div id="dealerSignatureBox" class="hidden space-y-2 bg-gray-800 border border-gray-700 rounded p-3 mt-2">
-                                <div class="grid grid-cols-1 gap-2">
-                                    <input id="dealer_name" class="w-full rounded bg-gray-900 border border-gray-700 p-2" placeholder="Nome Dealer">
-                                    <input id="dealer_email" class="w-full rounded bg-gray-900 border border-gray-700 p-2" placeholder="Email Dealer">
-                                    <input id="dealer_phone" class="w-full rounded bg-gray-900 border border-gray-700 p-2" placeholder="Telefono Dealer">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="lg:col-span-2 space-y-4">
-                        <div>
-                            <p class="text-xs text-gray-400 mb-2" data-i18n="contact.prompt">Prompt per l'AI</p>
-                            <textarea id="aiPromptInput" rows="6" class="w-full rounded bg-gray-800 border border-gray-700 p-3" placeholder="Scrivi qui le istruzioni per l'AI..."></textarea>
-                        </div>
-                        <div>
-                            <p class="text-xs text-gray-400 mb-2" data-i18n="contact.preview">Anteprima messaggi</p>
-                            <div id="aiResults" class="h-48 overflow-auto bg-gray-800 border border-gray-700 rounded p-3"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex justify-end gap-2 mt-6">
-                    <button onclick="generateAndOptionallySend(false)" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm" data-i18n="contact.generate">Genera bozza</button>
-                    <button onclick="generateAndOptionallySend(true)" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm" data-i18n="contact.send">Invia</button>
-                </div>
-            </div>
-        </div>
 
     
     <script>
@@ -1312,6 +1242,7 @@
             document.getElementById('cardsView').classList.add('hidden');
             displayTableView();
         }
+
                 // Generate client data section for cards
         function generateClientSection(cert, settings) {
             const clientFields = Object.entries(settings.cardFields)
@@ -1426,8 +1357,8 @@
                                 <div class="flex items-center gap-2">
                                     <div class="flex-shrink-0 w-8 h-8 bg-green-100 dark:bg-green-500/20 rounded-full flex items-center justify-center cursor-pointer" ondblclick="copyToClipboard('${cert.odometer ? cert.odometer.toLocaleString('it-IT') + ' km' : 'N/A'}', 'Odometer')">
                                         <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11v4"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2C6.48 2 2 6.48 2 12c0 2.76 1.12 5.26 2.93 7.07M22 12c0-5.52-4.48-10-10-10"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v5l3 3"/>
                                             <circle cx="12" cy="12" r="2" fill="currentColor"/>
                                         </svg>
                                     </div>
@@ -1657,6 +1588,7 @@
                     </div>
                 `;
             }).join('');
+
             // Load vehicle images after rendering cards (only if vehicle image is enabled)
             const isVehicleImageEnabled = settings.cardFields.vehicleImage && settings.cardFields.vehicleImage.enabled;
             if (isVehicleImageEnabled) {
@@ -1719,7 +1651,6 @@
             
             // Update table header to match visible columns
             updateTableHeader(visibleColumns);
-            ensureBulkActionsBar();
                          
             if (filteredCertificates.length === 0) {
                 tableBody.innerHTML = `
@@ -1736,8 +1667,7 @@
             tableBody.innerHTML = filteredCertificates.map(cert => `
                 <tr class="hover:bg-gray-700 transition-colors">
                     <!-- Actions Column (First) -->
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-center flex items-center gap-2">
-                        <input type="checkbox" class="form-checkbox h-4 w-4 text-green-500" data-row-checkbox data-id="${cert.id}" onchange="toggleRowSelection(${cert.id}, this.checked)" />
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-center">
                         <button onclick="openVehiclePage(${cert.id})" 
                                 class="p-1.5 text-gray-400 hover:text-green-500 hover:bg-gray-600 rounded transition-colors"
                                 title="${t('vehicle.open_details')}">
@@ -1749,25 +1679,6 @@
                     ${visibleColumns.map(([columnId]) => generateTableCell(cert, columnId)).join('')}
                 </tr>
             `).join('');
-            updateSelectionUI();
-        }
-
-        function ensureBulkActionsBar() {
-            if (document.getElementById('bulkActionsBar')) return;
-            const container = document.querySelector('#tableView');
-            const bar = document.createElement('div');
-            bar.id = 'bulkActionsBar';
-            bar.className = 'hidden mb-3 flex items-center justify-between bg-gray-800 border border-gray-700 rounded p-3';
-            bar.innerHTML = `
-                <div class="text-sm text-gray-300">
-                    <span id="selectedCount">0</span> ${t('selected.items') || 'selected'}
-                </div>
-                <div class="flex items-center gap-2">
-                    <button onclick="openBulkContactDialog(); initChipGroups();" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm">${t('contact.selected') || 'Contatta selezionati'}</button>
-                    <button onclick="toggleSelectAll(false)" class="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm">${t('clear.selection') || 'Pulisci selezione'}</button>
-                </div>
-            `;
-            container.parentNode.insertBefore(bar, container);
         }
 
         // Update table header based on visible columns
@@ -1777,11 +1688,8 @@
             
             tableHeader.innerHTML = `
                 <!-- Actions Column Header (First) -->
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider" style="white-space: nowrap !important; min-width: 110px;">
-                    <label class="inline-flex items-center gap-2">
-                        <input id="selectAllCheckbox" type="checkbox" class="form-checkbox h-4 w-4 text-green-500" onchange="toggleSelectAll(this.checked)" />
-                        <span data-i18n="table.actions">Actions</span>
-                    </label>
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-300 uppercase tracking-wider" style="white-space: nowrap !important; min-width: 80px;">
+                    <span data-i18n="table.actions">Actions</span>
                 </th>
             ` + visibleColumns.map(([columnId, columnInfo]) => `
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-600" onclick="sortTable('${columnId}')" style="white-space: nowrap !important; min-width: ${getColumnMinWidth(columnId)};">
@@ -1905,171 +1813,6 @@
             
             return displayValue;
         }
-
-        // Selection state
-        const selectedCertificateIds = new Set();
-
-        function toggleRowSelection(id, isChecked) {
-            if (isChecked) {
-                selectedCertificateIds.add(id);
-            } else {
-                selectedCertificateIds.delete(id);
-            }
-            updateSelectionUI();
-        }
-
-        function toggleSelectAll(checked) {
-            // Apply to all filtered results, not just visible DOM rows
-            if (checked) {
-                filteredCertificates.forEach(c => selectedCertificateIds.add(c.id));
-            } else {
-                selectedCertificateIds.clear();
-            }
-            // Reflect state on current DOM checkboxes
-            document.querySelectorAll('[data-row-checkbox]').forEach(cb => {
-                cb.checked = checked;
-            });
-            updateSelectionUI();
-        }
-
-        function updateSelectionUI() {
-            const count = selectedCertificateIds.size;
-            const bar = document.getElementById('bulkActionsBar');
-            if (bar) {
-                bar.classList.toggle('hidden', count === 0);
-                const counter = document.getElementById('selectedCount');
-                if (counter) counter.textContent = count.toString();
-            }
-            // Update tri-state for header checkbox
-            const master = document.getElementById('selectAllCheckbox');
-            if (master) {
-                const total = filteredCertificates.length;
-                master.indeterminate = count > 0 && count < total;
-                master.checked = count > 0 && count === total;
-            }
-        }
-
-        function getSelectedCertificates() {
-            const set = new Set(Array.from(selectedCertificateIds));
-            return filteredCertificates.filter(c => set.has(c.id));
-        }
-
-        async function openBulkContactDialog() {
-            const selected = getSelectedCertificates();
-            if (selected.length === 0) return;
-            const dialog = document.getElementById('bulkContactDialog');
-            if (!dialog) return;
-            dialog.classList.remove('hidden');
-            document.getElementById('aiPromptInput').value = '';
-        }
-
-        function closeBulkContactDialog() {
-            const dialog = document.getElementById('bulkContactDialog');
-            if (dialog) dialog.classList.add('hidden');
-        }
-        async function generateAndOptionallySend(sendNow = false) {
-            const channel = document.querySelector('#channelToggleGroup .active-chip')?.dataset.value || 'email';
-            const style = document.querySelector('#styleToggleGroup .active-chip')?.dataset.value || 'professional';
-            const language = document.documentElement.lang || 'it';
-            const prompt = document.getElementById('aiPromptInput').value || '';
-            const useFields = {};
-            document.querySelectorAll('#fieldsChipGroup .active-chip').forEach(chip => {
-                useFields[chip.dataset.field] = true;
-            });
-
-            const recipients = getSelectedCertificates();
-            // Dealer signature enrichment
-            const dealerName = document.getElementById('dealer_name')?.value?.trim() || '';
-            const dealerEmail = document.getElementById('dealer_email')?.value?.trim() || '';
-            const dealerPhone = document.getElementById('dealer_phone')?.value?.trim() || '';
-            const payloadRecipients = useFields.dealerSignature ? recipients.map(r => ({ ...r, dealerName, dealerEmail, dealerPhone })) : recipients;
-
-            const out = document.getElementById('aiResults');
-            const genBtn = document.querySelector('#bulkContactDialog [data-i18n="contact.generate"]') || document.querySelector('#bulkContactDialog button:nth-last-child(2)');
-            const sendBtn = document.querySelector('#bulkContactDialog [data-i18n="contact.send"]') || document.querySelector('#bulkContactDialog button:nth-last-child(1)');
-            
-            if (!recipients.length) {
-                out.textContent = language === 'it' ? 'Seleziona almeno un certificato.' : 'Please select at least one certificate.';
-                return;
-            }
-
-            try {
-                if (genBtn) { genBtn.disabled = true; genBtn.classList.add('opacity-70','cursor-not-allowed'); }
-                if (sendBtn) { sendBtn.disabled = true; sendBtn.classList.add('opacity-70','cursor-not-allowed'); }
-                out.textContent = language === 'it' ? 'Generazione in corso...' : 'Generating...';
-
-                const response = await fetch('/api/communications/generate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ channel, style, prompt, recipients: payloadRecipients, useFields, language, send: sendNow })
-                });
-                const ct = response.headers.get('content-type') || '';
-                if (!response.ok) {
-                    const msg = ct.includes('application/json') ? (await response.json()).error : await response.text();
-                    throw new Error(msg || ('HTTP ' + response.status));
-                }
-                const data = ct.includes('application/json') ? await response.json() : { success: false, error: 'Invalid content-type' };
-
-                if (!data.success) {
-                    out.textContent = (language === 'it' ? 'Errore: ' : 'Error: ') + (data.error || 'unknown');
-                    return;
-                }
-                // Render previews
-                out.innerHTML = data.results.map(r => `
-                    <div class="p-3 border border-gray-600 rounded mb-2">
-                        <div class="text-xs text-gray-400 mb-1">#${r.certificateId}</div>
-                        <pre class="whitespace-pre-wrap text-sm">${(r.message || '').replace(/</g,'&lt;')}</pre>
-                    </div>
-                `).join('');
-            } catch (err) {
-                out.textContent = (language === 'it' ? 'Errore di rete: ' : 'Network error: ') + err.message;
-            } finally {
-                if (genBtn) { genBtn.disabled = false; genBtn.classList.remove('opacity-70','cursor-not-allowed'); }
-                if (sendBtn) { sendBtn.disabled = false; sendBtn.classList.remove('opacity-70','cursor-not-allowed'); }
-            }
-        }
-
-        // Chip/toggle helpers for modern UI
-        function initChipGroups() {
-            // Channel group
-            document.querySelectorAll('#channelToggleGroup button').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('#channelToggleGroup button').forEach(b => b.classList.remove('active-chip','border-emerald-500','bg-emerald-600/10'));
-                    btn.classList.add('active-chip','border-emerald-500','bg-emerald-600/10');
-                });
-            });
-            const firstChannel = document.querySelector('#channelToggleGroup button[data-value="email"]');
-            if (firstChannel) firstChannel.click();
-
-            // Style group
-            document.querySelectorAll('#styleToggleGroup button').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('#styleToggleGroup button').forEach(b => b.classList.remove('active-chip','border-emerald-500','bg-emerald-600/10'));
-                    btn.classList.add('active-chip','border-emerald-500','bg-emerald-600/10');
-                });
-            });
-            const defaultStyle = document.querySelector('#styleToggleGroup button[data-value="professional"]');
-            if (defaultStyle) defaultStyle.click();
-
-            // Fields chips
-            document.querySelectorAll('#fieldsChipGroup button').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    btn.classList.toggle('active-chip');
-                    btn.classList.toggle('border-emerald-500');
-                    btn.classList.toggle('bg-emerald-600/10');
-                    if (btn.dataset.field === 'dealerSignature') {
-                        const box = document.getElementById('dealerSignatureBox');
-                        if (box) box.classList.toggle('hidden', !btn.classList.contains('active-chip'));
-                    }
-                });
-            });
-            // Preselect useful fields
-            ['name','brandModel','plate','ctaTagliando'].forEach(f => {
-                const chip = document.querySelector(`#fieldsChipGroup button[data-field="${f}"]`);
-                if (chip && !chip.classList.contains('active-chip')) chip.click();
-            });
-        }
-
 
         // Get minimum width for columns
         function getColumnMinWidth(columnId) {
@@ -2295,6 +2038,7 @@
             
             console.log('🎯 Search type changed to:', selectedType);
         }
+        
         // Populate dynamic dropdown based on search type
         function populateDynamicDropdown(type) {
             const dropdown = document.getElementById('dynamicDropdownInput');
@@ -2632,6 +2376,7 @@
                 cardFields: cardFields
             };
         }
+
         // Save customization settings to cookies
         function saveCustomizationSettings(tableColumns, cardFields) {
             const cookieNames = getDealerCookieNames();
@@ -2974,6 +2719,7 @@
                 showCopyNotification(`Failed to copy ${fieldName}`, 'error');
             }
         }
+
         // Show copy notification
         function showCopyNotification(message, type = 'success') {
             // Remove existing notification
@@ -3321,6 +3067,7 @@
             
             return options;
         }
+
         // Get value inputs based on field type and operator
         function getValueInputs(criteria) {
             if (!criteria.field || !criteria.operator) {
@@ -3670,6 +3417,7 @@
             d.setMonth(0, 1);
             return getDateStart(d);
         }
+
         // Helper functions to add specific criteria types
         function addDateRangeCriteria(field, startDate, endDate) {
             const criteriaId = 'criteria_' + (++criteriaIdCounter);
@@ -4021,6 +3769,7 @@
                     if (span) span.style.setProperty('color', 'white', 'important');
                 }
             });
+            
             const whiteTextModalButtons = [
                 document.querySelector('button[onclick="addSearchCriteria()"]'),
                 document.querySelector('button[onclick="saveAdvancedSearch()"]'),
@@ -4319,6 +4068,7 @@
                     const rawFilteredCertificates = data.data.filter(cert => 
                         allGroupVehicleIds.includes(cert.vehicle_id)
                     );
+
                     // Process the filtered certificates with the same formatting logic
                     filteredCertificates = rawFilteredCertificates.map(cert => {
                         // Helper functions to handle JSON data
@@ -4659,6 +4409,7 @@
             const modal = document.getElementById('createGroupModal');
             modal.classList.add('hidden');
         }
+
         // Edit group
         function editGroup(groupId) {
             const group = vehicleGroups.find(g => g.id === groupId);
@@ -4998,6 +4749,7 @@
                 </div>
             `).join('');
         }
+
         // Render group vehicles
         function renderGroupVehicles(vehiclesToRender = null) {
             const container = document.getElementById('groupVehiclesList');

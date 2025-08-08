@@ -2850,29 +2850,31 @@
             }
         }
 
-        // Load Client Data
+        // Load Client Data (from certificate.client JSON)
         async function loadClientData() {
-            if (!certificateData || !certificateData.deviceId) {
-                console.warn('No device ID available for client data');
-                return;
-            }
-
             try {
-                
-                
-                const response = await secureApiCall(`/api/device/${certificateData.deviceId}/client`);
-                if (!response) {
-                    console.error('❌ Failed to authenticate for client data');
+                if (!window.certificateData) {
+                    console.warn('No certificate data available for client info');
+                    displayNoClientData('Nessuna informazione cliente disponibile');
                     return;
                 }
-                const result = await response.json();
-                
-                if (result.success && result.client) {
-                    displayClientData(result.client);
-                } else {
-                    displayNoClientData(result.message);
+
+                let clientData = window.certificateData.client;
+
+                // If stored as JSON string, parse it safely
+                if (typeof clientData === 'string') {
+                    try {
+                        clientData = JSON.parse(clientData);
+                    } catch (_e) {
+                        console.warn('Client data is a string but not valid JSON');
+                    }
                 }
-                
+
+                if (clientData && typeof clientData === 'object') {
+                    displayClientData(clientData);
+                } else {
+                    displayNoClientData('Nessuna informazione cliente disponibile');
+                }
             } catch (error) {
                 console.error('❌ Error loading client data:', error);
                 displayClientDataError('Failed to load client information');

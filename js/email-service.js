@@ -20,6 +20,42 @@ class EmailService {
     }
 
     /**
+     * Send a generic email using SES
+     * @param {string} toEmail
+     * @param {string} subject
+     * @param {string} htmlBody
+     * @param {string} textBody
+     * @returns {Promise<{success:boolean, messageId?:string, error?:string}>}
+     */
+    async sendGenericEmail(toEmail, subject, htmlBody, textBody = '') {
+        if (!this.isEnabled) {
+            console.log('Email service disabled - AWS credentials not configured');
+            return { success: false, error: 'email_service_disabled' };
+        }
+
+        try {
+            const command = new SendEmailCommand({
+                Source: this.fromEmail,
+                Destination: { ToAddresses: [toEmail] },
+                Message: {
+                    Subject: { Data: subject, Charset: 'UTF-8' },
+                    Body: {
+                        Html: { Data: htmlBody, Charset: 'UTF-8' },
+                        Text: { Data: textBody || htmlBody.replace(/<[^>]+>/g, ''), Charset: 'UTF-8' }
+                    }
+                }
+            });
+
+            const result = await this.sesClient.send(command);
+            console.log(`Email sent successfully to ${toEmail}, Message ID: ${result.MessageId}`);
+            return { success: true, messageId: result.MessageId };
+        } catch (error) {
+            console.error('Error sending generic email:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
+    /**
      * Send PIN email to dealer
      * @param {string} toEmail - Dealer's email address
      * @param {string} dealerName - Dealer's company name

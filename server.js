@@ -95,6 +95,136 @@ app.get('/status', (req, res) => {
     });
 });
 
+// Bulk communication endpoint: generate AI messages and optionally send
+app.post('/api/communications/generate', express.json(), async (req, res) => {
+    try {
+        const { channel, style, prompt, recipients, useFields, language = 'it', send = false } = req.body;
+
+        if (!Array.isArray(recipients) || recipients.length === 0) {
+            return res.status(400).json({ success: false, error: 'no_recipients' });
+        }
+
+        if (!['email', 'whatsapp'].includes(channel)) {
+            return res.status(400).json({ success: false, error: 'invalid_channel' });
+        }
+
+        const styleMap = {
+            formal: language === 'it' ? 'tono formale' : 'formal tone',
+            informal: language === 'it' ? 'tono informale' : 'informal tone',
+            professional: language === 'it' ? 'tono professionale' : 'professional tone'
+        };
+
+            const results = [];
+
+        for (const r of recipients) {
+            // r is expected to carry the certificate fields we need
+            const dataForPrompt = {};
+            if (useFields?.name) dataForPrompt.name = r.clientName;
+            if (useFields?.email) dataForPrompt.email = r.clientEmail;
+            if (useFields?.phone) dataForPrompt.phone = r.clientPhone;
+            if (useFields?.km) dataForPrompt.km = r.odometer;
+            if (useFields?.year) dataForPrompt.year = r.vehicleYear;
+            if (useFields?.fuel) dataForPrompt.fuel = r.fuelType;
+            if (useFields?.plate) dataForPrompt.plate = r.vehiclePlate;
+            if (useFields?.vin) dataForPrompt.vin = r.vin;
+            if (useFields?.brandModel) dataForPrompt.vehicle = r.vehicleInfo;
+            if (useFields?.serial) dataForPrompt.serial = r.serial;
+
+            let message = '';
+            if (openai && process.env.OPENAI_API_KEY) {
+                try {
+                    const messages = [
+                        { role: 'system', content: language === 'it' ? 'Sei un assistente che scrive messaggi di contatto per clienti di un concessionario.' : 'You are an assistant writing outreach messages to dealership customers.' },
+                        { role: 'user', content: `${language === 'it' ? 'Scrivi un messaggio in' : 'Write a message in'} ${styleMap[style] || styleMap.professional}. ${language === 'it' ? 'Istruzioni del dealer:' : 'Dealer instructions:'} ${prompt}\n\n${language === 'it' ? 'Dati del cliente (JSON):' : 'Client data (JSON):'}\n${JSON.stringify(dataForPrompt)}` }
+                    ];
+                    const completion = await openai.chat.completions.create({ model: 'gpt-3.5-turbo', messages });
+                    message = completion.choices?.[0]?.message?.content?.trim() || '';
+                } catch (e) {
+                    console.warn('OpenAI failed, falling back to template message:', e.message);
+                }
+            }
+
+            if (!message) {
+                // Fallback deterministic template with tone by style
+                const styleTone = (typeof style === 'string' ? style : 'professional');
+                const name = dataForPrompt.name || (language === 'it' ? 'Cliente' : 'Customer');
+                let intro, body;
+                if (language === 'it') {
+                    if (styleTone === 'formal') {
+                        intro = `Gentile ${name},`;
+                        body = useFields?.ctaTagliando
+                            ? "La contattiamo per ricordarle il tagliando del veicolo. La invitiamo a recarsi in concessionaria per fissare l'appuntamento."
+                            : "La contattiamo per un aggiornamento relativo al suo veicolo.";
+                    } else if (styleTone === 'informal') {
+                        intro = `Ciao ${name}!`;
+                        body = useFields?.ctaTagliando
+                            ? "Ti contattiamo per ricordarti il tagliando del veicolo. Passa in concessionaria per fissare l'appuntamento."
+                            : "Ti contattiamo per un aggiornamento sul tuo veicolo.";
+                    } else { // professional
+                        intro = `Buongiorno ${name},`;
+                        body = useFields?.ctaTagliando
+                            ? "La contattiamo per ricordarle il tagliando del veicolo. Può recarsi in concessionaria o fissare un appuntamento."
+                            : "La contattiamo per un aggiornamento relativo al veicolo.";
+                    }
+                } else {
+                    if (styleTone === 'formal') {
+                        intro = `Dear ${name},`;
+                        body = useFields?.ctaTagliando
+                            ? "We kindly remind you about your vehicle service. Please visit the dealership to schedule your appointment."
+                            : "We are contacting you with an update regarding your vehicle.";
+                    } else if (styleTone === 'informal') {
+                        intro = `Hi ${name}!`;
+                        body = useFields?.ctaTagliando
+                            ? "We're reaching out to remind you about your vehicle service. Drop by the dealership to book your appointment."
+                            : "We're getting in touch with a quick update about your vehicle.";
+                    } else {
+                        intro = `Hello ${name},`;
+                        body = useFields?.ctaTagliando
+                            ? "We are contacting you to remind you about your vehicle service. You can visit the dealership or schedule an appointment."
+                            : "We are contacting you with a vehicle-related update.";
+                    }
+                }
+
+                const details = [
+                    dataForPrompt.vehicle && `${language === 'it' ? 'Veicolo' : 'Vehicle'}: ${dataForPrompt.vehicle}`,
+                    dataForPrompt.plate && `${language === 'it' ? 'Targa' : 'Plate'}: ${dataForPrompt.plate}`,
+                    dataForPrompt.year && `${language === 'it' ? 'Anno' : 'Year'}: ${dataForPrompt.year}`,
+                    dataForPrompt.fuel && `${language === 'it' ? 'Carburante' : 'Fuel'}: ${dataForPrompt.fuel}`,
+                    (dataForPrompt.km != null) && `${language === 'it' ? 'Km' : 'Mileage'}: ${dataForPrompt.km}`
+                ].filter(Boolean).join(' • ');
+
+                const dealerSig = useFields?.dealerSignature ? `\n\n— ${r.dealerName || ''}${r.dealerEmail ? ` | ${r.dealerEmail}` : ''}${r.dealerPhone ? ` | ${r.dealerPhone}` : ''}` : '';
+                message = `${intro}\n\n${details ? details + '\n\n' : ''}${body}${dealerSig}`;
+            }
+
+            let sendResult = { success: false };
+            if (send) {
+                try {
+                    if (channel === 'email' && r.clientEmail) {
+                        sendResult = await emailService.sendGenericEmail(r.clientEmail, language === 'it' ? 'Comunicazione Service Hub' : 'Service Hub Communication', `<p>${message.replace(/\n/g, '<br/>')}</p>`);
+                    } else if (channel === 'whatsapp' && twilioClient && r.clientPhone) {
+                        const whatsappMessage = await twilioClient.messages.create({
+                            body: message,
+                            from: process.env.TWILIO_WHATSAPP_FROM,
+                            to: `whatsapp:${r.clientPhone}`
+                        });
+                        sendResult = { success: true, sid: whatsappMessage.sid };
+                    }
+                } catch (e) {
+                    sendResult = { success: false, error: e.message };
+                }
+            }
+
+            results.push({ certificateId: r.id, message, sendResult });
+        }
+
+        return res.json({ success: true, results });
+    } catch (error) {
+        console.error('Bulk communications error:', error);
+        return res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Email service status endpoint
 app.get('/api/email/status', (req, res) => {
     res.status(200).json({
