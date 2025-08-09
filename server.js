@@ -190,6 +190,11 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
         };
 
             const results = [];
+        // Accumulator for OpenAI usage across messages
+        let oaModel = '';
+        let oaPromptTokens = 0;
+        let oaCompletionTokens = 0;
+        const oaIds = [];
 
         for (const r of recipients) {
             // r is expected to carry the certificate fields we need
@@ -217,6 +222,13 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
                     ];
                     const completion = await openai.chat.completions.create({ model: 'gpt-3.5-turbo', messages });
                     message = completion.choices?.[0]?.message?.content?.trim() || '';
+                    // Collect OpenAI usage details
+                    try {
+                        oaModel = completion.model || oaModel || 'gpt-3.5-turbo';
+                        oaPromptTokens += completion.usage?.prompt_tokens || 0;
+                        oaCompletionTokens += completion.usage?.completion_tokens || 0;
+                        if (completion.id) oaIds.push(completion.id);
+                    } catch { /* ignore */ }
                     // Billing: registra uso OpenAI (stima base) e scala saldo
                     try {
                         const dealerId = bodyDealerId || 1;
@@ -356,7 +368,17 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
             // Registra addebito OpenAI ora (bozza)
             try {
                 if (openai_cents > 0) {
-                    await supabaseAdmin.from('billing_usage_events').insert([{ dealer_id: dealerId, event_type: 'openai', quantity: 1, unit_cost_cents: openai_cents, total_cost_cents: openai_cents }]);
+                    await supabaseAdmin.from('billing_usage_events').insert([{
+                        dealer_id: dealerId,
+                        event_type: 'openai',
+                        quantity: 1,
+                        unit_cost_cents: openai_cents,
+                        total_cost_cents: openai_cents,
+                        openai_model: oaModel || 'gpt-3.5-turbo',
+                        openai_input_tokens: oaPromptTokens || 0,
+                        openai_output_tokens: oaCompletionTokens || 0,
+                        related_entity: oaIds.join(',') || null
+                    }]);
                     const { data: bal } = await supabaseAdmin.from('dealer_billing_accounts').select('balance_cents').eq('dealer_id', dealerId).order('updated_at', { ascending: false }).limit(1);
                     const current = bal?.[0]?.balance_cents ?? 0;
                     await supabaseAdmin.from('dealer_billing_accounts').update({ balance_cents: current - openai_cents, updated_at: new Date().toISOString() }).eq('dealer_id', dealerId);
