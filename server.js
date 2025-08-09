@@ -148,7 +148,7 @@ app.get('/api/billing/usage/:dealerId', async (req, res) => {
 // Bulk communication endpoint: generate AI messages and optionally send
 app.post('/api/communications/generate', express.json(), async (req, res) => {
     try {
-        const { channel, style, prompt, recipients, useFields, language = 'it', send = false, dealerSignatureText, dealerId: bodyDealerId } = req.body;
+        const { channel, style, prompt, recipients, useFields, language = 'it', send = false, dealerSignatureText, dealerId: bodyDealerId, selectedCount = 0 } = req.body;
 
         if (!Array.isArray(recipients) || recipients.length === 0) {
             return res.status(400).json({ success: false, error: 'no_recipients' });
@@ -315,8 +315,9 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
 
         // Calcola costi (stima per conferma)
         const dealerId = bodyDealerId || 1;
-        const emailCount = send && channel === 'email' ? recipients.length : 0;
-        const waCount = send && channel === 'whatsapp' ? recipients.length : 0;
+        // i costi dipendono dal numero di veicoli selezionati (selectedCount)
+        const emailCount = send && channel === 'email' ? selectedCount : 0;
+        const waCount = send && channel === 'whatsapp' ? selectedCount : 0;
         const email_cents = emailCount * 5;
         const whatsapp_cents = waCount * 10;
         const openai_cents = 20; // stima base

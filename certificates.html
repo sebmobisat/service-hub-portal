@@ -2050,13 +2050,17 @@
                 useFields[chip.dataset.field] = true;
             });
 
-            const recipients = getSelectedCertificates();
-            // Solo clienti test per generazione/invio (match su email/phone)
+            const selectedCerts = getSelectedCertificates();
+            // Carica clienti test come destinatari principali
             const dealerId = getCurrentDealerId();
             const testClients = await fetch(`/api/communications/test-clients/${dealerId}`).then(r=>r.json()).then(j=> j.data||[]);
-            const tcEmails = new Set(testClients.map(c => (c.email||'').toLowerCase()).filter(Boolean));
-            const tcPhones = new Set(testClients.map(c => (c.phone||'')).filter(Boolean));
-            const onlyTestRecipients = recipients.filter(r => tcEmails.has((r.clientEmail||'').toLowerCase()) || tcPhones.has(r.clientPhone||''));
+            const testRecipients = testClients.map(c => ({
+                id: c.id,
+                clientName: [c.first_name, c.last_name].filter(Boolean).join(' ').trim() || 'Cliente Test',
+                clientEmail: (c.email||'').toLowerCase(),
+                clientPhone: c.phone||''
+            }));
+            const onlyTestRecipients = testRecipients; // bozza/invio sempre su test clients
 
             // Firma dealer selezionata
             let dealerSignatureText = '';
@@ -2072,7 +2076,7 @@
             const genBtn = document.querySelector('#bulkContactDialog [data-i18n="contact.generate"]') || document.querySelector('#bulkContactDialog button:nth-last-child(2)');
             const sendBtn = document.querySelector('#bulkContactDialog [data-i18n="contact.send"]') || document.querySelector('#bulkContactDialog button:nth-last-child(1)');
             
-            if (!recipients.length) {
+            if (!selectedCerts.length) {
                 out.textContent = language === 'it' ? 'Seleziona almeno un certificato.' : 'Please select at least one certificate.';
                 return;
             }
@@ -2085,7 +2089,7 @@
                 const response = await fetch('/api/communications/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ channel, style, prompt, recipients: onlyTestRecipients, useFields, language, send: sendNow, dealerSignatureText, dealerId })
+                    body: JSON.stringify({ channel, style, prompt, recipients: onlyTestRecipients, useFields, language, send: sendNow, dealerSignatureText, dealerId, selectedCount: selectedCerts.length })
                 });
                 const ct = response.headers.get('content-type') || '';
                 if (!response.ok) {
