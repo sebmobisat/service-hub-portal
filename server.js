@@ -130,39 +130,49 @@ app.get('/api/billing/balance/:dealerId', async (req, res) => {
 // Billing: usage daily series for charts
 app.get('/api/billing/usage/:dealerId', async (req, res) => {
     const dealerId = parseInt(req.params.dealerId, 10) || 1;
-    const { from, to } = req.query; // ISO dates
+    const { from, to, granularity } = req.query; // ISO dates + granularity (day|hour)
     try {
         const { supabaseAdmin } = require('./config/supabase.js');
-        // Se la vista non è disponibile, leggi direttamente dalla tabella e aggrega lato server
+        // Leggi sempre direttamente dalla tabella per evitare problemi con la vista materializzata
         let data = [];
-        try {
-            const r = await supabaseAdmin.from('v_billing_usage_daily').select('*').eq('dealer_id', dealerId).order('day');
-            if (r.error) throw r.error;
-            data = r.data || [];
-        } catch (e) {
-            const q = await supabaseAdmin
-                .from('billing_usage_events')
-                .select('dealer_id, created_at, event_type, total_cost_cents')
-                .eq('dealer_id', dealerId)
-                .order('created_at');
-            if (!q.error) {
-                const map = new Map();
-                for (const row of q.data || []) {
-                    const day = new Date(row.created_at); day.setHours(0,0,0,0);
-                    const key = day.toISOString();
-                    const rec = map.get(key) || { dealer_id: dealerId, day: key, emails:0, whatsapps:0, openai_calls:0, total_cost_cents:0 };
-                    if (row.event_type==='email') rec.emails += 1;
-                    if (row.event_type==='whatsapp') rec.whatsapps += 1;
-                    if (row.event_type==='openai') rec.openai_calls += 1;
-                    rec.total_cost_cents += row.total_cost_cents||0;
-                    map.set(key, rec);
+        // Salta la vista e vai diretto alla tabella
+        const q = await supabaseAdmin
+            .from('billing_usage_events')
+            .select('dealer_id, created_at, event_type, total_cost_cents')
+            .eq('dealer_id', dealerId)
+            .order('created_at');
+        if (!q.error) {
+            const map = new Map();
+            const isHourly = granularity === 'hour';
+            for (const row of q.data || []) {
+                const timestamp = new Date(row.created_at);
+                let key;
+                if (isHourly) {
+                    // Aggrega per ora (mantieni ora, azzera minuti/secondi)
+                    timestamp.setMinutes(0, 0, 0);
+                    key = timestamp.toISOString();
+                } else {
+                    // Aggrega per giorno (azzera ora)
+                    timestamp.setHours(0,0,0,0);
+                    key = timestamp.toISOString();
                 }
-                data = Array.from(map.values()).sort((a,b)=> new Date(a.day)-new Date(b.day));
+                const rec = map.get(key) || { 
+                    dealer_id: dealerId, 
+                    [isHourly ? 'hour' : 'day']: key, 
+                    emails:0, whatsapps:0, openai_calls:0, total_cost_cents:0 
+                };
+                if (row.event_type==='email') rec.emails += 1;
+                if (row.event_type==='whatsapp') rec.whatsapps += 1;
+                if (row.event_type==='openai') rec.openai_calls += 1;
+                rec.total_cost_cents += row.total_cost_cents||0;
+                map.set(key, rec);
             }
+            data = Array.from(map.values()).sort((a,b)=> new Date(a[isHourly ? 'hour' : 'day'])-new Date(b[isHourly ? 'hour' : 'day']));
         }
         // Filtra per range dato lato server (se fornito)
-        if (from) data = data.filter(d => new Date(d.day) >= new Date(from));
-        if (to) data = data.filter(d => new Date(d.day) <= new Date(to));
+        const timeField = granularity === 'hour' ? 'hour' : 'day';
+        if (from) data = data.filter(d => new Date(d[timeField]) >= new Date(from));
+        if (to) data = data.filter(d => new Date(d[timeField]) <= new Date(to));
         res.json({ success: true, data });
     } catch (e) {
         console.error('Billing usage error', e);
@@ -173,7 +183,7 @@ app.get('/api/billing/usage/:dealerId', async (req, res) => {
 // Bulk communication endpoint: generate AI messages and optionally send
 app.post('/api/communications/generate', express.json(), async (req, res) => {
     try {
-        const { channel, style, prompt, recipients, useFields, language = 'it', send = false, dealerSignatureText, dealerCompanyName = '', selectedVehicles = [], dealerId: bodyDealerId, selectedCount = 0 } = req.body;
+        const { channel, style, prompt, recipients, useFields, language = 'it', send = false, dealerSignatureText, dealerCompanyName = '', selectedVehicles = [], dealerId: bodyDealerId, baseMessage: providedBaseMessage } = req.body;
 
         if (!Array.isArray(recipients) || recipients.length === 0) {
             return res.status(400).json({ success: false, error: 'no_recipients' });
@@ -188,18 +198,37 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
             informal: language === 'it' ? 'tono informale' : 'informal tone',
             professional: language === 'it' ? 'tono professionale' : 'professional tone'
         };
+        // Prepare chip placeholders the AI must include
+        const chipToToken = {
+            name: '{NAME}',
+            email: '{EMAIL}',
+            phone: '{PHONE}',
+            brandModel: '{VEHICLE}',
+            plate: '{PLATE}',
+            year: '{YEAR}',
+            fuel: '{FUEL}',
+            km: '{KM}',
+            vin: '{VIN}',
+            serial: '{SERIAL}',
+            ctaTagliando: '{CTA_TAGLIANDO}'
+        };
+        const selectedTokens = Object.entries(useFields || {})
+            .filter(([, v]) => !!v)
+            .map(([k]) => chipToToken[k])
+            .filter(Boolean);
+        // Always include a salutation token for gender-based personalization
+        const alwaysTokens = ['{SALUTATION}'];
 
-            const results = [];
-        // Accumulator for OpenAI usage across messages
+        // Build a single base message either from provided draft or via one OpenAI call
+        let baseMessage = (providedBaseMessage || '').trim();
         let oaModel = '';
         let oaPromptTokens = 0;
         let oaCompletionTokens = 0;
         const oaIds = [];
 
-        for (const r of recipients) {
-            // r is expected to carry the certificate fields we need
-            // compila dati per prompt usando i chip attivi e la selezione veicoli
-            const vehicleSummary = selectedVehicles.map(v => ({
+        if (!baseMessage) {
+            // One single OpenAI call for the whole batch
+            const vehicleSummary = (selectedVehicles || []).map(v => ({
                 name: v.name,
                 email: v.email,
                 phone: v.phone,
@@ -211,116 +240,104 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
                 vin: v.vin,
                 serial: v.serial
             }));
-            const dataForPrompt = { dealerCompanyName, vehicleSummary };
+            const dataForPrompt = { dealerCompanyName, required_placeholders: [...alwaysTokens, ...selectedTokens], vehicleSummary };
 
-            let message = '';
             if (openai && process.env.OPENAI_API_KEY) {
                 try {
                     const messages = [
                         { role: 'system', content: language === 'it' ? 'Sei un assistente che scrive messaggi di contatto per clienti di un concessionario.' : 'You are an assistant writing outreach messages to dealership customers.' },
-                        { role: 'user', content: `${language === 'it' ? 'Scrivi un messaggio in' : 'Write a message in'} ${styleMap[style] || styleMap.professional}. ${language === 'it' ? 'Istruzioni del dealer:' : 'Dealer instructions:'} ${prompt}\n\n${language === 'it' ? 'Dati del cliente (JSON):' : 'Client data (JSON):'}\n${JSON.stringify(dataForPrompt)}` }
+                        { role: 'user', content:
+`${language === 'it' ? 'Scrivi un unico messaggio in' : 'Write a single message in'} ${styleMap[style] || styleMap.professional}.
+${language === 'it' ? 'Includi OBBLIGATORIAMENTE i seguenti placeholder esattamente come scritti (non sostituirli):' : 'MANDATORILY include the following placeholders exactly as written (do not replace them):'} ${[...alwaysTokens, ...selectedTokens].join(' ')}.
+${language === 'it' ? 'Istruzioni del dealer:' : 'Dealer instructions:'} ${prompt}
+${language === 'it' ? 'Contesto (JSON):' : 'Context (JSON):'}\n${JSON.stringify(dataForPrompt)}
+
+${language === 'it' ? 'Restituisci SOLO il testo del messaggio, senza spiegazioni.' : 'Return ONLY the message text, with no explanations.'}` }
                     ];
                     const completion = await openai.chat.completions.create({ model: 'gpt-3.5-turbo', messages });
-                    message = completion.choices?.[0]?.message?.content?.trim() || '';
-                    // Collect OpenAI usage details
+                    baseMessage = completion.choices?.[0]?.message?.content?.trim() || '';
                     try {
-                        oaModel = completion.model || oaModel || 'gpt-3.5-turbo';
-                        oaPromptTokens += completion.usage?.prompt_tokens || 0;
-                        oaCompletionTokens += completion.usage?.completion_tokens || 0;
+                        oaModel = completion.model || 'gpt-3.5-turbo';
+                        oaPromptTokens = completion.usage?.prompt_tokens || 0;
+                        oaCompletionTokens = completion.usage?.completion_tokens || 0;
                         if (completion.id) oaIds.push(completion.id);
-                    } catch { /* ignore */ }
-                    // Billing: registra uso OpenAI (stima base) e scala saldo
-                    try {
-                        const dealerId = bodyDealerId || 1;
-                        const providerCostCents = 1; // placeholder minimo; in futuro calcolo reale
-                        const unitCostCents = Math.round(providerCostCents * 20);
-                        await supabaseAdmin.from('billing_usage_events').insert([{
-                            dealer_id: dealerId,
-                            event_type: 'openai',
-                            quantity: 1,
-                            unit_cost_cents: unitCostCents,
-                            total_cost_cents: unitCostCents,
-                            openai_provider_cost_cents: providerCostCents
-                        }]);
-                        // Decremento saldo (approccio semplice)
-                        const { data: bal } = await supabaseAdmin
-                            .from('dealer_billing_accounts')
-                            .select('balance_cents')
-                            .eq('dealer_id', dealerId)
-                            .order('updated_at', { ascending: false })
-                            .limit(1);
-                        const current = bal?.[0]?.balance_cents ?? 0;
-                        await supabaseAdmin
-                            .from('dealer_billing_accounts')
-                            .update({ balance_cents: current - unitCostCents, updated_at: new Date().toISOString() })
-                            .eq('dealer_id', dealerId);
-                    } catch (e) { console.warn('billing openai event failed', e.message); }
+                    } catch {}
                 } catch (e) {
                     console.warn('OpenAI failed, falling back to template message:', e.message);
                 }
             }
 
-            if (!message) {
-                // Fallback deterministic template with tone by style
-                const styleTone = (typeof style === 'string' ? style : 'professional');
-                const name = dataForPrompt.name || (language === 'it' ? 'Cliente' : 'Customer');
-                let intro, body;
-                if (language === 'it') {
-                    if (styleTone === 'formal') {
-                        intro = `Gentile ${name},`;
-                        body = useFields?.ctaTagliando
-                            ? "La contattiamo per ricordarle il tagliando del veicolo. La invitiamo a recarsi in concessionaria per fissare l'appuntamento."
-                            : "La contattiamo per un aggiornamento relativo al suo veicolo.";
-                    } else if (styleTone === 'informal') {
-                        intro = `Ciao ${name}!`;
-                        body = useFields?.ctaTagliando
-                            ? "Ti contattiamo per ricordarti il tagliando del veicolo. Passa in concessionaria per fissare l'appuntamento."
-                            : "Ti contattiamo per un aggiornamento sul tuo veicolo.";
-                    } else { // professional
-                        intro = `Buongiorno ${name},`;
-                        body = useFields?.ctaTagliando
-                            ? "La contattiamo per ricordarle il tagliando del veicolo. Può recarsi in concessionaria o fissare un appuntamento."
-                            : "La contattiamo per un aggiornamento relativo al veicolo.";
-                    }
-                } else {
-                    if (styleTone === 'formal') {
-                        intro = `Dear ${name},`;
-                        body = useFields?.ctaTagliando
-                            ? "We kindly remind you about your vehicle service. Please visit the dealership to schedule your appointment."
-                            : "We are contacting you with an update regarding your vehicle.";
-                    } else if (styleTone === 'informal') {
-                        intro = `Hi ${name}!`;
-                        body = useFields?.ctaTagliando
-                            ? "We're reaching out to remind you about your vehicle service. Drop by the dealership to book your appointment."
-                            : "We're getting in touch with a quick update about your vehicle.";
-                    } else {
-                        intro = `Hello ${name},`;
-                        body = useFields?.ctaTagliando
-                            ? "We are contacting you to remind you about your vehicle service. You can visit the dealership or schedule an appointment."
-                            : "We are contacting you with a vehicle-related update.";
-                    }
-                }
-
+            if (!baseMessage) {
+                // Deterministic fallback base with placeholders
+                const greetingToken = '{SALUTATION}';
                 const details = [
-                    dataForPrompt.vehicle && `${language === 'it' ? 'Veicolo' : 'Vehicle'}: ${dataForPrompt.vehicle}`,
-                    dataForPrompt.plate && `${language === 'it' ? 'Targa' : 'Plate'}: ${dataForPrompt.plate}`,
-                    dataForPrompt.year && `${language === 'it' ? 'Anno' : 'Year'}: ${dataForPrompt.year}`,
-                    dataForPrompt.fuel && `${language === 'it' ? 'Carburante' : 'Fuel'}: ${dataForPrompt.fuel}`,
-                    (dataForPrompt.km != null) && `${language === 'it' ? 'Km' : 'Mileage'}: ${dataForPrompt.km}`
+                    selectedTokens.includes('{VEHICLE}') && `${language === 'it' ? 'Veicolo' : 'Vehicle'}: {VEHICLE}`,
+                    selectedTokens.includes('{PLATE}') && `${language === 'it' ? 'Targa' : 'Plate'}: {PLATE}`,
+                    selectedTokens.includes('{YEAR}') && `${language === 'it' ? 'Anno' : 'Year'}: {YEAR}`,
+                    selectedTokens.includes('{FUEL}') && `${language === 'it' ? 'Carburante' : 'Fuel'}: {FUEL}`,
+                    selectedTokens.includes('{KM}') && `${language === 'it' ? 'Km' : 'Mileage'}: {KM}`
                 ].filter(Boolean).join(' • ');
-
-                const dealerSig = dealerSignatureText ? `\n\n${dealerSignatureText}` : '';
-                message = `${intro}\n\n${details ? details + '\n\n' : ''}${body}${dealerSig}`;
+                const cta = (useFields?.ctaTagliando ? (language === 'it' ? '\n\n{CTA_TAGLIANDO}' : '\n\n{CTA_TAGLIANDO}') : '');
+                baseMessage = `${greetingToken}\n\n${details ? details + '\n\n' : ''}${language === 'it' ? 'La contattiamo in merito al suo veicolo.' : 'We are contacting you regarding your vehicle.'}${cta}`.trim();
             }
+        }
+
+        // Personalize per recipient from the single base message
+        const results = [];
+        const dealerId = bodyDealerId || 1;
+
+        const buildSalutation = (fullName) => {
+            const firstName = (fullName || '').trim().split(/\s+/)[0] || '';
+            if (language === 'it') {
+                if (!firstName) return 'Gentile Cliente';
+                const isFemale = firstName.toLowerCase().endsWith('a');
+                return `${isFemale ? 'Cara' : 'Caro'} ${firstName}`;
+            }
+            return firstName ? `Dear ${firstName}` : 'Dear Customer';
+        };
+
+        const computePossessive = (fullName) => {
+            if (language === 'it') {
+                const firstName = (fullName || '').trim().split(/\s+/)[0] || '';
+                const isFemale = firstName.toLowerCase().endsWith('a');
+                return isFemale ? 'sua' : 'suo';
+            }
+            return 'your';
+        };
+
+        const allRecipients = Array.isArray(recipients) ? recipients : [];
+        for (let i = 0; i < allRecipients.length; i++) {
+            const r = allRecipients[i];
+            const v = (selectedVehicles && selectedVehicles[i]) || {};
+            const name = v.name || r.clientName || '';
+            const replacements = {
+                '{SALUTATION}': buildSalutation(name),
+                '{NAME}': name || (language === 'it' ? 'Cliente' : 'Customer'),
+                '{EMAIL}': v.email || r.clientEmail || '',
+                '{PHONE}': v.phone || r.clientPhone || '',
+                '{VEHICLE}': v.vehicle || '',
+                '{PLATE}': v.plate || '',
+                '{YEAR}': v.year || '',
+                '{FUEL}': v.fuel || '',
+                '{KM}': (v.km != null ? String(v.km) : ''),
+                '{VIN}': v.vin || '',
+                '{SERIAL}': v.serial || '',
+                '{CTA_TAGLIANDO}': (useFields?.ctaTagliando ? (language === 'it' ? 'Ti invitiamo a fissare il tagliando in concessionaria.' : 'Please schedule your vehicle service with our dealership.') : ''),
+                '{POSSESSIVE}': computePossessive(name)
+            };
+            let personalized = baseMessage;
+            for (const [token, value] of Object.entries(replacements)) {
+                personalized = personalized.replace(new RegExp(token, 'g'), value);
+            }
+            const finalMsg = dealerSignatureText ? `${personalized}\n\n${dealerSignatureText}` : personalized;
 
             let sendResult = { success: false };
             if (send) {
                 try {
                     if (channel === 'email' && r.clientEmail) {
-                        sendResult = await emailService.sendGenericEmail(r.clientEmail, language === 'it' ? 'Comunicazione Service Hub' : 'Service Hub Communication', `<p>${message.replace(/\n/g, '<br/>')}</p>`);
+                        sendResult = await emailService.sendGenericEmail(r.clientEmail, language === 'it' ? 'Comunicazione Service Hub' : 'Service Hub Communication', `<p>${finalMsg.replace(/\n/g, '<br/>')}</p>`);
                         // Billing email
                         try {
-                            const dealerId = bodyDealerId || 1;
                             const unit = 5; // cents
                             await supabaseAdmin.from('billing_usage_events').insert([{ dealer_id: dealerId, event_type: 'email', quantity: 1, unit_cost_cents: unit, total_cost_cents: unit }]);
                             const { data: bal } = await supabaseAdmin.from('dealer_billing_accounts').select('balance_cents').eq('dealer_id', dealerId).order('updated_at', { ascending: false }).limit(1);
@@ -329,14 +346,13 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
                         } catch (e) { console.warn('billing email event failed', e.message); }
                     } else if (channel === 'whatsapp' && twilioClient && r.clientPhone) {
                         const whatsappMessage = await twilioClient.messages.create({
-                            body: message,
+                            body: finalMsg,
                             from: process.env.TWILIO_WHATSAPP_FROM,
                             to: `whatsapp:${r.clientPhone}`
                         });
                         sendResult = { success: true, sid: whatsappMessage.sid };
                         // Billing whatsapp
                         try {
-                            const dealerId = bodyDealerId || 1;
                             const unit = 10; // cents
                             await supabaseAdmin.from('billing_usage_events').insert([{ dealer_id: dealerId, event_type: 'whatsapp', quantity: 1, unit_cost_cents: unit, total_cost_cents: unit }]);
                             const { data: bal } = await supabaseAdmin.from('dealer_billing_accounts').select('balance_cents').eq('dealer_id', dealerId).order('updated_at', { ascending: false }).limit(1);
@@ -349,23 +365,19 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
                 }
             }
 
-            const finalMsg = dealerSignatureText ? `${message}\n\n${dealerSignatureText}` : message;
             results.push({ certificateId: r.id, message: finalMsg, sendResult });
         }
 
-        // Calcola costi (stima per conferma)
-        const dealerId = bodyDealerId || 1;
-        // i costi dipendono dal numero di veicoli selezionati (selectedCount)
-        const emailCount = send && channel === 'email' ? selectedCount : 0;
-        const waCount = send && channel === 'whatsapp' ? selectedCount : 0;
+        // Costs
+        const emailCount = send && channel === 'email' ? results.length : 0;
+        const waCount = send && channel === 'whatsapp' ? results.length : 0;
         const email_cents = emailCount * 5;
         const whatsapp_cents = waCount * 10;
-        // OpenAI: addebito in fase bozza (non al send)
-        const openai_cents = !send ? 20 : 0; // stima base
+        const openai_cents = !send ? 20 : 0; // one AI call per batch (flat for now)
         const total_cents = email_cents + whatsapp_cents + openai_cents;
 
         if (!send) {
-            // Registra addebito OpenAI ora (bozza)
+            // Bill OpenAI once at draft time
             try {
                 if (openai_cents > 0) {
                     await supabaseAdmin.from('billing_usage_events').insert([{
@@ -384,20 +396,12 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
                     await supabaseAdmin.from('dealer_billing_accounts').update({ balance_cents: current - openai_cents, updated_at: new Date().toISOString() }).eq('dealer_id', dealerId);
                 }
             } catch (e) { console.warn('billing openai (draft) failed', e.message); }
-            return res.json({ success: true, results, costs: { email_cents, whatsapp_cents, openai_cents, total_cents } });
+            // Return only the base message for preview purposes
+            return res.json({ success: true, base_message: baseMessage, results: results.length ? [results[0]] : [], costs: { email_cents, whatsapp_cents, openai_cents, total_cents } });
         }
 
-        // Se invio: registra gli addebiti aggregati
-        try {
-            // OpenAI già addebitato in fase bozza
-            for (let i=0;i<emailCount;i++) await supabaseAdmin.from('billing_usage_events').insert([{ dealer_id: dealerId, event_type: 'email', quantity: 1, unit_cost_cents: 5, total_cost_cents: 5 }]);
-            for (let i=0;i<waCount;i++) await supabaseAdmin.from('billing_usage_events').insert([{ dealer_id: dealerId, event_type: 'whatsapp', quantity: 1, unit_cost_cents: 10, total_cost_cents: 10 }]);
-            const { data: bal } = await supabaseAdmin.from('dealer_billing_accounts').select('balance_cents').eq('dealer_id', dealerId).order('updated_at', { ascending: false }).limit(1);
-            const current = bal?.[0]?.balance_cents ?? 0;
-            await supabaseAdmin.from('dealer_billing_accounts').update({ balance_cents: current - total_cents, updated_at: new Date().toISOString() }).eq('dealer_id', dealerId);
-        } catch (e) { console.warn('billing aggregate failed', e.message); }
-
-        return res.json({ success: true, results, costs: { email_cents, whatsapp_cents, openai_cents, total_cents } });
+        // Aggregate billing already inserted per message above; just return summary
+        return res.json({ success: true, base_message: baseMessage, results, costs: { email_cents, whatsapp_cents, openai_cents, total_cents } });
     } catch (error) {
         console.error('Bulk communications error:', error);
         return res.status(500).json({ success: false, error: error.message });

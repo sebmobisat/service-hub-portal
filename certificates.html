@@ -1140,7 +1140,7 @@
                             prompt: document.getElementById('aiPromptInput').value || '',
                             recipients: lastDraft.recipients,
                             useFields: {}, language: lastDraft.language, send: true, dealerId: lastDraft.dealerId,
-                            selectedCount: selected.length
+                            baseMessage: lastDraft.baseMessage
                         })
                     });
                     if (!res.ok) throw new Error(await res.text());
@@ -2031,7 +2031,6 @@
 
         async function openBulkContactDialog() {
             const selected = getSelectedCertificates();
-            if (selected.length === 0) return;
             const dialog = document.getElementById('bulkContactDialog');
             if (!dialog) return;
             dialog.classList.remove('hidden');
@@ -2110,7 +2109,7 @@
             const genBtn = document.querySelector('#bulkContactDialog [data-i18n="contact.generate"]') || document.querySelector('#bulkContactDialog button:nth-last-child(2)');
             const sendBtn = document.querySelector('#bulkContactDialog [data-i18n="contact.send"]') || document.querySelector('#bulkContactDialog button:nth-last-child(1)');
             
-            if (!selectedCerts.length) {
+            if (!sendToTest && !selectedCerts.length) {
                 out.textContent = language === 'it' ? 'Seleziona almeno un certificato.' : 'Please select at least one certificate.';
                 return;
             }
@@ -2121,7 +2120,18 @@
                 out.textContent = language === 'it' ? 'Generazione in corso...' : 'Generating...';
 
                 // Riassunto veicoli selezionati in base ai chip attivi
-                const selectedVehicles = selectedCerts.map(c => ({
+                const selectedVehicles = (sendToTest ? testClients.map(c=>({
+                    name: [c.first_name, c.last_name].filter(Boolean).join(' ').trim(),
+                    email: (c.email||'').toLowerCase(),
+                    phone: c.phone||'',
+                    vehicle: useFields.brandModel ? [c.vehicle_brand, c.vehicle_model].filter(Boolean).join(' ') : undefined,
+                    plate: undefined,
+                    year: undefined,
+                    fuel: useFields.fuel ? c.fuel_type : undefined,
+                    km: useFields.km ? c.odometer : undefined,
+                    vin: undefined,
+                    serial: undefined
+                })) : selectedCerts.map(c => ({
                     name: c.clientName,
                     email: c.clientEmail,
                     phone: c.clientPhone,
@@ -2132,7 +2142,7 @@
                     km: useFields.km ? c.odometer : undefined,
                     vin: useFields.vin ? c.vin : undefined,
                     serial: useFields.serial ? c.serial : undefined
-                }));
+                }))); 
 
                 const response = await fetch('/api/communications/generate', {
                     method: 'POST',
@@ -2150,15 +2160,9 @@
                     out.textContent = (language === 'it' ? 'Errore: ' : 'Error: ') + (data.error || 'unknown');
                     return;
                 }
-                // Render previews e aggiungi firma
-                out.innerHTML = data.results.map(rr => {
-                    const replaced = dealerCompanyName ? (rr.message || '').replace(/\[Nome(?:\s+del)?\s+Concessionario\]/ig, dealerCompanyName) : (rr.message||'');
-                    return `
-                    <div class="p-3 border border-gray-600 rounded mb-2">
-                        <div class="text-xs text-gray-400 mb-1">#${rr.certificateId}</div>
-                        <pre class="whitespace-pre-wrap text-sm">${replaced.replace(/</g,'&lt;')}</pre>
-                    </div>`;
-                }).join('');
+                // Show only ONE base message on screen
+                const baseMsg = (data.base_message || data.results?.[0]?.message || '').replace(/</g,'&lt;');
+                out.innerHTML = `<div class="p-3 border border-gray-600 rounded mb-2"><pre class="whitespace-pre-wrap text-sm">${baseMsg}</pre></div>`;
 
                 // Cost summary
                 if (data.costs) {
@@ -2176,7 +2180,7 @@
                     channel,
                     language,
                     recipients,
-                    message: (data.results?.[0]?.message || ''),
+                    baseMessage: (data.base_message || data.results?.[0]?.message || ''),
                     costs: data.costs || null
                 };
             } catch (err) {
