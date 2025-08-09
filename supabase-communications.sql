@@ -67,6 +67,43 @@ BEGIN
 END$$;
 
 
+-- BILLING RECHARGES (Top-up payments via Stripe) -----------------------------
+CREATE TABLE IF NOT EXISTS public.billing_recharges (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  dealer_id integer NOT NULL,
+  stripe_customer_id text,
+  stripe_payment_intent_id text,
+  stripe_checkout_session_id text,
+  amount_cents integer NOT NULL CHECK (amount_cents > 0),
+  currency text DEFAULT 'EUR',
+  status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','succeeded','failed','canceled','refunded','requires_action')),
+  metadata jsonb DEFAULT '{}'::jsonb,
+  created_at timestamptz DEFAULT now(),
+  processed_at timestamptz
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS billing_recharges_pi_uidx
+  ON public.billing_recharges(stripe_payment_intent_id)
+  WHERE stripe_payment_intent_id IS NOT NULL;
+
+CREATE UNIQUE INDEX IF NOT EXISTS billing_recharges_cs_uidx
+  ON public.billing_recharges(stripe_checkout_session_id)
+  WHERE stripe_checkout_session_id IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS billing_recharges_dealer_created_idx
+  ON public.billing_recharges(dealer_id, created_at DESC);
+
+ALTER TABLE public.billing_recharges ENABLE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE schemaname='public' AND tablename='billing_recharges' AND policyname='allow_all_service_role'
+  ) THEN
+    CREATE POLICY allow_all_service_role ON public.billing_recharges FOR ALL TO service_role USING (true) WITH CHECK (true);
+  END IF;
+END$$;
+
 
 -- BILLING / USAGE TABLES -----------------------------------------------------
 
