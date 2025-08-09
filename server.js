@@ -148,7 +148,7 @@ app.get('/api/billing/usage/:dealerId', async (req, res) => {
 // Bulk communication endpoint: generate AI messages and optionally send
 app.post('/api/communications/generate', express.json(), async (req, res) => {
     try {
-        const { channel, style, prompt, recipients, useFields, language = 'it', send = false } = req.body;
+        const { channel, style, prompt, recipients, useFields, language = 'it', send = false, dealerSignatureText, dealerId: bodyDealerId } = req.body;
 
         if (!Array.isArray(recipients) || recipients.length === 0) {
             return res.status(400).json({ success: false, error: 'no_recipients' });
@@ -189,6 +189,32 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
                     ];
                     const completion = await openai.chat.completions.create({ model: 'gpt-3.5-turbo', messages });
                     message = completion.choices?.[0]?.message?.content?.trim() || '';
+                    // Billing: registra uso OpenAI (stima base) e scala saldo
+                    try {
+                        const dealerId = bodyDealerId || 1;
+                        const providerCostCents = 1; // placeholder minimo; in futuro calcolo reale
+                        const unitCostCents = Math.round(providerCostCents * 20);
+                        await supabaseAdmin.from('billing_usage_events').insert([{
+                            dealer_id: dealerId,
+                            event_type: 'openai',
+                            quantity: 1,
+                            unit_cost_cents: unitCostCents,
+                            total_cost_cents: unitCostCents,
+                            openai_provider_cost_cents: providerCostCents
+                        }]);
+                        // Decremento saldo (approccio semplice)
+                        const { data: bal } = await supabaseAdmin
+                            .from('dealer_billing_accounts')
+                            .select('balance_cents')
+                            .eq('dealer_id', dealerId)
+                            .order('updated_at', { ascending: false })
+                            .limit(1);
+                        const current = bal?.[0]?.balance_cents ?? 0;
+                        await supabaseAdmin
+                            .from('dealer_billing_accounts')
+                            .update({ balance_cents: current - unitCostCents, updated_at: new Date().toISOString() })
+                            .eq('dealer_id', dealerId);
+                    } catch (e) { console.warn('billing openai event failed', e.message); }
                 } catch (e) {
                     console.warn('OpenAI failed, falling back to template message:', e.message);
                 }
@@ -252,6 +278,15 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
                 try {
                     if (channel === 'email' && r.clientEmail) {
                         sendResult = await emailService.sendGenericEmail(r.clientEmail, language === 'it' ? 'Comunicazione Service Hub' : 'Service Hub Communication', `<p>${message.replace(/\n/g, '<br/>')}</p>`);
+                        // Billing email
+                        try {
+                            const dealerId = bodyDealerId || 1;
+                            const unit = 5; // cents
+                            await supabaseAdmin.from('billing_usage_events').insert([{ dealer_id: dealerId, event_type: 'email', quantity: 1, unit_cost_cents: unit, total_cost_cents: unit }]);
+                            const { data: bal } = await supabaseAdmin.from('dealer_billing_accounts').select('balance_cents').eq('dealer_id', dealerId).order('updated_at', { ascending: false }).limit(1);
+                            const current = bal?.[0]?.balance_cents ?? 0;
+                            await supabaseAdmin.from('dealer_billing_accounts').update({ balance_cents: current - unit, updated_at: new Date().toISOString() }).eq('dealer_id', dealerId);
+                        } catch (e) { console.warn('billing email event failed', e.message); }
                     } else if (channel === 'whatsapp' && twilioClient && r.clientPhone) {
                         const whatsappMessage = await twilioClient.messages.create({
                             body: message,
@@ -259,13 +294,23 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
                             to: `whatsapp:${r.clientPhone}`
                         });
                         sendResult = { success: true, sid: whatsappMessage.sid };
+                        // Billing whatsapp
+                        try {
+                            const dealerId = bodyDealerId || 1;
+                            const unit = 10; // cents
+                            await supabaseAdmin.from('billing_usage_events').insert([{ dealer_id: dealerId, event_type: 'whatsapp', quantity: 1, unit_cost_cents: unit, total_cost_cents: unit }]);
+                            const { data: bal } = await supabaseAdmin.from('dealer_billing_accounts').select('balance_cents').eq('dealer_id', dealerId).order('updated_at', { ascending: false }).limit(1);
+                            const current = bal?.[0]?.balance_cents ?? 0;
+                            await supabaseAdmin.from('dealer_billing_accounts').update({ balance_cents: current - unit, updated_at: new Date().toISOString() }).eq('dealer_id', dealerId);
+                        } catch (e) { console.warn('billing whatsapp event failed', e.message); }
                     }
                 } catch (e) {
                     sendResult = { success: false, error: e.message };
                 }
             }
 
-            results.push({ certificateId: r.id, message, sendResult });
+            const finalMsg = dealerSignatureText ? `${message}\n\n${dealerSignatureText}` : message;
+            results.push({ certificateId: r.id, message: finalMsg, sendResult });
         }
 
         return res.json({ success: true, results });

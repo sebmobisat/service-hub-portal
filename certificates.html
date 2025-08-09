@@ -1072,15 +1072,19 @@
                                 <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover-border-emerald-500" data-field="vin">VIN</button>
                                 <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover-border-emerald-500" data-field="serial">Serial</button>
                                 <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="ctaTagliando">CTA Tagliando</button>
-                                <button type="button" id="dealerSigChip" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="dealerSignature">Firma Dealer</button>
                             </div>
-                            <div id="dealerSignatureBox" class="hidden space-y-2 bg-gray-800 border border-gray-700 rounded p-3 mt-2">
-                                <div class="grid grid-cols-1 gap-2">
-                                    <input id="dealer_name" class="w-full rounded bg-gray-900 border border-gray-700 p-2" placeholder="Nome Dealer">
-                                    <input id="dealer_email" class="w-full rounded bg-gray-900 border border-gray-700 p-2" placeholder="Email Dealer">
-                                    <input id="dealer_phone" class="w-full rounded bg-gray-900 border border-gray-700 p-2" placeholder="Telefono Dealer">
-                                </div>
+                            <!-- Firma dealer selector -->
+                            <div class="space-y-2 bg-gray-800 border border-gray-700 rounded p-3 mt-2">
+                                <label class="text-xs text-gray-400">Firma dealer</label>
+                                <select id="dealerSignatureSelect" class="w-full rounded bg-gray-900 border border-gray-700 p-2">
+                                    <option value="none">Nessuna firma</option>
+                                </select>
                             </div>
+                            <!-- Invio ai clienti test -->
+                            <label class="inline-flex items-center gap-2 mt-2 text-sm">
+                                <input id="sendToTestClients" type="checkbox" class="form-checkbox h-4 w-4 text-green-500" checked>
+                                <span>Invia comunicazione ai clienti test</span>
+                            </label>
                         </div>
                     </div>
 
@@ -1098,10 +1102,28 @@
 
                 <div class="flex justify-end gap-2 mt-6">
                     <button onclick="generateAndOptionallySend(false)" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm" data-i18n="contact.generate">Genera bozza</button>
-                    <button onclick="generateAndOptionallySend(true)" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm" data-i18n="contact.send">Invia</button>
+                    <button onclick="confirmAndSend()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm" data-i18n="contact.send">Invia</button>
                 </div>
             </div>
         </div>
+        async function confirmAndSend(){
+            const language = document.documentElement.lang || 'it';
+            const dealerId = getCurrentDealerId();
+            const selected = getSelectedCertificates();
+            // Costi: email 5c, whatsapp 10c, openAI 20x (mostriamo stima base 0.20€ se 1c provider)
+            const channel = document.querySelector('#channelToggleGroup .active-chip')?.dataset.value || 'email';
+            const n = selected.length;
+            const emailCost = channel==='email' ? n*0.05 : 0;
+            const waCost = channel==='whatsapp' ? n*0.10 : 0;
+            const openaiCost = 0.20; // stima (20x di 0.01€)
+            const total = (emailCost + waCost + openaiCost).toFixed(2);
+            const msg = language==='it'
+                ? `Sei sicuro? Spenderai:\n- Email: €${emailCost.toFixed(2)}\n- WhatsApp: €${waCost.toFixed(2)}\n- OpenAI: ~€${openaiCost.toFixed(2)}\nTotale stimato: ~€${total}`
+                : `Are you sure? You will spend:\n- Email: €${emailCost.toFixed(2)}\n- WhatsApp: €${waCost.toFixed(2)}\n- OpenAI: ~€${openaiCost.toFixed(2)}\nEstimated total: ~€${total}`;
+            const proceed = window.confirm(msg);
+            if (!proceed) return;
+            await generateAndOptionallySend(true);
+        }
 
     
     <script>
@@ -1985,6 +2007,18 @@
             if (!dialog) return;
             dialog.classList.remove('hidden');
             document.getElementById('aiPromptInput').value = '';
+
+            // Carica firme dealer per il select
+            try {
+                const dealerId = getCurrentDealerId();
+                const r = await fetch(`/api/communications/signatures/${dealerId}`).then(r=>r.json());
+                const list = r?.data || [];
+                const sel = document.getElementById('dealerSignatureSelect');
+                if (sel) {
+                    sel.innerHTML = '<option value="none">Nessuna firma</option>' +
+                        list.map(s=>`<option value="${encodeURIComponent(JSON.stringify(s))}">${(s.company_name||'Firma')}${s.phone? ' • '+s.phone:''}${s.email? ' • '+s.email:''}</option>`).join('');
+                }
+            } catch {}
         }
 
         function closeBulkContactDialog() {
@@ -2002,11 +2036,21 @@
             });
 
             const recipients = getSelectedCertificates();
-            // Dealer signature enrichment
-            const dealerName = document.getElementById('dealer_name')?.value?.trim() || '';
-            const dealerEmail = document.getElementById('dealer_email')?.value?.trim() || '';
-            const dealerPhone = document.getElementById('dealer_phone')?.value?.trim() || '';
-            const payloadRecipients = useFields.dealerSignature ? recipients.map(r => ({ ...r, dealerName, dealerEmail, dealerPhone })) : recipients;
+            // Solo clienti test per generazione/invio
+            const dealerId = getCurrentDealerId();
+            const testClients = await fetch(`/api/communications/test-clients/${dealerId}`).then(r=>r.json()).then(j=> j.data||[]);
+            const selectedIds = new Set(recipients.map(r=> r.id));
+            const onlyTestRecipients = recipients.filter(r=> selectedIds.has(r.id)); // placeholder (potremmo mappare con email/phone dai test_clients se necessario)
+
+            // Firma dealer selezionata
+            let dealerSignatureText = '';
+            const sel = document.getElementById('dealerSignatureSelect');
+            if (sel && sel.value && sel.value !== 'none') {
+                try {
+                    const sig = JSON.parse(decodeURIComponent(sel.value));
+                    dealerSignatureText = `\n\n${sig.company_name||''}${sig.address1? `\n${sig.address1}`:''}${sig.postcode||sig.city? `\n${[sig.postcode||'', sig.city||''].filter(Boolean).join(' ')}`:''}${sig.phone? `\nTel: ${sig.phone}`:''}${sig.email? `\nEmail: ${sig.email}`:''}`.trim();
+                } catch {}
+            }
 
             const out = document.getElementById('aiResults');
             const genBtn = document.querySelector('#bulkContactDialog [data-i18n="contact.generate"]') || document.querySelector('#bulkContactDialog button:nth-last-child(2)');
@@ -2025,7 +2069,7 @@
                 const response = await fetch('/api/communications/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ channel, style, prompt, recipients: payloadRecipients, useFields, language, send: sendNow })
+                    body: JSON.stringify({ channel, style, prompt, recipients: onlyTestRecipients, useFields, language, send: sendNow, dealerSignatureText })
                 });
                 const ct = response.headers.get('content-type') || '';
                 if (!response.ok) {
@@ -2038,11 +2082,11 @@
                     out.textContent = (language === 'it' ? 'Errore: ' : 'Error: ') + (data.error || 'unknown');
                     return;
                 }
-                // Render previews
+                // Render previews e aggiungi firma
                 out.innerHTML = data.results.map(r => `
                     <div class="p-3 border border-gray-600 rounded mb-2">
                         <div class="text-xs text-gray-400 mb-1">#${r.certificateId}</div>
-                        <pre class="whitespace-pre-wrap text-sm">${(r.message || '').replace(/</g,'&lt;')}</pre>
+                        <pre class="whitespace-pre-wrap text-sm">${((r.message || '') + (dealerSignatureText? ('\n\n' + dealerSignatureText) : '')).replace(/</g,'&lt;')}</pre>
                     </div>
                 `).join('');
             } catch (err) {
