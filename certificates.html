@@ -2060,7 +2060,17 @@
                 clientEmail: (c.email||'').toLowerCase(),
                 clientPhone: c.phone||''
             }));
-            const onlyTestRecipients = testRecipients; // bozza/invio sempre su test clients
+            const sendToTest = document.getElementById('sendToTestClients')?.checked;
+            let recipients;
+            if (sendToTest) {
+                recipients = testRecipients;
+                if (!recipients.length) {
+                    out.textContent = language==='it' ? 'Nessun cliente test salvato.' : 'No test clients saved.';
+                    return;
+                }
+            } else {
+                recipients = selectedCerts.map(r=>({ id:r.id, clientName:r.clientName, clientEmail:(r.clientEmail||'').toLowerCase(), clientPhone:r.clientPhone||'' }));
+            }
 
             // Firma dealer selezionata
             let dealerSignatureText = '';
@@ -2089,7 +2099,7 @@
                 const response = await fetch('/api/communications/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ channel, style, prompt, recipients: onlyTestRecipients, useFields, language, send: sendNow, dealerSignatureText, dealerId, selectedCount: selectedCerts.length })
+                    body: JSON.stringify({ channel, style, prompt, recipients, useFields, language, send: sendNow, dealerSignatureText, dealerId, selectedCount: selectedCerts.length })
                 });
                 const ct = response.headers.get('content-type') || '';
                 if (!response.ok) {

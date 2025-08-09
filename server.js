@@ -133,12 +133,37 @@ app.get('/api/billing/usage/:dealerId', async (req, res) => {
     const { from, to } = req.query; // ISO dates
     try {
         const { supabaseAdmin } = require('./config/supabase.js');
-        let query = supabaseAdmin.from('v_billing_usage_daily').select('*').eq('dealer_id', dealerId).order('day');
-        if (from) query = query.gte('day', from);
-        if (to) query = query.lte('day', to);
-        const { data, error } = await query;
-        if (error) throw error;
-        res.json({ success: true, data: data || [] });
+        // Se la vista non è disponibile, leggi direttamente dalla tabella e aggrega lato server
+        let data = [];
+        try {
+            const r = await supabaseAdmin.from('v_billing_usage_daily').select('*').eq('dealer_id', dealerId).order('day');
+            if (r.error) throw r.error;
+            data = r.data || [];
+        } catch (e) {
+            const q = await supabaseAdmin
+                .from('billing_usage_events')
+                .select('dealer_id, created_at, event_type, total_cost_cents')
+                .eq('dealer_id', dealerId)
+                .order('created_at');
+            if (!q.error) {
+                const map = new Map();
+                for (const row of q.data || []) {
+                    const day = new Date(row.created_at); day.setHours(0,0,0,0);
+                    const key = day.toISOString();
+                    const rec = map.get(key) || { dealer_id: dealerId, day: key, emails:0, whatsapps:0, openai_calls:0, total_cost_cents:0 };
+                    if (row.event_type==='email') rec.emails += 1;
+                    if (row.event_type==='whatsapp') rec.whatsapps += 1;
+                    if (row.event_type==='openai') rec.openai_calls += 1;
+                    rec.total_cost_cents += row.total_cost_cents||0;
+                    map.set(key, rec);
+                }
+                data = Array.from(map.values()).sort((a,b)=> new Date(a.day)-new Date(b.day));
+            }
+        }
+        // Filtra per range dato lato server (se fornito)
+        if (from) data = data.filter(d => new Date(d.day) >= new Date(from));
+        if (to) data = data.filter(d => new Date(d.day) <= new Date(to));
+        res.json({ success: true, data });
     } catch (e) {
         console.error('Billing usage error', e);
         res.status(500).json({ success: false, error: 'billing_usage_error' });
