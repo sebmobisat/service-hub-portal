@@ -12,6 +12,7 @@ const cors = require('cors');
 const path = require('path');
 const { Pool } = require('pg');
 const OpenAI = require('openai');
+const Stripe = require('stripe');
 const FMB003Mapping = require('./js/fmb003-mapping.js');
 const { emailService } = require('./js/email-service.js');
 const { SupabasePinManager } = require('./js/supabase-pin-manager.js');
@@ -38,6 +39,15 @@ if (process.env.OPENAI_API_KEY) {
     console.log('OpenAI client initialized');
 } else {
     console.log('OpenAI API key not provided - AI features will be disabled');
+}
+
+// Initialize Stripe (for dealer credit/balance)
+let stripe = null;
+if (process.env.STRIPE_SECRET_KEY) {
+    stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+    console.log('Stripe client initialized');
+} else {
+    console.log('Stripe key not provided - billing features limited to Supabase ledger');
 }
 
 //  DEPLOYMENT REMINDER:
@@ -93,6 +103,48 @@ app.get('/status', (req, res) => {
         uptime: process.uptime(),
         emailService: emailService.getStatus()
     });
+});
+
+// Billing: get dealer balance (Stripe + Supabase fallback)
+app.get('/api/billing/balance/:dealerId', async (req, res) => {
+    const dealerId = parseInt(req.params.dealerId, 10) || 1;
+    try {
+        // If Stripe is configured, read balance from Stripe customer (needs mapping in Supabase)
+        const { supabaseAdmin } = require('./config/supabase.js');
+        const { data: account } = await supabaseAdmin
+            .from('dealer_billing_accounts')
+            .select('*')
+            .eq('dealer_id', dealerId)
+            .single();
+
+        let balanceCents = account?.balance_cents || 0;
+        if (stripe && account?.stripe_customer_id) {
+            // Stripe does not expose customer balance in the latest API for credit wallets universally.
+            // We keep our authoritative balance in Supabase and optionally reconcile with Stripe later.
+        }
+        res.json({ success: true, balance_cents: balanceCents, currency: account?.currency || 'EUR' });
+    } catch (e) {
+        console.error('Billing balance error', e);
+        res.status(500).json({ success: false, error: 'billing_balance_error' });
+    }
+});
+
+// Billing: usage daily series for charts
+app.get('/api/billing/usage/:dealerId', async (req, res) => {
+    const dealerId = parseInt(req.params.dealerId, 10) || 1;
+    const { from, to } = req.query; // ISO dates
+    try {
+        const { supabaseAdmin } = require('./config/supabase.js');
+        let query = supabaseAdmin.from('v_billing_usage_daily').select('*').eq('dealer_id', dealerId).order('day');
+        if (from) query = query.gte('day', from);
+        if (to) query = query.lte('day', to);
+        const { data, error } = await query;
+        if (error) throw error;
+        res.json({ success: true, data: data || [] });
+    } catch (e) {
+        console.error('Billing usage error', e);
+        res.status(500).json({ success: false, error: 'billing_usage_error' });
+    }
 });
 
 // Bulk communication endpoint: generate AI messages and optionally send

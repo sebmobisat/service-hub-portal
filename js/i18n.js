@@ -57,6 +57,7 @@ class I18nManager {
                 // Navigation and Sidebar
                 'nav.dashboard': 'Dashboard',
                 'nav.certificates': 'Certificati',
+                'nav.billing': 'Credito',
                 'nav.settings': 'Impostazioni',
                 'nav.logout': 'Logout',
                 
@@ -93,6 +94,22 @@ class I18nManager {
                 'page.certificates.subtitle': 'Gestisci e visualizza tutti i certificati del tuo dealer',
                 'page.settings.title': 'Impostazioni',
                 'page.settings.subtitle': 'Configura le impostazioni del tuo account',
+                'meta.billing.title': 'Credito & Consumi - Service Hub Portal',
+                'page.billing.title': 'Credito & Consumi',
+                'page.billing.subtitle': 'Saldo Stripe e consumi per canale',
+                'billing.balance': 'Credito disponibile',
+                'billing.date_range': 'Intervallo date',
+                'billing.presets.today': 'Oggi',
+                'billing.presets.yesterday': 'Ieri',
+                'billing.presets.this_week': 'Questa settimana',
+                'billing.presets.last_week': 'Settimana scorsa',
+                'billing.presets.this_month': 'Questo mese',
+                'billing.presets.this_year': 'Quest\'anno',
+                'billing.presets.custom': 'Personalizzato',
+                'billing.chart.title': 'Consumi giornalieri',
+                'billing.series.emails': 'Email',
+                'billing.series.whatsapp': 'WhatsApp',
+                'billing.series.openai': 'OpenAI',
                 
                 // Settings Page
                 'settings.language.title': 'Lingua',
@@ -433,6 +450,7 @@ class I18nManager {
                 // Navigation and Sidebar
                 'nav.dashboard': 'Dashboard',
                 'nav.certificates': 'Certificates',
+                'nav.billing': 'Billing',
                 'nav.settings': 'Settings',
                 'nav.logout': 'Logout',
                 
@@ -469,6 +487,22 @@ class I18nManager {
                 'page.certificates.subtitle': 'Manage and view all your dealer certificates',
                 'page.settings.title': 'Settings',
                 'page.settings.subtitle': 'Configure your account settings',
+                'meta.billing.title': 'Credit & Usage - Service Hub Portal',
+                'page.billing.title': 'Credit & Usage',
+                'page.billing.subtitle': 'Stripe balance and per-channel usage',
+                'billing.balance': 'Available credit',
+                'billing.date_range': 'Date range',
+                'billing.presets.today': 'Today',
+                'billing.presets.yesterday': 'Yesterday',
+                'billing.presets.this_week': 'This week',
+                'billing.presets.last_week': 'Last week',
+                'billing.presets.this_month': 'This month',
+                'billing.presets.this_year': 'This year',
+                'billing.presets.custom': 'Custom',
+                'billing.chart.title': 'Daily usage',
+                'billing.series.emails': 'Emails',
+                'billing.series.whatsapp': 'WhatsApp',
+                'billing.series.openai': 'OpenAI',
                 
                 // Settings Page
                 'settings.language.title': 'Language',
