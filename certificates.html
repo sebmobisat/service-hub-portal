@@ -223,6 +223,113 @@
               opacity: 0.7;
               transition: opacity 0.2s ease-in-out;
           }
+
+        /* Beautiful Draggable Tags Styles */
+        .draggable-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: grab;
+            user-select: none;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .draggable-tag::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .draggable-tag:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .draggable-tag:hover::before {
+            left: 100%;
+        }
+
+        .draggable-tag:active {
+            cursor: grabbing;
+            transform: translateY(-1px) scale(1.02);
+        }
+
+        .draggable-tag.dragging {
+            opacity: 0.8;
+            transform: rotate(5deg) scale(1.1);
+            z-index: 1000;
+        }
+
+        /* Different tag colors for variety */
+        .draggable-tag[data-type="client"] {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .draggable-tag[data-type="vehicle"] {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+        }
+
+        .draggable-tag[data-type="technical"] {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+        }
+
+        .draggable-tag[data-type="contact"] {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            box-shadow: 0 4px 15px rgba(67, 233, 123, 0.4);
+        }
+
+        .draggable-tag[data-type="cta"] {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            box-shadow: 0 4px 15px rgba(250, 112, 154, 0.4);
+        }
+
+        .draggable-tag .tag-icon {
+            width: 14px;
+            height: 14px;
+            opacity: 0.9;
+        }
+
+        /* Drop zone highlighting */
+        .drop-zone-active {
+            border-color: #10b981 !important;
+            background-color: rgba(16, 185, 129, 0.1) !important;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2) !important;
+        }
+
+        /* Tag insertion animation */
+        @keyframes tagInsert {
+            0% {
+                background-color: rgba(16, 185, 129, 0.3);
+                transform: scale(1.05);
+            }
+            100% {
+                background-color: transparent;
+                transform: scale(1);
+            }
+        }
+
+        .tag-inserted {
+            animation: tagInsert 0.5s ease-out;
+        }
           
           .certificate-card .cursor-pointer:active {
               transform: scale(0.95) !important;
@@ -1049,6 +1156,12 @@
                             </div>
                         </div>
 
+                        <!-- Email Subject Field (shown only for email) -->
+                        <div id="emailSubjectField" class="hidden">
+                            <p class="text-xs text-gray-400 mb-2" data-en="Email Subject" data-it="Oggetto Email">Oggetto Email</p>
+                            <input id="emailSubjectInput" type="text" class="w-full rounded bg-gray-800 border border-gray-700 p-2 text-sm" placeholder="L'AI personalizzerà l'oggetto automaticamente..." readonly>
+                        </div>
+
                         <div>
                             <p class="text-xs text-gray-400 mb-2" data-i18n="contact.style">Stile</p>
                             <div id="styleToggleGroup" class="flex flex-wrap gap-2">
@@ -1112,6 +1225,87 @@
                 </div>
             </div>
         </div>
+
+        <!-- Bulk Contact WITHOUT AI Dialog -->
+        <div id="bulkContactWithoutAIDialog" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+            <div class="bg-gray-900 border border-gray-700 rounded-lg w-full max-w-5xl p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold" data-en="Manual Communication to Selected" data-it="Comunicazione Manuale ai Selezionati">Comunicazione Manuale ai Selezionati</h3>
+                    <button onclick="closeBulkContactWithoutAIDialog()" class="text-gray-400 hover:text-white">✕</button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                    <!-- Left Column: Settings -->
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-xs text-gray-400 mb-2" data-en="Channel" data-it="Canale">Canale</p>
+                            <div id="channelToggleGroupNoAI" class="flex gap-2">
+                                <button type="button" class="px-3 py-1.5 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-value="email">Email</button>
+                                <button type="button" class="px-3 py-1.5 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-value="whatsapp">WhatsApp</button>
+                            </div>
+                        </div>
+
+                        <!-- Email Subject Field (shown only for email) -->
+                        <div id="emailSubjectFieldNoAI" class="hidden">
+                            <p class="text-xs text-gray-400 mb-2" data-en="Email Subject (Required)" data-it="Oggetto Email (Obbligatorio)">Oggetto Email (Obbligatorio)</p>
+                            <input id="emailSubjectInputNoAI" type="text" class="w-full rounded bg-gray-800 border border-gray-700 p-2 text-sm" placeholder="Inserisci l'oggetto dell'email...">
+                        </div>
+
+                        <!-- Dealer Signature -->
+                        <div class="space-y-2 bg-gray-800 border border-gray-700 rounded p-3">
+                            <label class="text-xs text-gray-400" data-en="Dealer Signature" data-it="Firma Dealer">Firma Dealer</label>
+                            <select id="dealerSignatureSelectNoAI" class="w-full rounded bg-gray-900 border border-gray-700 p-2">
+                                <option value="none" data-en="No signature" data-it="Nessuna firma">Nessuna firma</option>
+                            </select>
+                        </div>
+
+                        <!-- Send to Test Clients -->
+                        <label class="inline-flex items-center gap-2 text-sm">
+                            <input id="sendToTestClientsNoAI" type="checkbox" class="form-checkbox h-4 w-4 text-green-500" checked>
+                            <span data-en="Send to test clients" data-it="Invia ai clienti test">Invia ai clienti test</span>
+                        </label>
+                    </div>
+
+                    <!-- Middle Column: Draggable Tags -->
+                    <div class="space-y-4">
+                        <div>
+                            <p class="text-xs text-gray-400 mb-3" data-en="Available Data Tags" data-it="Tags Dati Disponibili">Tags Dati Disponibili</p>
+                            <div class="text-xs text-gray-500 mb-3" data-en="Drag tags into your message" data-it="Trascina i tags nel messaggio">Trascina i tags nel messaggio</div>
+                            <div id="draggableTagsContainer" class="space-y-2">
+                                <!-- Tags will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Message Composition -->
+                    <div class="lg:col-span-2 space-y-4">
+                        <div>
+                            <p class="text-xs text-gray-400 mb-2" data-en="Your Message" data-it="Il Tuo Messaggio">Il Tuo Messaggio</p>
+                            <textarea id="manualMessageInput" rows="12" class="w-full rounded bg-gray-800 border border-gray-700 p-3 font-mono text-sm" 
+                                placeholder="Scrivi qui il tuo messaggio personalizzato...&#10;&#10;Puoi trascinare i tags dai dati disponibili per inserire informazioni dinamiche.&#10;&#10;Esempio:&#10;Gentile {NOME},&#10;il suo veicolo {VEICOLO} con targa {TARGA}..."></textarea>
+                        </div>
+                        
+                        <!-- Message Preview -->
+                        <div>
+                            <p class="text-xs text-gray-400 mb-2" data-en="Preview" data-it="Anteprima">Anteprima</p>
+                            <div id="manualMessagePreview" class="h-32 overflow-auto bg-gray-800 border border-gray-700 rounded p-3 text-sm"></div>
+                        </div>
+
+                        <!-- Dealer Balance -->
+                        <div class="flex items-center justify-between">
+                            <p class="text-xs text-gray-400" data-en="Available Credit" data-it="Credito Disponibile">Credito Disponibile</p>
+                            <p id="dealerBalanceTextNoAI" class="text-sm font-semibold">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 mt-6">
+                    <button onclick="previewManualMessage()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm" data-en="Preview" data-it="Anteprima">Anteprima</button>
+                    <button onclick="sendManualMessage()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm" data-en="Send" data-it="Invia">Invia</button>
+                </div>
+            </div>
+        </div>
+
         <script>
         async function confirmAndSend(){
             const language = document.documentElement.lang || 'it';
@@ -1140,7 +1334,8 @@
                             prompt: document.getElementById('aiPromptInput').value || '',
                             recipients: lastDraft.recipients,
                             useFields: {}, language: lastDraft.language, send: true, dealerId: lastDraft.dealerId,
-                            baseMessage: lastDraft.baseMessage
+                            baseMessage: lastDraft.baseMessage,
+                            emailSubject: lastDraft.emailSubject
                         })
                     });
                     if (!res.ok) throw new Error(await res.text());
@@ -1838,7 +2033,8 @@
                     <span id="selectedCount">0</span> ${t('selected.items') || 'selected'}
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="openBulkContactDialog(); initChipGroups();" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm">${t('contact.selected') || 'Contatta selezionati'}</button>
+                    <button onclick="openBulkContactDialog(); initChipGroups();" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm" data-en="Contact with AI" data-it="Contatta con AI">Contatta con AI</button>
+                    <button onclick="openBulkContactWithoutAIDialog(); initDragDropTags();" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm ml-2" data-en="Contact Without AI" data-it="Contatta senza AI">Contatta senza AI</button>
                     <button onclick="toggleSelectAll(false)" class="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm">${t('clear.selection') || 'Pulisci selezione'}</button>
                 </div>
             `;
@@ -2189,6 +2385,15 @@
                     }
                 }
 
+                // Update email subject field if AI generated one
+                if (channel === 'email' && data.email_subject) {
+                    const subjectInput = document.getElementById('emailSubjectInput');
+                    if (subjectInput) {
+                        subjectInput.value = data.email_subject;
+                        subjectInput.placeholder = 'Oggetto generato dall\'AI';
+                    }
+                }
+
                 // Salva la bozza per l'invio (non rigenerare all'Invia)
                 lastDraft = {
                     dealerId,
@@ -2196,6 +2401,7 @@
                     language,
                     recipients,
                     baseMessage: (data.base_message || data.results?.[0]?.message || ''),
+                    emailSubject: data.email_subject || '',
                     costs: data.costs || null
                 };
             } catch (err) {
@@ -5301,6 +5507,355 @@
                 }, 300);
             }, 3000);
         }
+
+        // ===== CONTACT WITHOUT AI DIALOG FUNCTIONS =====
+
+        // Open the Contact Without AI Dialog
+        async function openBulkContactWithoutAIDialog() {
+            const selected = getSelectedCertificates();
+            const dialog = document.getElementById('bulkContactWithoutAIDialog');
+            if (!dialog) return;
+            
+            dialog.classList.remove('hidden');
+            document.getElementById('manualMessageInput').value = '';
+            document.getElementById('manualMessagePreview').innerHTML = '';
+            document.getElementById('emailSubjectInputNoAI').value = '';
+
+            // Load dealer signatures
+            try {
+                const dealerId = getCurrentDealerId();
+                const r = await fetch(`/api/communications/signatures/${dealerId}`).then(r=>r.json());
+                const list = r?.data || [];
+                const sel = document.getElementById('dealerSignatureSelectNoAI');
+                if (sel) {
+                    sel.innerHTML = '<option value="none">Nessuna firma</option>' +
+                        list.map(s=>`<option value="${encodeURIComponent(JSON.stringify(s))}">${(s.company_name||'Firma')}${s.phone? ' • '+s.phone:''}${s.email? ' • '+s.email:''}</option>`).join('');
+                }
+            } catch {}
+
+            // Load dealer balance
+            try {
+                const dealerId = getCurrentDealerId();
+                const b = await fetch(`/api/billing/balance/${dealerId}`).then(r=>r.json());
+                const text = (b?.balance_cents!=null) ? (b.balance_cents/100).toLocaleString(undefined,{style:'currency',currency:(b.currency||'EUR')}) : '-';
+                const el = document.getElementById('dealerBalanceTextNoAI');
+                if (el) el.textContent = text;
+            } catch {}
+
+            // Initialize drag & drop tags
+            initDragDropTags();
+            
+            // Initialize channel toggle functionality
+            initChannelToggleNoAI();
+        }
+
+        // Close the Contact Without AI Dialog
+        function closeBulkContactWithoutAIDialog() {
+            const dialog = document.getElementById('bulkContactWithoutAIDialog');
+            if (dialog) dialog.classList.add('hidden');
+        }
+
+        // Initialize draggable tags
+        function initDragDropTags() {
+            const container = document.getElementById('draggableTagsContainer');
+            if (!container) return;
+
+            const tags = [
+                { key: 'NOME', label: 'Nome Cliente', type: 'client', icon: '👤' },
+                { key: 'EMAIL', label: 'Email', type: 'contact', icon: '📧' },
+                { key: 'TELEFONO', label: 'Telefono', type: 'contact', icon: '📱' },
+                { key: 'VEICOLO', label: 'Marca Modello', type: 'vehicle', icon: '🚗' },
+                { key: 'TARGA', label: 'Targa', type: 'vehicle', icon: '🏷️' },
+                { key: 'ANNO', label: 'Anno', type: 'technical', icon: '📅' },
+                { key: 'CARBURANTE', label: 'Carburante', type: 'technical', icon: '⛽' },
+                { key: 'KM', label: 'Chilometri', type: 'technical', icon: '📏' },
+                { key: 'VIN', label: 'VIN', type: 'technical', icon: '🔢' },
+                { key: 'SERIAL', label: 'Seriale', type: 'technical', icon: '🏷️' },
+                { key: 'CTA_TAGLIANDO', label: 'CTA Tagliando', type: 'cta', icon: '🔧' }
+            ];
+
+            container.innerHTML = tags.map(tag => `
+                <div class="draggable-tag" 
+                     data-type="${tag.type}" 
+                     data-key="${tag.key}"
+                     draggable="true">
+                    <span class="tag-icon">${tag.icon}</span>
+                    <span>{${tag.key}}</span>
+                    <span class="text-xs opacity-75">- ${tag.label}</span>
+                </div>
+            `).join('');
+
+            // Add drag event listeners
+            container.querySelectorAll('.draggable-tag').forEach(tag => {
+                tag.addEventListener('dragstart', handleDragStart);
+                tag.addEventListener('dragend', handleDragEnd);
+            });
+
+            // Make textarea a drop zone
+            const textarea = document.getElementById('manualMessageInput');
+            if (textarea) {
+                textarea.addEventListener('dragover', handleDragOver);
+                textarea.addEventListener('drop', handleDrop);
+                textarea.addEventListener('dragenter', handleDragEnter);
+                textarea.addEventListener('dragleave', handleDragLeave);
+                
+                // Update preview on input
+                textarea.addEventListener('input', updateManualMessagePreview);
+            }
+        }
+
+        // Drag and drop handlers
+        let draggedTag = null;
+
+        function handleDragStart(e) {
+            draggedTag = e.target;
+            e.target.classList.add('dragging');
+            e.dataTransfer.setData('text/plain', `{${e.target.dataset.key}}`);
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+            draggedTag = null;
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+
+        function handleDragEnter(e) {
+            e.preventDefault();
+            e.target.classList.add('drop-zone-active');
+        }
+
+        function handleDragLeave(e) {
+            e.target.classList.remove('drop-zone-active');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            e.target.classList.remove('drop-zone-active');
+            
+            const tagText = e.dataTransfer.getData('text/plain');
+            const textarea = e.target;
+            
+            // Insert at cursor position
+            const start = textarea.selectionStart;
+            const end = textarea.selectionEnd;
+            const text = textarea.value;
+            
+            textarea.value = text.substring(0, start) + tagText + text.substring(end);
+            textarea.setSelectionRange(start + tagText.length, start + tagText.length);
+            
+            // Trigger animation
+            textarea.classList.add('tag-inserted');
+            setTimeout(() => textarea.classList.remove('tag-inserted'), 500);
+            
+            // Update preview
+            updateManualMessagePreview();
+            
+            // Focus back to textarea
+            textarea.focus();
+        }
+
+        // Initialize channel toggle for No AI dialog
+        function initChannelToggleNoAI() {
+            const toggleGroup = document.getElementById('channelToggleGroupNoAI');
+            const emailSubjectField = document.getElementById('emailSubjectFieldNoAI');
+            
+            if (!toggleGroup) return;
+
+            toggleGroup.addEventListener('click', (e) => {
+                if (e.target.dataset.value) {
+                    // Remove active class from all buttons
+                    toggleGroup.querySelectorAll('button').forEach(btn => {
+                        btn.classList.remove('active-chip', 'border-emerald-500', 'bg-emerald-600', 'text-white');
+                        btn.classList.add('border-gray-600');
+                    });
+                    
+                    // Add active class to clicked button
+                    e.target.classList.add('active-chip', 'border-emerald-500', 'bg-emerald-600', 'text-white');
+                    e.target.classList.remove('border-gray-600');
+                    
+                    // Show/hide email subject field
+                    if (e.target.dataset.value === 'email') {
+                        emailSubjectField?.classList.remove('hidden');
+                    } else {
+                        emailSubjectField?.classList.add('hidden');
+                    }
+                }
+            });
+
+            // Set email as default
+            const emailBtn = toggleGroup.querySelector('[data-value="email"]');
+            if (emailBtn) {
+                emailBtn.click();
+            }
+        }
+
+        // Update message preview with sample data
+        function updateManualMessagePreview() {
+            const message = document.getElementById('manualMessageInput').value;
+            const preview = document.getElementById('manualMessagePreview');
+            
+            if (!message.trim()) {
+                preview.innerHTML = '<div class="text-gray-500 text-sm">L\'anteprima apparirà qui...</div>';
+                return;
+            }
+
+            // Sample data for preview
+            const sampleData = {
+                'NOME': 'Mario Rossi',
+                'EMAIL': 'mario.rossi@email.com',
+                'TELEFONO': '+39 123 456 7890',
+                'VEICOLO': 'Fiat Panda',
+                'TARGA': 'AB123CD',
+                'ANNO': '2020',
+                'CARBURANTE': 'Benzina',
+                'KM': '45.000',
+                'VIN': 'WVWZZZ1JZ3W123456',
+                'SERIAL': 'SN123456789',
+                'CTA_TAGLIANDO': 'Prenota il tuo tagliando su: https://mobisat.com/tagliando'
+            };
+
+            let previewText = message;
+            Object.keys(sampleData).forEach(key => {
+                const regex = new RegExp(`\\{${key}\\}`, 'g');
+                previewText = previewText.replace(regex, `<span class="bg-emerald-600 text-white px-1 rounded text-xs">${sampleData[key]}</span>`);
+            });
+
+            preview.innerHTML = `<div class="text-sm">${previewText.replace(/\n/g, '<br>')}</div>`;
+        }
+
+        // Preview manual message
+        function previewManualMessage() {
+            updateManualMessagePreview();
+            
+            // Scroll to preview
+            const preview = document.getElementById('manualMessagePreview');
+            if (preview) {
+                preview.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        // Send manual message
+        async function sendManualMessage() {
+            const channel = document.querySelector('#channelToggleGroupNoAI .active-chip')?.dataset.value || 'email';
+            const message = document.getElementById('manualMessageInput').value.trim();
+            const subject = document.getElementById('emailSubjectInputNoAI').value.trim();
+            const sendToTest = document.getElementById('sendToTestClientsNoAI').checked;
+            
+            // Validation
+            if (!message) {
+                alert('Inserisci un messaggio');
+                return;
+            }
+            
+            if (channel === 'email' && !subject) {
+                alert('L\'oggetto email è obbligatorio');
+                document.getElementById('emailSubjectInputNoAI').focus();
+                return;
+            }
+
+            const confirmed = confirm(`Sei sicuro di voler inviare questo messaggio via ${channel.toUpperCase()}?`);
+            if (!confirmed) return;
+
+            try {
+                const dealerId = getCurrentDealerId();
+                const selectedCerts = sendToTest ? [] : getSelectedCertificates();
+                
+                // Get dealer signature
+                let dealerSignatureText = '';
+                const sigSelect = document.getElementById('dealerSignatureSelectNoAI');
+                if (sigSelect && sigSelect.value !== 'none') {
+                    try {
+                        const sig = JSON.parse(decodeURIComponent(sigSelect.value));
+                        dealerSignatureText = `${sig.company_name||''}${sig.address1? `\n${sig.address1}`:''}${sig.postcode||sig.city? `\n${[sig.postcode||'', sig.city||''].filter(Boolean).join(' ')}`:''}${sig.phone? `\nTel: ${sig.phone}`:''}${sig.email? `\nEmail: ${sig.email}`:''}`.trim();
+                    } catch {}
+                }
+
+                // Build recipients list
+                let recipients = [];
+                if (sendToTest) {
+                    const testClients = await fetch(`/api/communications/test-clients/${dealerId}`).then(r=>r.json()).then(j=> j.data||[]);
+                    recipients = testClients.map(c => ({
+                        name: [c.first_name, c.last_name].filter(Boolean).join(' ').trim(),
+                        email: c.email?.toLowerCase() || '',
+                        phone: c.phone || '',
+                        vehicle: [c.vehicle_brand, c.vehicle_model].filter(Boolean).join(' '),
+                        plate: c.plate || '',
+                        year: c.year || '',
+                        fuel: c.fuel_type || '',
+                        km: c.odometer || '',
+                        vin: c.vin || '',
+                        serial: c.serial || ''
+                    }));
+                } else {
+                    recipients = selectedCerts.map(cert => ({
+                        name: `${cert.client?.firstName || ''} ${cert.client?.lastName || ''}`.trim(),
+                        email: cert.client?.email?.toLowerCase() || '',
+                        phone: cert.client?.phone || '',
+                        vehicle: `${cert.brand || ''} ${cert.model || ''}`.trim(),
+                        plate: cert.license_plate || '',
+                        year: cert.year || '',
+                        fuel: cert.fuel_type || '',
+                        km: cert.odometer || '',
+                        vin: cert.vin || '',
+                        serial: cert.serial || ''
+                    }));
+                }
+
+                // Send manual communication
+                const response = await fetch('/api/communications/send-manual', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        dealerId,
+                        channel,
+                        subject: channel === 'email' ? subject : undefined,
+                        message,
+                        signature: dealerSignatureText,
+                        recipients
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(await response.text());
+                }
+
+                const result = await response.json();
+                alert(`Messaggio inviato con successo a ${result.sent} destinatari!`);
+                closeBulkContactWithoutAIDialog();
+
+            } catch (error) {
+                console.error('Error sending manual message:', error);
+                alert(`Errore nell'invio: ${error.message}`);
+            }
+        }
+
+        // Show email subject field in AI dialog when email is selected
+        function initChannelToggleAI() {
+            const toggleGroup = document.getElementById('channelToggleGroup');
+            const emailSubjectField = document.getElementById('emailSubjectField');
+            
+            if (!toggleGroup) return;
+
+            toggleGroup.addEventListener('click', (e) => {
+                if (e.target.dataset.value) {
+                    // Show/hide email subject field
+                    if (e.target.dataset.value === 'email') {
+                        emailSubjectField?.classList.remove('hidden');
+                    } else {
+                        emailSubjectField?.classList.add('hidden');
+                    }
+                }
+            });
+        }
+
+        // Initialize channel toggle for AI dialog on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // ... existing code ...
+            initChannelToggleAI();
+        });
     </script>
 </body>
 </html> 
