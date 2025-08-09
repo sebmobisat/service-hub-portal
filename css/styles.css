@@ -527,12 +527,13 @@ body {
 }
 
 .btn-theme-active {
-  background-color: var(--success) !important;
+  /* Allineato al verde dei pulsanti lingua */
+  background-color: #16a34a !important; /* green-600 */
   color: white !important;
 }
 
 .btn-theme-active:hover {
-  background-color: #059669 !important;
+  background-color: #15803d !important; /* green-700 */
 }
 
 /* ============================================

@@ -294,6 +294,92 @@ class SupabaseManager {
             return { success: false, error: error.message };
         }
     }
+
+    // COMMUNICATIONS TABLES (dealer_signatures, test_clients)
+    static async getDealerSignatures(dealerId) {
+        try {
+            const { data, error } = await supabase
+                .from('dealer_signatures')
+                .select('*')
+                .eq('dealer_id', dealerId)
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            return { success: true, data: data || [] };
+        } catch (error) {
+            return { success: false, error: error.message, data: [] };
+        }
+    }
+
+    static async upsertDealerSignature(signature) {
+        try {
+            const payload = { ...signature };
+            const { data, error } = await supabase
+                .from('dealer_signatures')
+                .upsert([payload], { onConflict: 'id' })
+                .select()
+                .single();
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    static async deleteDealerSignature(id, dealerId) {
+        try {
+            const { error } = await supabase
+                .from('dealer_signatures')
+                .delete()
+                .eq('id', id)
+                .eq('dealer_id', dealerId);
+            if (error) throw error;
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    static async getTestClients(dealerId) {
+        try {
+            const { data, error } = await supabase
+                .from('test_clients')
+                .select('*')
+                .eq('dealer_id', dealerId)
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            return { success: true, data: data || [] };
+        } catch (error) {
+            return { success: false, error: error.message, data: [] };
+        }
+    }
+
+    static async upsertTestClient(client) {
+        try {
+            const { data, error } = await supabase
+                .from('test_clients')
+                .upsert([client], { onConflict: 'id' })
+                .select()
+                .single();
+            if (error) throw error;
+            return { success: true, data };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
+
+    static async deleteTestClient(id, dealerId) {
+        try {
+            const { error } = await supabase
+                .from('test_clients')
+                .delete()
+                .eq('id', id)
+                .eq('dealer_id', dealerId);
+            if (error) throw error;
+            return { success: true };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    }
 }
 
 module.exports = {

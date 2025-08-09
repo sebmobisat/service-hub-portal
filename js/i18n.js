@@ -969,21 +969,24 @@ class I18nManager {
         
         if (langIT && langEN) {
             // Check if we're on the settings page (different styling)
-            const isSettingsPage = window.location.pathname.includes('settings');
+            const path = window.location.pathname;
+            const isSettingsPage = path.includes('settings') || path.includes('setting_restored');
             
             if (isSettingsPage) {
-                // Settings page buttons - different styling
-                const baseClass = 'px-4 py-2 rounded-lg text-white transition-colors';
-                
-                // Reset both buttons to default state
-                langEN.className = `${baseClass} bg-gray-600 hover:bg-gray-700`;
-                langIT.className = `${baseClass} bg-gray-600 hover:bg-gray-700`;
-                
+                // Settings page buttons - align with theme buttons styling exactly
+                const base = 'btn-theme px-4 py-2 rounded-lg transition-colors';
+                const inactive = `${base} btn-theme-inactive`;
+                const active = `${base} btn-theme-active`;
+
+                // Reset both buttons to inactive
+                langEN.className = inactive;
+                langIT.className = inactive;
+
                 // Set active button based on current language
                 if (this.currentLanguage === 'en') {
-                    langEN.className = `${baseClass} bg-green-600 hover:bg-green-700`;
+                    langEN.className = active;
                 } else if (this.currentLanguage === 'it') {
-                    langIT.className = `${baseClass} bg-green-600 hover:bg-green-700`;
+                    langIT.className = active;
                 }
             } else {
                 // Header buttons - original styling

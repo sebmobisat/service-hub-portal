@@ -1295,8 +1295,7 @@ app.get('/api/dealer/:dealerId', async (req, res) => {
         console.log(` Fetching dealer info for ID: ${dealerId}`);
         
         const query = `
-            SELECT id, "companyLoginEmail", "companyName", "companyMobisatTechRefName", 
-                   brand, "createdAt", "updatedAt"
+            SELECT *
             FROM dealer 
             WHERE id = $1
         `;
@@ -4753,6 +4752,96 @@ async function generateAISectionResponse(prompt, context, lang, section) {
 
 // Import Supabase client
 const { supabaseAdmin } = require('./config/supabase.js');
+// Communications: Dealer Signatures & Test Clients
+app.get('/api/communications/signatures/:dealerId', async (req, res) => {
+    try {
+        const { dealerId } = req.params;
+        const { data, error } = await supabaseAdmin
+            .from('dealer_signatures')
+            .select('*')
+            .eq('dealer_id', dealerId)
+            .order('created_at', { ascending: false });
+        if (error) throw error;
+        res.json({ success: true, data });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message, data: [] });
+    }
+});
+
+app.post('/api/communications/signatures', express.json(), async (req, res) => {
+    try {
+        const payload = req.body;
+        const { data, error } = await supabaseAdmin
+            .from('dealer_signatures')
+            .upsert([payload], { onConflict: 'id' })
+            .select()
+            .single();
+        if (error) throw error;
+        res.json({ success: true, data });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.delete('/api/communications/signatures/:id/:dealerId', async (req, res) => {
+    try {
+        const { id, dealerId } = req.params;
+        const { error } = await supabaseAdmin
+            .from('dealer_signatures')
+            .delete()
+            .eq('id', id)
+            .eq('dealer_id', dealerId);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.get('/api/communications/test-clients/:dealerId', async (req, res) => {
+    try {
+        const { dealerId } = req.params;
+        const { data, error } = await supabaseAdmin
+            .from('test_clients')
+            .select('*')
+            .eq('dealer_id', dealerId)
+            .order('created_at', { ascending: false });
+        if (error) throw error;
+        res.json({ success: true, data });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message, data: [] });
+    }
+});
+
+app.post('/api/communications/test-clients', express.json(), async (req, res) => {
+    try {
+        const payload = req.body;
+        const { data, error } = await supabaseAdmin
+            .from('test_clients')
+            .upsert([payload], { onConflict: 'id' })
+            .select()
+            .single();
+        if (error) throw error;
+        res.json({ success: true, data });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+app.delete('/api/communications/test-clients/:id/:dealerId', async (req, res) => {
+    try {
+        const { id, dealerId } = req.params;
+        const { error } = await supabaseAdmin
+            .from('test_clients')
+            .delete()
+            .eq('id', id)
+            .eq('dealer_id', dealerId);
+        if (error) throw error;
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
 
 // Get vehicle groups for a dealer
 app.get('/api/vehicle-groups/:dealerId', async (req, res) => {

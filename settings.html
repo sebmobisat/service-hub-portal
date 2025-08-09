@@ -13,6 +13,23 @@
     <link rel="icon" type="image/png" href="/favicon/favicon-48x48.png" sizes="48x48">
     <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" sizes="180x180">
     <link rel="manifest" href="/favicon/manifest.json">
+    <style>
+      #dealerSignatureForm .form-group { margin-bottom: 0.5rem !important; }
+      /* Compact form styles (only for Comunicazioni section) */
+      .compact-form .form-input { padding: 0.5rem !important; min-height: 36px !important; }
+      .compact-form .form-label { margin-bottom: 0.25rem !important; font-size: 0.8125rem !important; text-align: left !important; }
+      .compact-form .form-group { margin-bottom: 0.5rem !important; }
+      /* Address wraps to max 2 lines */
+      .address-two-lines {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        white-space: normal;
+        word-break: break-word;
+      }
+    </style>
     
     <!-- Authentication Configuration -->
     <script src="/js/auth-config.js"></script>
@@ -40,9 +57,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
                     </svg>
                 </button>
-                                 <!-- Tooltip -->
-                 <div class="sidebar-tooltip absolute left-full ml-2 px-2 py-1 text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-60" data-i18n="nav.dashboard">
-                 </div>
+                 <div class="sidebar-tooltip absolute left-full ml-2 px-2 py-1 text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-60" data-i18n="nav.dashboard"></div>
             </div>
             
             <!-- Certificates -->
@@ -52,9 +67,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
                 </button>
-                                 <!-- Tooltip -->
-                 <div class="sidebar-tooltip absolute left-full ml-2 px-2 py-1 text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-60" data-i18n="nav.certificates">
-                 </div>
+                 <div class="sidebar-tooltip absolute left-full ml-2 px-2 py-1 text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-60" data-i18n="nav.certificates"></div>
             </div>
             
             <!-- Settings (Active) -->
@@ -65,9 +78,7 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
                 </button>
-                                 <!-- Tooltip -->
-                 <div class="sidebar-tooltip absolute left-full ml-2 px-2 py-1 text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-60" data-i18n="nav.settings">
-                 </div>
+                 <div class="sidebar-tooltip absolute left-full ml-2 px-2 py-1 text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-60" data-i18n="nav.settings"></div>
             </div>
         </nav>
         
@@ -78,9 +89,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
                 </svg>
             </button>
-                         <!-- Tooltip -->
-             <div class="sidebar-tooltip absolute left-full ml-2 px-2 py-1 text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-60" data-i18n="nav.logout">
-             </div>
+             <div class="sidebar-tooltip absolute left-full ml-2 px-2 py-1 text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-60" data-i18n="nav.logout"></div>
         </div>
     </div>
 
@@ -100,62 +109,260 @@
         </header>
 
         <!-- Main Content -->
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <div class="grid gap-6">
-                                 <!-- Language Settings -->
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8" style="max-width: 65%">
+            <div class="grid gap-4">
+                 <!-- Preferenze: Language + Theme in one row (two columns) -->
                  <div class="settings-card rounded-lg p-6 border">
-                     <h2 class="settings-title text-lg font-semibold mb-4" data-i18n="settings.language.title"></h2>
-                     <div class="space-y-4">
-                         <p class="settings-description text-sm" data-i18n="settings.language.description"></p>
-                         <div class="flex space-x-4">
-                             <button id="lang-it" onclick="changeLanguage('it')" class="px-4 py-2 rounded-lg text-white transition-colors hover:bg-green-700" data-i18n="settings.language.italian">
-                              </button>
-                              <button id="lang-en" onclick="changeLanguage('en')" class="px-4 py-2 rounded-lg text-white hover:bg-gray-700 transition-colors" data-i18n="settings.language.english">
-                              </button>
+                     <h2 class="settings-title text-lg font-semibold mb-4">Preferenze</h2>
+                     <div class="relative grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+                         <!-- Central divider -->
+                         <div class="hidden md:block absolute top-0 bottom-0 left-1/2" style="width:1px; background-color: var(--border-color); transform: translateX(-50%);"></div>
+                         <!-- Language Column -->
+                         <div class="max-w-sm px-2">
+                             <h3 class="text-base font-semibold mb-2" data-i18n="settings.language.title"></h3>
+                             <p class="settings-description text-sm mb-4" data-i18n="settings.language.description"></p>
+                              <div class="flex justify-start space-x-4">
+                                  <button id="lang-it" onclick="changeLanguage('it')" class="btn-theme btn-theme-inactive px-4 py-2 rounded-lg transition-colors" data-i18n="settings.language.italian"></button>
+                                  <button id="lang-en" onclick="changeLanguage('en')" class="btn-theme btn-theme-inactive px-4 py-2 rounded-lg transition-colors" data-i18n="settings.language.english"></button>
+                              </div>
+                         </div>
+                         <!-- Theme Column -->
+                         <div class="max-w-sm px-2">
+                             <h3 class="text-base font-semibold mb-2" data-i18n="settings.theme.title"></h3>
+                             <p class="settings-description text-sm mb-4" data-i18n="settings.theme.description"></p>
+                              <div class="flex justify-start space-x-4">
+                                 <button id="themeDark" class="btn-theme btn-theme-active px-4 py-2 rounded-lg transition-colors" data-i18n="settings.theme.dark"></button>
+                                 <button id="themeLight" class="btn-theme btn-theme-inactive px-4 py-2 rounded-lg transition-colors" data-i18n="settings.theme.light"></button>
+                             </div>
                          </div>
                      </div>
                  </div>
 
-                                 <!-- Theme Settings -->
+                 <!-- Comunicazioni: Firma Dealer e Clienti Test (sezione autonoma) -->
                  <div class="settings-card rounded-lg p-6 border">
-                     <h2 class="settings-title text-lg font-semibold mb-4" data-i18n="settings.theme.title"></h2>
-                     <div class="space-y-4">
-                         <p class="settings-description text-sm" data-i18n="settings.theme.description"></p>
-                         <div class="flex space-x-4">
-                             <button id="themeDark" class="btn-theme btn-theme-active px-4 py-2 rounded-lg transition-colors" data-i18n="settings.theme.dark">
-                             </button>
-                             <button id="themeLight" class="btn-theme btn-theme-inactive px-4 py-2 rounded-lg transition-colors" data-i18n="settings.theme.light">
-                             </button>
+                     <h2 class="settings-title text-lg font-semibold mb-4">Comunicazioni</h2>
+                     <div class="relative grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+                         <!-- Central divider -->
+                         <div class="hidden md:block absolute top-0 bottom-0 left-1/2" style="width:1px; background-color: var(--border-color); transform: translateX(-50%);"></div>
+                         <!-- Firma Dealer -->
+                         <div class="w-full max-w-none min-w-0 compact-form">
+                             <h3 class="text-base font-semibold mb-3">Firma Dealer</h3>
+                             <form id="dealerSignatureForm" class="space-y-2 w-full max-w-none min-w-0">
+                                <div class="grid grid-cols-1 gap-1.5">
+                                     <div class="form-group">
+                                         <label class="form-label" for="sig_company_name">Nome concessionaria</label>
+                                          <input class="form-input" id="sig_company_name" required />
+                                     </div>
+                                     <div class="form-group">
+                                         <label class="form-label" for="sig_address1">Indirizzo 1</label>
+                                         <input class="form-input" id="sig_address1" />
+                                     </div>
+                                     <div class="form-group">
+                                         <label class="form-label" for="sig_address2">Indirizzo 2</label>
+                                         <input class="form-input" id="sig_address2" />
+                                     </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                                         <div class="form-group">
+                                             <label class="form-label" for="sig_city">Città</label>
+                                             <input class="form-input" id="sig_city" />
+                                         </div>
+                                         <div class="form-group">
+                                             <label class="form-label" for="sig_provincia">Provincia</label>
+                                             <input class="form-input" id="sig_provincia" />
+                                         </div>
+                                     </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                                         <div class="form-group">
+                                             <label class="form-label" for="sig_postcode">CAP</label>
+                                             <input class="form-input" id="sig_postcode" />
+                                         </div>
+                                         <div class="form-group">
+                                             <label class="form-label" for="sig_phone">Telefono</label>
+                                             <input class="form-input" id="sig_phone" />
+                                         </div>
+                                     </div>
+                                     <div class="form-group">
+                                         <label class="form-label" for="sig_email">Email</label>
+                                         <input class="form-input" id="sig_email" />
+                                     </div>
+                                 </div>
+                                 <div class="flex gap-2 mt-2">
+                                     <button type="button" id="saveSignatureBtn" class="btn btn-primary">Salva</button>
+                                     <button type="button" id="resetSignatureBtn" class="btn btn-secondary">Reset</button>
+                                 </div>
+                             </form>
+                             <div class="mt-4">
+                                 <h4 class="text-sm font-semibold mb-2">Firme salvate</h4>
+                                 <div id="signaturesList" class="space-y-2"></div>
+                             </div>
+                         </div>
+
+                         <!-- Clienti Test -->
+                         <div class="w-full max-w-none min-w-0 compact-form">
+                             <h3 class="text-base font-semibold mb-3">Clienti Test</h3>
+                            <form id="testClientForm" class="space-y-2 w-full max-w-none min-w-0 compact-form">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                <div class="form-group" style="margin-bottom:0.5rem">
+                                         <label class="form-label" for="tc_first_name">Nome</label>
+                                          <input class="form-input" id="tc_first_name" required />
+                                     </div>
+                                <div class="form-group" style="margin-bottom:0.5rem">
+                                         <label class="form-label" for="tc_last_name">Cognome</label>
+                                          <input class="form-input" id="tc_last_name" required />
+                                     </div>
+                                 </div>
+                                <div class="form-group" style="margin-bottom:0.5rem">
+                                     <label class="form-label" for="tc_company">Società</label>
+                                     <input class="form-input" id="tc_company" />
+                                 </div>
+                                 <div class="form-group">
+                                     <label class="form-label" for="tc_address1">Indirizzo 1</label>
+                                     <input class="form-input" id="tc_address1" />
+                                 </div>
+                                 <div class="form-group">
+                                     <label class="form-label" for="tc_address2">Indirizzo 2</label>
+                                     <input class="form-input" id="tc_address2" />
+                                 </div>
+                                 <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                     <div class="form-group">
+                                         <label class="form-label" for="tc_city">Città</label>
+                                         <input class="form-input" id="tc_city" />
+                                     </div>
+                                     <div class="form-group">
+                                         <label class="form-label" for="tc_provincia">Provincia</label>
+                                         <input class="form-input" id="tc_provincia" />
+                                     </div>
+                                     <div class="form-group">
+                                         <label class="form-label" for="tc_postcode">CAP</label>
+                                         <input class="form-input" id="tc_postcode" />
+                                     </div>
+                                 </div>
+                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                     <div class="form-group">
+                                         <label class="form-label" for="tc_phone">Telefono</label>
+                                         <input class="form-input" id="tc_phone" />
+                                     </div>
+                                     <div class="form-group">
+                                         <label class="form-label" for="tc_email">Email</label>
+                                         <input class="form-input" id="tc_email" />
+                                     </div>
+                                 </div>
+                                <!-- Row 1: Marca + Modello -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                     <div class="form-group">
+                                         <label class="form-label" for="tc_vehicle_brand">Marca</label>
+                                         <input class="form-input" id="tc_vehicle_brand" />
+                                     </div>
+                                     <div class="form-group">
+                                         <label class="form-label" for="tc_vehicle_model">Modello</label>
+                                         <input class="form-input" id="tc_vehicle_model" />
+                                     </div>
+                                </div>
+                                <!-- Row 2: Alimentazione + Odometro -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                     <div class="form-group">
+                                         <label class="form-label" for="tc_fuel_type">Alimentazione</label>
+                                         <input class="form-input" id="tc_fuel_type" />
+                                     </div>
+                                     <div class="form-group">
+                                         <label class="form-label" for="tc_odometer">Odometro</label>
+                                         <input class="form-input" id="tc_odometer" />
+                                     </div>
+                                </div>
+                                 <div class="flex gap-2 mt-2">
+                                     <button type="button" id="saveTestClientBtn" class="btn btn-primary">Salva</button>
+                                     <button type="button" id="resetTestClientBtn" class="btn btn-secondary">Reset</button>
+                                 </div>
+                             </form>
+                             <div class="mt-4">
+                                 <h4 class="text-sm font-semibold mb-2">Clienti test salvati</h4>
+                                 <div id="testClientsList" class="space-y-2"></div>
+                             </div>
                          </div>
                      </div>
                  </div>
 
                                  <!-- Dealer Information -->
                  <div class="settings-card rounded-lg p-6 border">
-                     <h2 class="settings-title text-lg font-semibold mb-4" data-i18n="settings.dealer.title"></h2>
-                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                         <div>
-                             <p class="settings-description text-sm" data-i18n="settings.dealer.id"></p>
-                             <p class="settings-title font-mono" id="dealerIdDisplay">1</p>
+                     <h2 class="settings-title text-lg font-semibold mb-4" data-i18n="settings.dealer.title">Informazioni Dealer</h2>
+                     <div class="relative grid grid-cols-1 md:grid-cols-2 gap-6">
+                         <!-- Central divider -->
+                         <div class="hidden md:block absolute top-0 bottom-0 left-1/2" style="width:1px; background-color: var(--border-color); transform: translateX(-50%);"></div>
+                         <!-- Colonna 1 -->
+                         <section class="space-y-3 w-full max-w-none min-w-0 px-2">
+                             <div class="flex items-start gap-2 md:whitespace-nowrap flex-wrap">
+                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 21h18M5 21V7a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v14M9 7h2m-2 4h2m-2 4h2m4-8h2m-2 4h2m-2 4h2"/></svg>
+                                <span class="settings-description text-sm">Nome Concessionaria:</span>
+                                 <span class="settings-title text-base" id="dealerNameDisplay">-</span>
+                             </div>
+                             <div class="flex items-center gap-2 md:whitespace-nowrap flex-wrap">
+                                 <span class="settings-description text-sm">ID Dealer:</span>
+                                 <span id="dealerIdDisplay" class="font-mono text-sm px-2 py-0.5 rounded bg-[var(--bg-tertiary)]">-</span>
+                             </div>
+                             <div class="flex items-center gap-2 md:whitespace-nowrap flex-wrap">
+                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M22 8l-8.586 5.724a2 2 0 0 1-2.828 0L2 8"/></svg>
+                                <span class="settings-description text-sm">Email login dealer:</span>
+                                 <span class="settings-title text-base" id="companyLoginEmail">-</span>
+                             </div>
+                             <div class="flex items-center gap-2 md:whitespace-nowrap flex-wrap">
+                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" ry="2" stroke-width="1.5"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 9h6M7 12h4"/></svg>
+                                 <span class="settings-description text-sm">Dati fiscali:</span>
+                                 <span class="settings-title text-base" id="companyTaxCode">-</span>
+                             </div>
+                         </section>
+
+                        <!-- Colonna 2 -->
+                         <section class="space-y-3 w-full max-w-none min-w-0 px-2">
+                             <div class="flex items-center gap-2 md:whitespace-nowrap flex-wrap">
+                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2 5a2 2 0 0 1 2-2h2l2 5-2 1a12 12 0 0 0 7 7l1-2 5 2v2a2 2 0 0 1-2 2h-1C8.82 20 4 15.18 4 9V8a2 2 0 0 1 2-2"/></svg>
+                                <span class="settings-description text-sm">Telefono:</span>
+                                 <span class="settings-title text-base" id="companyPhoneNumber">-</span>
+                             </div>
+                             <div class="flex items-center gap-2 md:whitespace-nowrap flex-wrap">
+                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a4 4 0 1 1-6 0 4 4 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 21a7 7 0 1 1 14 0"/></svg>
+                                <span class="settings-description text-sm">Ref. Tecnico Mobisat:</span>
+                                 <span class="settings-title text-base" id="companyMobisatTechRefName">-</span>
+                             </div>
+                             <div class="flex items-center gap-2 md:whitespace-nowrap flex-wrap">
+                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2 5a2 2 0 0 1 2-2h2l2 5-2 1a12 12 0 0 0 7 7l1-2 5 2v2a2 2 0 0 1-2 2h-1C8.82 20 4 15.18 4 9V8a2 2 0 0 1 2-2"/></svg>
+                                <span class="settings-description text-sm">Telefono Ref. Tecnico:</span>
+                                 <span class="settings-title text-base" id="companyMobisatTechRefPhone">-</span>
                          </div>
-                         <div>
-                             <p class="settings-description text-sm" data-i18n="settings.dealer.name"></p>
-                             <p class="settings-title" id="dealerNameDisplay">Mobisat Dealer</p>
+                              <div class="flex items-center gap-2 md:whitespace-nowrap flex-wrap">
+                                <span class="settings-description text-sm inline-flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 21s7-4.35 7-10a7 7 0 1 0-14 0c0 5.65 7 10 7 10z"></path>
+                                        <circle cx="12" cy="11" r="3" fill="#ffffff"></circle>
+                                    </svg>
+                                    Indirizzo:
+                                </span>
+                                <span id="companyAddressFull" class="settings-title text-base address-two-lines min-w-0 w-full md:w-auto">-</span>
                          </div>
+                         </section>
                      </div>
                  </div>
 
                                  <!-- System Information -->
                  <div class="settings-card rounded-lg p-6 border">
                      <h2 class="settings-title text-lg font-semibold mb-4" data-i18n="settings.system.title"></h2>
-                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                         <div>
+                      <div class="relative grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+                         <!-- Central divider -->
+                         <div class="hidden md:block absolute top-0 bottom-0 left-1/2" style="width:1px; background-color: var(--border-color); transform: translateX(-50%);"></div>
+                         <!-- Version -->
+                         <div class="max-w-sm px-2 text-left">
                              <p class="settings-description text-sm" data-i18n="settings.system.version"></p>
                              <p class="settings-title">Service Hub Portal v1.0</p>
                          </div>
-                         <div>
-                             <p class="settings-description text-sm" data-i18n="settings.system.database"></p>
-                             <p class="text-green-400" data-i18n="settings.system.connected"></p>
+                         <!-- Databases -->
+                         <div class="max-w-sm px-2 space-y-1.5 text-left">
+                             <div class="flex items-center gap-2">
+                                 <p class="settings-description text-sm">Database 1:</p>
+                                 <span id="db1Status" class="settings-title text-base text-green-400 inline-flex items-center gap-2">-</span>
+                             </div>
+                             <div class="flex items-center gap-2">
+                                 <p class="settings-description text-sm">Database 2:</p>
+                                 <span id="db2Status" class="settings-title text-base text-green-400 inline-flex items-center gap-2">-</span>
+                             </div>
                          </div>
                      </div>
                  </div>
@@ -229,10 +436,25 @@
                 const dealerNameEl = document.getElementById('dealerNameDisplay');
                 
                 if (data.success && data.dealer) {
-                    // Update UI with data from database
-                    if (dealerIdEl) dealerIdEl.textContent = data.dealer.id || dealerId;
-                    if (dealerNameEl) dealerNameEl.textContent = data.dealer.companyName || 'Mobisat Dealer';
-                    
+                    const d = data.dealer;
+                    if (dealerIdEl) dealerIdEl.textContent = d.id ?? dealerId;
+                    if (dealerNameEl) dealerNameEl.textContent = d.companyName || '-';
+
+                    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val ?? '-'; };
+                    // Compose full address for display and tooltip
+                    const addressFull = document.getElementById('companyAddressFull');
+                    if (addressFull) {
+                        const parts = [d.companyAddress1, d.companyAddress2, d.companyPostcode, d.companyCity, d.companyProvincia, d.companyCountry]
+                            .filter(Boolean);
+                        const fullAddress = parts.join(' ');
+                        addressFull.textContent = fullAddress || '-';
+                        addressFull.title = fullAddress; // tooltip nativo
+                    }
+                    set('companyPhoneNumber', d.companyPhoneNumber);
+                    set('companyTaxCode', d.companyTaxCode);
+                    set('companyMobisatTechRefName', d.companyMobisatTechRefName);
+                    set('companyMobisatTechRefPhone', d.companyMobisatTechRefPhone);
+                    set('companyLoginEmail', d.companyLoginEmail);
 
                 } else {
                     // Fallback to localStorage or defaults
@@ -277,6 +499,23 @@
             }
         }
 
+        async function updateDbStatus() {
+            try {
+                const res = await fetch('/status');
+                const data = await res.json();
+                const db1 = document.getElementById('db1Status');
+                const db2 = document.getElementById('db2Status');
+                const ok = '<span class="inline-flex items-center gap-2"><span style="display:inline-block;width:18px;height:18px;border-radius:4px;background:#34d399;position:relative;box-shadow:inset 0 0 0 2px rgba(0,0,0,0.08)"></span><span style="color:#34d399">Connesso</span></span>';
+                if (db1) db1.innerHTML = ok;
+                if (db2) db2.innerHTML = ok;
+            } catch (_) {
+                const db1 = document.getElementById('db1Status');
+                const db2 = document.getElementById('db2Status');
+                if (db1) db1.textContent = 'Errore';
+                if (db2) db2.textContent = 'Errore';
+            }
+        }
+
         // Initialize page when DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
             // Check authentication first
@@ -287,6 +526,154 @@
             
             // Load dealer info
             loadDealerInfo();
+            // Update DB status (Mobisat + Supabase)
+            updateDbStatus();
+
+            // Comunicazioni: wire handlers
+            const dealerId = (JSON.parse(localStorage.getItem('authData')||'{}').dealerId) || 1;
+
+            async function refreshSignatures() {
+                const list = document.getElementById('signaturesList');
+                if (!list) return;
+                list.textContent = 'Caricamento...';
+                try {
+                    const r = await fetch(`/api/communications/signatures/${dealerId}`);
+                    const j = await r.json();
+                    list.innerHTML = (j.data||[]).map(s => `
+                        <div class="relative p-3 border rounded">
+                            <button data-id="${s.id}" class="absolute top-2 right-2 px-2 py-1 text-xs rounded bg-red-600 text-white del-sig">Elimina</button>
+                            <div class="text-sm pr-16">
+                                <div class="font-medium">${s.company_name||'-'}</div>
+                                <div class="text-gray-400">${[s.address1,s.postcode,s.city,s.provincia].filter(Boolean).join(' ')}</div>
+                                <div class="text-gray-400">${s.phone||''} ${s.email? ' • '+s.email:''}</div>
+                            </div>
+                        </div>
+                    `).join('') || '<div class="text-sm text-gray-400">Nessuna firma salvata</div>';
+                    list.querySelectorAll('.del-sig').forEach(btn=>{
+                        btn.addEventListener('click', async()=>{
+                            await fetch(`/api/communications/signatures/${btn.dataset.id}/${dealerId}`, { method:'DELETE' });
+                            refreshSignatures();
+                        });
+                    });
+                } catch { list.textContent = 'Errore caricamento'; }
+            }
+
+            async function refreshTestClients() {
+                const list = document.getElementById('testClientsList');
+                if (!list) return;
+                list.textContent = 'Caricamento...';
+                try {
+                    const r = await fetch(`/api/communications/test-clients/${dealerId}`);
+                    const j = await r.json();
+                    list.innerHTML = (j.data||[]).map(c => `
+                        <div class="relative p-3 border rounded">
+                            <button data-id="${c.id}" class="absolute top-2 right-2 px-2 py-1 text-xs rounded bg-red-600 text-white del-tc">Elimina</button>
+                            <div class="text-sm pr-16">
+                                <div class="font-medium">${[c.first_name,c.last_name].filter(Boolean).join(' ')||'-'} ${c.company? '• '+c.company:''}</div>
+                                <div class="text-gray-400">${[c.address1,c.postcode,c.city,c.provincia].filter(Boolean).join(' ')}</div>
+                                <div class="text-gray-400">${c.phone||''} ${c.email? ' • '+c.email:''}</div>
+                                <div class="text-gray-400">${[c.vehicle_brand,c.vehicle_model,c.fuel_type,c.odometer].filter(Boolean).join(' • ')}</div>
+                            </div>
+                        </div>
+                    `).join('') || '<div class="text-sm text-gray-400">Nessun cliente test salvato</div>';
+                    list.querySelectorAll('.del-tc').forEach(btn=>{
+                        btn.addEventListener('click', async()=>{
+                            await fetch(`/api/communications/test-clients/${btn.dataset.id}/${dealerId}`, { method:'DELETE' });
+                            refreshTestClients();
+                        });
+                    });
+                } catch { list.textContent = 'Errore caricamento'; }
+            }
+
+            const saveSignatureBtn = document.getElementById('saveSignatureBtn');
+            if (saveSignatureBtn) {
+                saveSignatureBtn.addEventListener('click', async()=>{
+                    const companyInput = document.getElementById('sig_company_name');
+                    const companyName = companyInput?.value.trim() || '';
+                    if (!companyName) {
+                        // Tooltip nativo + scroll
+                        if (companyInput) {
+                            companyInput.setAttribute('title', 'Campo obbligatorio');
+                            companyInput.scrollIntoView({behavior:'smooth', block:'center'});
+                            companyInput.focus({preventScroll:true});
+                            // Mostra tooltip nativo aggiornando l'attributo title
+                            companyInput.setAttribute('data-tip-ts', Date.now().toString());
+                        }
+                        return;
+                    }
+                    const body = {
+                        dealer_id: dealerId,
+                        company_name: companyName,
+                        address1: document.getElementById('sig_address1')?.value || '',
+                        address2: document.getElementById('sig_address2')?.value || '',
+                        city: document.getElementById('sig_city')?.value || '',
+                        provincia: document.getElementById('sig_provincia')?.value || '',
+                        postcode: document.getElementById('sig_postcode')?.value || '',
+                        phone: document.getElementById('sig_phone')?.value || '',
+                        email: document.getElementById('sig_email')?.value || ''
+                    };
+                    await fetch('/api/communications/signatures', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+                    refreshSignatures();
+                });
+            }
+            const resetSignatureBtn = document.getElementById('resetSignatureBtn');
+            if (resetSignatureBtn) resetSignatureBtn.addEventListener('click', ()=> document.getElementById('dealerSignatureForm').reset());
+
+            const saveTestClientBtn = document.getElementById('saveTestClientBtn');
+            if (saveTestClientBtn) {
+                saveTestClientBtn.addEventListener('click', async()=>{
+                    const firstInput = document.getElementById('tc_first_name');
+                    const lastInput = document.getElementById('tc_last_name');
+                    const firstName = firstInput?.value.trim() || '';
+                    const lastName = lastInput?.value.trim() || '';
+                    if (!firstName || !lastName) {
+                        const target = !firstName ? firstInput : lastInput;
+                        if (target) {
+                            target.setAttribute('title', 'Campo obbligatorio');
+                            target.scrollIntoView({behavior:'smooth', block:'center'});
+                            target.focus({preventScroll:true});
+                            target.setAttribute('data-tip-ts', Date.now().toString());
+                        }
+                        return;
+                    }
+                    const body = {
+                        dealer_id: dealerId,
+                        first_name: firstName,
+                        last_name: lastName,
+                        company: document.getElementById('tc_company')?.value || '',
+                        address1: document.getElementById('tc_address1')?.value || '',
+                        address2: document.getElementById('tc_address2')?.value || '',
+                        city: document.getElementById('tc_city')?.value || '',
+                        provincia: document.getElementById('tc_provincia')?.value || '',
+                        postcode: document.getElementById('tc_postcode')?.value || '',
+                        phone: document.getElementById('tc_phone')?.value || '',
+                        email: document.getElementById('tc_email')?.value || '',
+                        vehicle_brand: document.getElementById('tc_vehicle_brand')?.value || '',
+                        vehicle_model: document.getElementById('tc_vehicle_model')?.value || '',
+                        fuel_type: document.getElementById('tc_fuel_type')?.value || '',
+                        odometer: document.getElementById('tc_odometer')?.value || null
+                    };
+                    await fetch('/api/communications/test-clients', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+                    refreshTestClients();
+                });
+            }
+            const resetTestClientBtn = document.getElementById('resetTestClientBtn');
+            if (resetTestClientBtn) resetTestClientBtn.addEventListener('click', ()=> document.getElementById('testClientForm').reset());
+
+            refreshSignatures();
+            refreshTestClients();
+
+            // Tooltip helper: rimuove il title quando l'utente digita
+            function attachRequiredTooltipClear(inputId) {
+                const el = document.getElementById(inputId);
+                if (!el) return;
+                el.addEventListener('input', ()=>{
+                    if ((el.value||'').trim()) el.removeAttribute('title');
+                });
+            }
+            attachRequiredTooltipClear('sig_company_name');
+            attachRequiredTooltipClear('tc_first_name');
+            attachRequiredTooltipClear('tc_last_name');
         });
     </script>
 </body>

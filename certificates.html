@@ -184,8 +184,22 @@
         input[type="text"],
         input[type="search"] {
             /* Light Mode */
-            color: #374151 !important;
+            color: #1f2937 !important; /* gray-800 for better contrast */
             background-color: #ffffff !important;
+        }
+
+        /* Force heading color for search section in light theme */
+        html:not(.dark) h3[data-i18n="certificates.search.title"] {
+            color: #111827 !important; /* gray-900 nearly black */
+        }
+        /* Ensure the main search input is readable in light mode */
+        #dynamicTextInput {
+            color: #1f2937 !important;
+            background-color: #ffffff !important;
+        }
+        #dynamicTextInput::placeholder,
+        input[type="search"]::placeholder {
+            color: #6b7280 !important; /* gray-500 */
         }
         
                   html.dark input[type="text"],
