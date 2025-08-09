@@ -430,7 +430,7 @@
             const cents = getRowCostCents(x);
             return (cents/100)||0; // Converti centesimi in euro
           });
-          chart.update();
+        chart.update();
           renderRows(rows);
           if (debugEnabled) {
             const dbg = document.getElementById('debugContainer');

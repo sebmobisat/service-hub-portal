@@ -127,6 +127,20 @@ class I18nManager {
                 'settings.system.version': 'Versione',
                 'settings.system.database': 'Stato Database',
                 'settings.system.connected': '✅ Connesso',
+
+                // Additional messages for settings.html
+                'message.loading': 'Caricamento...',
+                'message.loading_error': 'Errore caricamento',
+                'message.no_saved_signatures': 'Nessuna firma salvata',
+                'message.no_saved_test_clients': 'Nessun cliente test salvato',
+                'message.required_field': 'Campo obbligatorio',
+                'message.test_client_save_error': 'Errore salvataggio cliente test',
+                'button.delete': 'Elimina',
+                'button.logout': 'Esci',
+                'button.cancel': 'Annulla',
+                'status.connected': 'Connesso',
+                'status.error': 'Errore',
+                'dialog.logout_title': 'Conferma Logout',
                 
                 // Certificate Page
                 'certificates.search.title': 'Ricerca e Filtri',
@@ -520,6 +534,20 @@ class I18nManager {
                 'settings.system.version': 'Version',
                 'settings.system.database': 'Database Status',
                 'settings.system.connected': '✅ Connected',
+
+                // Additional messages for settings.html
+                'message.loading': 'Loading...',
+                'message.loading_error': 'Loading error',
+                'message.no_saved_signatures': 'No saved signatures',
+                'message.no_saved_test_clients': 'No saved test clients',
+                'message.required_field': 'Required field',
+                'message.test_client_save_error': 'Test client save error',
+                'button.delete': 'Delete',
+                'button.logout': 'Logout',
+                'button.cancel': 'Cancel',
+                'status.connected': 'Connected',
+                'status.error': 'Error',
+                'dialog.logout_title': 'Confirm Logout',
                 
                 // Certificate Page
                 'certificates.search.title': 'Search and Filters',

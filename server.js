@@ -136,15 +136,15 @@ app.get('/api/billing/usage/:dealerId', async (req, res) => {
         // Leggi sempre direttamente dalla tabella per evitare problemi con la vista materializzata
         let data = [];
         // Salta la vista e vai diretto alla tabella
-        const q = await supabaseAdmin
-            .from('billing_usage_events')
-            .select('dealer_id, created_at, event_type, total_cost_cents')
-            .eq('dealer_id', dealerId)
-            .order('created_at');
-        if (!q.error) {
-            const map = new Map();
+            const q = await supabaseAdmin
+                .from('billing_usage_events')
+                .select('dealer_id, created_at, event_type, total_cost_cents')
+                .eq('dealer_id', dealerId)
+                .order('created_at');
+            if (!q.error) {
+                const map = new Map();
             const isHourly = granularity === 'hour';
-            for (const row of q.data || []) {
+                for (const row of q.data || []) {
                 const timestamp = new Date(row.created_at);
                 let key;
                 if (isHourly) {
@@ -161,12 +161,12 @@ app.get('/api/billing/usage/:dealerId', async (req, res) => {
                     [isHourly ? 'hour' : 'day']: key, 
                     emails:0, whatsapps:0, openai_calls:0, total_cost_cents:0 
                 };
-                if (row.event_type==='email') rec.emails += 1;
-                if (row.event_type==='whatsapp') rec.whatsapps += 1;
-                if (row.event_type==='openai') rec.openai_calls += 1;
-                rec.total_cost_cents += row.total_cost_cents||0;
-                map.set(key, rec);
-            }
+                    if (row.event_type==='email') rec.emails += 1;
+                    if (row.event_type==='whatsapp') rec.whatsapps += 1;
+                    if (row.event_type==='openai') rec.openai_calls += 1;
+                    rec.total_cost_cents += row.total_cost_cents||0;
+                    map.set(key, rec);
+                }
             data = Array.from(map.values()).sort((a,b)=> new Date(a[isHourly ? 'hour' : 'day'])-new Date(b[isHourly ? 'hour' : 'day']));
         }
         // Filtra per range dato lato server (se fornito)
@@ -249,6 +249,9 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
                         { role: 'user', content:
 `${language === 'it' ? 'Scrivi un unico messaggio in' : 'Write a single message in'} ${styleMap[style] || styleMap.professional}.
 ${language === 'it' ? 'Includi OBBLIGATORIAMENTE i seguenti placeholder esattamente come scritti (non sostituirli):' : 'MANDATORILY include the following placeholders exactly as written (do not replace them):'} ${[...alwaysTokens, ...selectedTokens].join(' ')}.
+
+${language === 'it' ? 'IMPORTANTE: Il placeholder {SALUTATION} verrà sostituito automaticamente con il saluto corretto basato sul gender (es. "Cara Maria" o "Caro Luca"). Non scrivere "Gentile Sig./Sig.ra".' : 'IMPORTANT: The {SALUTATION} placeholder will be automatically replaced with the correct gender-based greeting (e.g. "Dear Maria" or "Dear John"). Do not write generic greetings.'}
+
 ${language === 'it' ? 'Istruzioni del dealer:' : 'Dealer instructions:'} ${prompt}
 ${language === 'it' ? 'Contesto (JSON):' : 'Context (JSON):'}\n${JSON.stringify(dataForPrompt)}
 
@@ -290,16 +293,30 @@ ${language === 'it' ? 'Restituisci SOLO il testo del messaggio, senza spiegazion
             const firstName = (fullName || '').trim().split(/\s+/)[0] || '';
             if (language === 'it') {
                 if (!firstName) return 'Gentile Cliente';
-                const isFemale = firstName.toLowerCase().endsWith('a');
+                const isFemale = isLikelyFemale(firstName);
                 return `${isFemale ? 'Cara' : 'Caro'} ${firstName}`;
             }
             return firstName ? `Dear ${firstName}` : 'Dear Customer';
         };
 
+        const isLikelyFemale = (firstName) => {
+            const name = firstName.toLowerCase();
+            // Lista di nomi femminili comuni
+            const femaleNames = ['anna', 'maria', 'giulia', 'francesca', 'sara', 'laura', 'elena', 'chiara', 'valentina', 'alessandra', 'monica', 'paola', 'barbara', 'roberta', 'simona', 'daniela', 'claudia', 'silvia', 'federica', 'elisa'];
+            // Lista di nomi maschili che finiscono con 'a'
+            const maleNamesEndingA = ['luca', 'andrea', 'mattia', 'nicola', 'simone', 'gabriele', 'michele', 'daniele'];
+            
+            if (femaleNames.includes(name)) return true;
+            if (maleNamesEndingA.includes(name)) return false;
+            
+            // Fallback: euristica finale 'a'
+            return name.endsWith('a');
+        };
+
         const computePossessive = (fullName) => {
             if (language === 'it') {
                 const firstName = (fullName || '').trim().split(/\s+/)[0] || '';
-                const isFemale = firstName.toLowerCase().endsWith('a');
+                const isFemale = isLikelyFemale(firstName);
                 return isFemale ? 'sua' : 'suo';
             }
             return 'your';
@@ -396,8 +413,10 @@ ${language === 'it' ? 'Restituisci SOLO il testo del messaggio, senza spiegazion
                     await supabaseAdmin.from('dealer_billing_accounts').update({ balance_cents: current - openai_cents, updated_at: new Date().toISOString() }).eq('dealer_id', dealerId);
                 }
             } catch (e) { console.warn('billing openai (draft) failed', e.message); }
-            // Return only the base message for preview purposes
-            return res.json({ success: true, base_message: baseMessage, results: results.length ? [results[0]] : [], costs: { email_cents, whatsapp_cents, openai_cents, total_cents } });
+            // Return all results for test mode, or just first for normal preview
+            const isTestMode = req.body.sendToTestClients || false;
+            const returnResults = isTestMode ? results : (results.length ? [results[0]] : []);
+            return res.json({ success: true, base_message: baseMessage, results: returnResults, costs: { email_cents, whatsapp_cents, openai_cents, total_cents } });
         }
 
         // Aggregate billing already inserted per message above; just return summary
@@ -4996,18 +5015,102 @@ app.get('/api/communications/test-clients/:dealerId', async (req, res) => {
     }
 });
 
+// Countries list (for dropdowns)
+app.get('/api/countries', async (req, res) => {
+    // Built‑in fallback list (subset) in case DB not available / different schema
+    const fallback = [
+        { code: 'IT', name_it: 'Italia', name_en: 'Italy' },
+        { code: 'US', name_it: 'Stati Uniti', name_en: 'United States' },
+        { code: 'GB', name_it: 'Regno Unito', name_en: 'United Kingdom' },
+        { code: 'FR', name_it: 'Francia', name_en: 'France' },
+        { code: 'DE', name_it: 'Germania', name_en: 'Germany' },
+        { code: 'ES', name_it: 'Spagna', name_en: 'Spain' },
+        { code: 'PT', name_it: 'Portogallo', name_en: 'Portugal' },
+        { code: 'NL', name_it: 'Paesi Bassi', name_en: 'Netherlands' },
+        { code: 'CH', name_it: 'Svizzera', name_en: 'Switzerland' },
+        { code: 'AU', name_it: 'Australia', name_en: 'Australia' }
+    ];
+
+    try {
+        // 1) Prefer normalized view if present
+        let rows = [];
+        try {
+        const { data, error } = await supabaseAdmin
+                .from('v_countries_i18n')
+                .select('code,name_it,name_en')
+                .order('name_it', { ascending: true });
+            if (!error && Array.isArray(data) && data.length) {
+                rows = data;
+            }
+        } catch (_) {}
+
+        // 2) Fallback: try common schemas on countries table
+        if (!rows.length) {
+            const candidates = [
+                { select: 'code,name_it,name_en',                                   order: 'name_it' },
+                { select: 'country_code as code,name_it,name_en',                   order: 'name_it' },
+                { select: 'code,name',                                              order: 'name'    },
+                { select: 'country_code as code,country_name_it as name_it,country_name_en as name_en', order: 'name_it' },
+                { select: 'iso2 as code,name',                                      order: 'name'    },
+                { select: '*',                                                      order: 'code'    },
+            ];
+
+            for (const c of candidates) {
+                const { data, error } = await supabaseAdmin
+                    .from('countries')
+                    .select(c.select)
+                    .order(c.order, { ascending: true });
+                if (error) continue;
+                if (Array.isArray(data) && data.length) {
+                    rows = data.map((r)=>({
+                        code: r.code || r.country_code || r.iso2 || r.id || r.code2 || r.alpha2 || null,
+                        name_it: r.name_it || r.country_name_it || r.it || r.name || r.label_it || r.nome || r.nome_it || null,
+                        name_en: r.name_en || r.country_name_en || r.en || r.name || r.label_en || r.nome_en || null
+                    })).filter(x=>x.code && (x.name_it || x.name_en));
+                    if (rows.length) break;
+                }
+            }
+        }
+
+        if (!rows.length) {
+            return res.json({ success: true, data: fallback });
+        }
+        return res.json({ success: true, data: rows });
+    } catch (error) {
+        // On any failure, return fallback list to keep UI responsive
+        return res.json({ success: true, data: fallback, note: 'fallback_countries' });
+    }
+});
+
 app.post('/api/communications/test-clients', express.json(), async (req, res) => {
     try {
-        const payload = req.body;
-        const { data, error } = await supabaseAdmin
+        const payload = req.body || {};
+        // First attempt: upsert full payload (works when columns exist)
+        let q = await supabaseAdmin
             .from('test_clients')
             .upsert([payload], { onConflict: 'id' })
             .select()
             .single();
-        if (error) throw error;
-        res.json({ success: true, data });
+        if (q.error) {
+            // Fallback for environments where new columns are not yet added
+            // Keep only the base columns that certainly exist
+            const baseKeys = [
+                'dealer_id','first_name','last_name','company','address1','address2','city','provincia','postcode','phone','email','vehicle_brand','vehicle_model','fuel_type','odometer'
+            ];
+            const sanitized = {};
+            for (const k of baseKeys) if (payload[k] !== undefined) sanitized[k] = payload[k];
+            const q2 = await supabaseAdmin
+                .from('test_clients')
+                .upsert([sanitized], { onConflict: 'id' })
+                .select()
+                .single();
+            if (q2.error) throw q2.error;
+            return res.json({ success: true, data: q2.data, note: 'saved_with_base_columns' });
+        }
+        return res.json({ success: true, data: q.data });
     } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
+        console.error('test-clients upsert failed:', error);
+        return res.status(500).json({ success: false, error: error.message });
     }
 });
 

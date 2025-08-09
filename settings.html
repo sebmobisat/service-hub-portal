@@ -148,144 +148,181 @@
                      </div>
                  </div>
 
-                 <!-- Comunicazioni: Firma Dealer e Clienti Test (sezione autonoma) -->
-                 <div class="settings-card rounded-lg p-6 border">
-                     <h2 class="settings-title text-lg font-semibold mb-4">Comunicazioni</h2>
+                                 <!-- Comunicazioni: Firma Dealer e Clienti Test (sezione autonoma) -->
+                <div class="settings-card rounded-lg p-6 border">
+                    <h2 class="settings-title text-lg font-semibold mb-2" data-en="Communications" data-it="Comunicazioni">Comunicazioni</h2>
+                    <p class="settings-description text-sm mb-6" data-en="On this page, you can create the signatures to include in the messages you send to your customers. You can also set up test customers to preview and verify your communications before sending them out in bulk." data-it="In questa pagina puoi creare le firme da includere nei messaggi che invii ai tuoi clienti. Puoi anche configurare clienti test per visualizzare in anteprima e verificare le tue comunicazioni prima di inviarle in massa.">In questa pagina puoi creare le firme da includere nei messaggi che invii ai tuoi clienti. Puoi anche configurare clienti test per visualizzare in anteprima e verificare le tue comunicazioni prima di inviarle in massa.</p>
                      <div class="relative grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                          <!-- Central divider -->
                          <div class="hidden md:block absolute top-0 bottom-0 left-1/2" style="width:1px; background-color: var(--border-color); transform: translateX(-50%);"></div>
-                         <!-- Firma Dealer -->
-                         <div class="w-full max-w-none min-w-0 compact-form">
-                             <h3 class="text-base font-semibold mb-3">Firma Dealer</h3>
-                             <form id="dealerSignatureForm" class="space-y-2 w-full max-w-none min-w-0">
-                                <div class="grid grid-cols-1 gap-1.5">
-                                     <div class="form-group">
-                                         <label class="form-label" for="sig_company_name">Nome concessionaria</label>
-                                          <input class="form-input" id="sig_company_name" required />
-                                     </div>
-                                     <div class="form-group">
-                                         <label class="form-label" for="sig_address1">Indirizzo 1</label>
-                                         <input class="form-input" id="sig_address1" />
-                                     </div>
-                                     <div class="form-group">
-                                         <label class="form-label" for="sig_address2">Indirizzo 2</label>
-                                         <input class="form-input" id="sig_address2" />
-                                     </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-1.5">
-                                         <div class="form-group">
-                                             <label class="form-label" for="sig_city">Città</label>
-                                             <input class="form-input" id="sig_city" />
-                                         </div>
-                                         <div class="form-group">
-                                             <label class="form-label" for="sig_provincia">Provincia</label>
-                                             <input class="form-input" id="sig_provincia" />
-                                         </div>
-                                     </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-1.5">
-                                         <div class="form-group">
-                                             <label class="form-label" for="sig_postcode">CAP</label>
-                                             <input class="form-input" id="sig_postcode" />
-                                         </div>
-                                         <div class="form-group">
-                                             <label class="form-label" for="sig_phone">Telefono</label>
-                                             <input class="form-input" id="sig_phone" />
-                                         </div>
-                                     </div>
-                                     <div class="form-group">
-                                         <label class="form-label" for="sig_email">Email</label>
-                                         <input class="form-input" id="sig_email" />
-                                     </div>
-                                 </div>
-                                 <div class="flex gap-2 mt-2">
-                                     <button type="button" id="saveSignatureBtn" class="btn btn-primary">Salva</button>
-                                     <button type="button" id="resetSignatureBtn" class="btn btn-secondary">Reset</button>
-                                 </div>
-                             </form>
+                          <!-- Firma Dealer -->
+                          <div class="w-full max-w-none min-w-0 compact-form">
+                              <h3 class="text-base font-semibold mb-3" data-en="Dealer Signature" data-it="Firma Dealer">Firma Dealer</h3>
+                              <form id="dealerSignatureForm" class="space-y-2 w-full max-w-none min-w-0">
+                                 <div class="grid grid-cols-1 gap-1.5">
+                                      <div class="form-group">
+                                          <label class="form-label" for="sig_company_name" data-en="Dealer name" data-it="Nome concessionaria">Nome concessionaria</label>
+                                           <input class="form-input" id="sig_company_name" required />
+                                      </div>
+                                      <div class="form-group">
+                                          <label class="form-label" for="sig_address1" data-en="Address 1" data-it="Indirizzo 1">Indirizzo 1</label>
+                                          <input class="form-input" id="sig_address1" />
+                                      </div>
+                                      <div class="form-group">
+                                          <label class="form-label" for="sig_address2" data-en="Address 2" data-it="Indirizzo 2">Indirizzo 2</label>
+                                          <input class="form-input" id="sig_address2" />
+                                      </div>
+                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                                          <div class="form-group">
+                                              <label class="form-label" for="sig_city" data-en="City" data-it="Città">Città</label>
+                                              <input class="form-input" id="sig_city" />
+                                          </div>
+                                          <div class="form-group">
+                                              <label class="form-label" for="sig_provincia" data-en="Province" data-it="Provincia">Provincia</label>
+                                              <input class="form-input" id="sig_provincia" />
+                                          </div>
+                                      </div>
+                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                                          <div class="form-group">
+                                              <label class="form-label" for="sig_postcode" data-en="Postcode" data-it="CAP">CAP</label>
+                                              <input class="form-input" id="sig_postcode" />
+                                          </div>
+                                          <div class="form-group">
+                                              <label class="form-label" for="sig_phone" data-en="Phone" data-it="Telefono">Telefono</label>
+                                              <input class="form-input" id="sig_phone" />
+                                          </div>
+                                      </div>
+                                      <div class="form-group">
+                                          <label class="form-label" for="sig_email" data-en="Email" data-it="Email">Email</label>
+                                          <input class="form-input" id="sig_email" />
+                                      </div>
+                                  </div>
+                                  <div class="flex gap-2 mt-2">
+                                      <button type="button" id="saveSignatureBtn" class="btn btn-primary" data-en="Save" data-it="Salva">Salva</button>
+                                      <button type="button" id="resetSignatureBtn" class="btn btn-secondary" data-en="Reset" data-it="Reset">Reset</button>
+                                  </div>
+                              </form>
                              <div class="mt-4">
-                                 <h4 class="text-sm font-semibold mb-2">Firme salvate</h4>
+                                  <h4 class="text-sm font-semibold mb-2" data-en="Saved signatures" data-it="Firme salvate">Firme salvate</h4>
                                  <div id="signaturesList" class="space-y-2"></div>
                              </div>
                          </div>
 
-                         <!-- Clienti Test -->
-                         <div class="w-full max-w-none min-w-0 compact-form">
-                             <h3 class="text-base font-semibold mb-3">Clienti Test</h3>
+                          <!-- Clienti Test -->
+                          <div class="w-full max-w-none min-w-0 compact-form">
+                              <h3 class="text-base font-semibold mb-3" data-en="Test Clients" data-it="Clienti Test">Clienti Test</h3>
                             <form id="testClientForm" class="space-y-2 w-full max-w-none min-w-0 compact-form">
+                                <!-- Sezione: Dati cliente -->
+                                <h4 class="text-sm font-semibold mt-1" data-en="Client Data" data-it="Dati cliente">Dati cliente</h4>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                                 <div class="form-group" style="margin-bottom:0.5rem">
-                                         <label class="form-label" for="tc_first_name">Nome</label>
+                                         <label class="form-label" for="tc_first_name" data-en="First name" data-it="Nome">Nome</label>
                                           <input class="form-input" id="tc_first_name" required />
                                      </div>
                                 <div class="form-group" style="margin-bottom:0.5rem">
-                                         <label class="form-label" for="tc_last_name">Cognome</label>
+                                         <label class="form-label" for="tc_last_name" data-en="Last name" data-it="Cognome">Cognome</label>
                                           <input class="form-input" id="tc_last_name" required />
                                      </div>
                                  </div>
                                 <div class="form-group" style="margin-bottom:0.5rem">
-                                     <label class="form-label" for="tc_company">Società</label>
+                                       <label class="form-label" for="tc_company" data-en="Company" data-it="Società">Società</label>
                                      <input class="form-input" id="tc_company" />
                                  </div>
                                  <div class="form-group">
-                                     <label class="form-label" for="tc_address1">Indirizzo 1</label>
+                                       <label class="form-label" for="tc_address1" data-en="Address 1" data-it="Indirizzo 1">Indirizzo 1</label>
                                      <input class="form-input" id="tc_address1" />
                                  </div>
                                  <div class="form-group">
-                                     <label class="form-label" for="tc_address2">Indirizzo 2</label>
+                                       <label class="form-label" for="tc_address2" data-en="Address 2" data-it="Indirizzo 2">Indirizzo 2</label>
                                      <input class="form-input" id="tc_address2" />
                                  </div>
-                                 <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                     <div class="form-group">
-                                         <label class="form-label" for="tc_city">Città</label>
-                                         <input class="form-input" id="tc_city" />
-                                     </div>
-                                     <div class="form-group">
-                                         <label class="form-label" for="tc_provincia">Provincia</label>
-                                         <input class="form-input" id="tc_provincia" />
-                                     </div>
-                                     <div class="form-group">
-                                         <label class="form-label" for="tc_postcode">CAP</label>
-                                         <input class="form-input" id="tc_postcode" />
-                                     </div>
-                                 </div>
+                                  <!-- Row: Città + Provincia -->
+                                  <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                      <div class="form-group">
+                                           <label class="form-label" for="tc_city" data-en="City" data-it="Città">Città</label>
+                                          <input class="form-input" id="tc_city" />
+                                      </div>
+                                      <div class="form-group">
+                                           <label class="form-label" for="tc_provincia" data-en="Province" data-it="Provincia">Provincia</label>
+                                          <input class="form-input" id="tc_provincia" />
+                                      </div>
+                                  </div>
+                                  <!-- Row: CAP + Country -->
+                                  <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                      <div class="form-group">
+                                           <label class="form-label" for="tc_postcode" data-en="Postcode" data-it="CAP">CAP</label>
+                                          <input class="form-input" id="tc_postcode" />
+                                      </div>
+                                      <div class="form-group">
+                                           <label class="form-label" for="tc_country" data-en="Country" data-it="Paese">Paese</label>
+                                          <select class="form-input" id="tc_country">
+                                              <option value="">-</option>
+                                          </select>
+                                      </div>
+                                  </div>
                                  <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                                      <div class="form-group">
-                                         <label class="form-label" for="tc_phone">Telefono</label>
+                                           <label class="form-label" for="tc_phone" data-en="Phone" data-it="Telefono">Telefono</label>
                                          <input class="form-input" id="tc_phone" />
                                      </div>
                                      <div class="form-group">
-                                         <label class="form-label" for="tc_email">Email</label>
+                                           <label class="form-label" for="tc_email" data-en="Email" data-it="Email">Email</label>
                                          <input class="form-input" id="tc_email" />
                                      </div>
                                  </div>
+                                <!-- Sezione: Dati veicolo -->
+                                <h4 class="text-sm font-semibold mt-3" data-en="Vehicle Data" data-it="Dati veicolo">Dati veicolo</h4>
                                 <!-- Row 1: Marca + Modello -->
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                                      <div class="form-group">
-                                         <label class="form-label" for="tc_vehicle_brand">Marca</label>
+                                          <label class="form-label" for="tc_vehicle_brand" data-en="Brand" data-it="Marca">Marca</label>
                                          <input class="form-input" id="tc_vehicle_brand" />
                                      </div>
                                      <div class="form-group">
-                                         <label class="form-label" for="tc_vehicle_model">Modello</label>
+                                          <label class="form-label" for="tc_vehicle_model" data-en="Model" data-it="Modello">Modello</label>
                                          <input class="form-input" id="tc_vehicle_model" />
                                      </div>
                                 </div>
-                                <!-- Row 2: Alimentazione + Odometro -->
+                                <!-- Row 2: Targa + Anno -->
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                                      <div class="form-group">
-                                         <label class="form-label" for="tc_fuel_type">Alimentazione</label>
+                                          <label class="form-label" for="tc_plate" data-en="Plate" data-it="Targa">Targa</label>
+                                         <input class="form-input" id="tc_plate" />
+                                     </div>
+                                     <div class="form-group">
+                                          <label class="form-label" for="tc_year" data-en="Year" data-it="Anno">Anno</label>
+                                         <input class="form-input" id="tc_year" type="number" min="1900" max="2030" />
+                                     </div>
+                                </div>
+                                <!-- Row 3: Alimentazione + Odometro -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                     <div class="form-group">
+                                          <label class="form-label" for="tc_fuel_type" data-en="Fuel type" data-it="Alimentazione">Alimentazione</label>
                                          <input class="form-input" id="tc_fuel_type" />
                                      </div>
                                      <div class="form-group">
-                                         <label class="form-label" for="tc_odometer">Odometro</label>
-                                         <input class="form-input" id="tc_odometer" />
+                                          <label class="form-label" for="tc_odometer" data-en="Odometer (Km)" data-it="Odometro (Km)">Odometro (Km)</label>
+                                         <input class="form-input" id="tc_odometer" type="number" min="0" />
+                                     </div>
+                                </div>
+                                <!-- Row 4: VIN + Serial -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                     <div class="form-group">
+                                          <label class="form-label" for="tc_vin" data-en="VIN" data-it="VIN">VIN</label>
+                                         <input class="form-input" id="tc_vin" maxlength="17" />
+                                     </div>
+                                     <div class="form-group">
+                                          <label class="form-label" for="tc_serial" data-en="Serial" data-it="Seriale">Serial</label>
+                                         <input class="form-input" id="tc_serial" />
                                      </div>
                                 </div>
                                  <div class="flex gap-2 mt-2">
-                                     <button type="button" id="saveTestClientBtn" class="btn btn-primary">Salva</button>
-                                     <button type="button" id="resetTestClientBtn" class="btn btn-secondary">Reset</button>
+                                     <button type="button" id="saveTestClientBtn" class="btn btn-primary" data-en="Save" data-it="Salva">Salva</button>
+                                     <button type="button" id="resetTestClientBtn" class="btn btn-secondary" data-en="Reset" data-it="Reset">Reset</button>
                                  </div>
                              </form>
                              <div class="mt-4">
-                                 <h4 class="text-sm font-semibold mb-2">Clienti test salvati</h4>
+                                  <h4 class="text-sm font-semibold mb-2" data-en="Saved test clients" data-it="Clienti test salvati">Clienti test salvati</h4>
                                  <div id="testClientsList" class="space-y-2"></div>
                              </div>
                          </div>
@@ -302,21 +339,21 @@
                          <section class="space-y-3 w-full max-w-none min-w-0 px-2">
                              <div class="flex items-start gap-2 md:whitespace-nowrap flex-wrap">
                                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 21h18M5 21V7a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v14M9 7h2m-2 4h2m-2 4h2m4-8h2m-2 4h2m-2 4h2"/></svg>
-                                <span class="settings-description text-sm">Nome Concessionaria:</span>
+                                <span class="settings-description text-sm" data-en="Dealer Name:" data-it="Nome Concessionaria:">Nome Concessionaria:</span>
                                  <span class="settings-title text-base" id="dealerNameDisplay">-</span>
                              </div>
                              <div class="flex items-center gap-2 md:whitespace-nowrap flex-wrap">
-                                 <span class="settings-description text-sm">ID Dealer:</span>
+                                 <span class="settings-description text-sm" data-en="Dealer ID:" data-it="ID Dealer:">ID Dealer:</span>
                                  <span id="dealerIdDisplay" class="font-mono text-sm px-2 py-0.5 rounded bg-[var(--bg-tertiary)]">-</span>
                              </div>
                              <div class="flex items-center gap-2 md:whitespace-nowrap flex-wrap">
                                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M22 8l-8.586 5.724a2 2 0 0 1-2.828 0L2 8"/></svg>
-                                <span class="settings-description text-sm">Email login dealer:</span>
+                                <span class="settings-description text-sm" data-en="Dealer login email:" data-it="Email login dealer:">Email login dealer:</span>
                                  <span class="settings-title text-base" id="companyLoginEmail">-</span>
                              </div>
                              <div class="flex items-center gap-2 md:whitespace-nowrap flex-wrap">
                                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" ry="2" stroke-width="1.5"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 9h6M7 12h4"/></svg>
-                                 <span class="settings-description text-sm">Dati fiscali:</span>
+                                 <span class="settings-description text-sm" data-en="Tax data:" data-it="Dati fiscali:">Dati fiscali:</span>
                                  <span class="settings-title text-base" id="companyTaxCode">-</span>
                              </div>
                          </section>
@@ -325,17 +362,17 @@
                          <section class="space-y-3 w-full max-w-none min-w-0 px-2">
                              <div class="flex items-center gap-2 md:whitespace-nowrap flex-wrap">
                                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2 5a2 2 0 0 1 2-2h2l2 5-2 1a12 12 0 0 0 7 7l1-2 5 2v2a2 2 0 0 1-2 2h-1C8.82 20 4 15.18 4 9V8a2 2 0 0 1 2-2"/></svg>
-                                <span class="settings-description text-sm">Telefono:</span>
+                                <span class="settings-description text-sm" data-en="Phone:" data-it="Telefono:">Telefono:</span>
                                  <span class="settings-title text-base" id="companyPhoneNumber">-</span>
                              </div>
                              <div class="flex items-center gap-2 md:whitespace-nowrap flex-wrap">
                                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a4 4 0 1 1-6 0 4 4 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 21a7 7 0 1 1 14 0"/></svg>
-                                <span class="settings-description text-sm">Ref. Tecnico Mobisat:</span>
+                                <span class="settings-description text-sm" data-en="Mobisat Tech Ref.:" data-it="Ref. Tecnico Mobisat:">Ref. Tecnico Mobisat:</span>
                                  <span class="settings-title text-base" id="companyMobisatTechRefName">-</span>
                              </div>
                              <div class="flex items-center gap-2 md:whitespace-nowrap flex-wrap">
                                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2 5a2 2 0 0 1 2-2h2l2 5-2 1a12 12 0 0 0 7 7l1-2 5 2v2a2 2 0 0 1-2 2h-1C8.82 20 4 15.18 4 9V8a2 2 0 0 1 2-2"/></svg>
-                                <span class="settings-description text-sm">Telefono Ref. Tecnico:</span>
+                                <span class="settings-description text-sm" data-en="Tech Ref. Phone:" data-it="Telefono Ref. Tecnico:">Telefono Ref. Tecnico:</span>
                                  <span class="settings-title text-base" id="companyMobisatTechRefPhone">-</span>
                          </div>
                               <div class="flex items-center gap-2 md:whitespace-nowrap flex-wrap">
@@ -344,7 +381,7 @@
                                         <path d="M12 21s7-4.35 7-10a7 7 0 1 0-14 0c0 5.65 7 10 7 10z"></path>
                                         <circle cx="12" cy="11" r="3" fill="#ffffff"></circle>
                                     </svg>
-                                    Indirizzo:
+                                    <span data-en="Address:" data-it="Indirizzo:">Indirizzo:</span>
                                 </span>
                                 <span id="companyAddressFull" class="settings-title text-base address-two-lines min-w-0 w-full md:w-auto">-</span>
                          </div>
@@ -366,11 +403,11 @@
                          <!-- Databases -->
                          <div class="max-w-sm px-2 space-y-1.5 text-left">
                              <div class="flex items-center gap-2">
-                                 <p class="settings-description text-sm">Database 1:</p>
+                                 <p class="settings-description text-sm" data-en="Database 1:" data-it="Database 1:">Database 1:</p>
                                  <span id="db1Status" class="settings-title text-base text-green-400 inline-flex items-center gap-2">-</span>
                              </div>
                              <div class="flex items-center gap-2">
-                                 <p class="settings-description text-sm">Database 2:</p>
+                                 <p class="settings-description text-sm" data-en="Database 2:" data-it="Database 2:">Database 2:</p>
                                  <span id="db2Status" class="settings-title text-base text-green-400 inline-flex items-center gap-2">-</span>
                              </div>
                          </div>
@@ -491,10 +528,10 @@
         // Logout function
         async function logout() {
             const confirmed = await window.customDialog.confirm(
-                'Conferma Logout',
+                t('dialog.logout_title'),
                 t('message.logout_confirm'),
-                'Esci',
-                'Annulla'
+                t('button.logout'),
+                t('button.cancel')
             );
             
             if (confirmed) {
@@ -515,14 +552,14 @@
                 const data = await res.json();
                 const db1 = document.getElementById('db1Status');
                 const db2 = document.getElementById('db2Status');
-                const ok = '<span class="inline-flex items-center gap-2"><span style="display:inline-block;width:18px;height:18px;border-radius:4px;background:#34d399;position:relative;box-shadow:inset 0 0 0 2px rgba(0,0,0,0.08)"></span><span style="color:#34d399">Connesso</span></span>';
+                const ok = `<span class="inline-flex items-center gap-2"><span style="display:inline-block;width:18px;height:18px;border-radius:4px;background:#34d399;position:relative;box-shadow:inset 0 0 0 2px rgba(0,0,0,0.08)"></span><span style="color:#34d399">${t('status.connected')}</span></span>`;
                 if (db1) db1.innerHTML = ok;
                 if (db2) db2.innerHTML = ok;
             } catch (_) {
                 const db1 = document.getElementById('db1Status');
                 const db2 = document.getElementById('db2Status');
-                if (db1) db1.textContent = 'Errore';
-                if (db2) db2.textContent = 'Errore';
+                if (db1) db1.textContent = t('status.error');
+                if (db2) db2.textContent = t('status.error');
             }
         }
 
@@ -545,54 +582,82 @@
             async function refreshSignatures() {
                 const list = document.getElementById('signaturesList');
                 if (!list) return;
-                list.textContent = 'Caricamento...';
+                list.innerHTML = '<div class="text-sm text-gray-400">Caricamento...</div>';
                 try {
-                    const r = await fetch(`/api/communications/signatures/${dealerId}`);
+                    const url = `/api/communications/signatures/${dealerId}`;
+                    console.log('Fetching signatures from:', url);
+                    const r = (window.authManager
+                        ? await window.authManager.secureApiCall(url, { headers: { 'Accept': 'application/json' } })
+                        : await fetch(url, { credentials: 'include', headers: { 'Accept': 'application/json' } }));
+                    console.log('Signatures response status:', r.status);
                     const j = await r.json();
+                    console.log('Signatures data:', j);
                     list.innerHTML = (j.data||[]).map(s => `
                         <div class="relative p-3 border rounded">
-                            <button data-id="${s.id}" class="absolute top-2 right-2 px-2 py-1 text-xs rounded bg-red-600 text-white del-sig">Elimina</button>
-                            <div class="text-sm pr-16">
+                            <button data-id="${s.id}" class="absolute top-2 right-2 px-2 py-1 text-xs rounded bg-red-600 text-white del-sig" data-en="DELETE" data-it="ELIMINA">ELIMINA</button>
+                            <div class="text-sm pr-16 break-words">
                                 <div class="font-medium">${s.company_name||'-'}</div>
                                 <div class="text-gray-400">${[s.address1,s.postcode,s.city,s.provincia].filter(Boolean).join(' ')}</div>
                                 <div class="text-gray-400">${s.phone||''} ${s.email? ' • '+s.email:''}</div>
                             </div>
                         </div>
-                    `).join('') || '<div class="text-sm text-gray-400">Nessuna firma salvata</div>';
+                    `).join('') || `<div class="text-sm text-gray-400" data-en="No saved signatures" data-it="Nessuna firma salvata">Nessuna firma salvata</div>`;
+                    // Update bilingual elements for dynamically added content
+                    if (window.forceUpdateBilingualElements) {
+                        window.forceUpdateBilingualElements(list);
+                    }
                     list.querySelectorAll('.del-sig').forEach(btn=>{
                         btn.addEventListener('click', async()=>{
                             await fetch(`/api/communications/signatures/${btn.dataset.id}/${dealerId}`, { method:'DELETE' });
                             refreshSignatures();
                         });
                     });
-                } catch { list.textContent = 'Errore caricamento'; }
+                } catch (e) { 
+                    console.error('Error loading signatures:', e);
+                    list.innerHTML = '<div class="text-sm text-gray-400">Errore caricamento firme</div>';
+                }
             }
 
             async function refreshTestClients() {
                 const list = document.getElementById('testClientsList');
                 if (!list) return;
-                list.textContent = 'Caricamento...';
+                list.innerHTML = '<div class="text-sm text-gray-400">Caricamento...</div>';
                 try {
-                    const r = await fetch(`/api/communications/test-clients/${dealerId}`);
+                    const url = `/api/communications/test-clients/${dealerId}`;
+                    console.log('Fetching test clients from:', url);
+                    const r = (window.authManager
+                        ? await window.authManager.secureApiCall(url, { headers: { 'Accept': 'application/json' } })
+                        : await fetch(url, { credentials: 'include', headers: { 'Accept': 'application/json' } }));
+                    console.log('Test clients response status:', r.status);
                     const j = await r.json();
+                    console.log('Test clients data:', j);
                     list.innerHTML = (j.data||[]).map(c => `
                         <div class="relative p-3 border rounded">
-                            <button data-id="${c.id}" class="absolute top-2 right-2 px-2 py-1 text-xs rounded bg-red-600 text-white del-tc">Elimina</button>
-                            <div class="text-sm pr-16">
+                            <button data-id="${c.id}" class="absolute top-2 right-2 px-2 py-1 text-xs rounded bg-red-600 text-white del-tc" data-en="DELETE" data-it="ELIMINA">ELIMINA</button>
+                            <div class="text-sm pr-16 break-words">
                                 <div class="font-medium">${[c.first_name,c.last_name].filter(Boolean).join(' ')||'-'} ${c.company? '• '+c.company:''}</div>
                                 <div class="text-gray-400">${[c.address1,c.postcode,c.city,c.provincia].filter(Boolean).join(' ')}</div>
                                 <div class="text-gray-400">${c.phone||''} ${c.email? ' • '+c.email:''}</div>
-                                <div class="text-gray-400">${[c.vehicle_brand,c.vehicle_model,c.fuel_type,c.odometer].filter(Boolean).join(' • ')}</div>
+                                <div class="text-gray-400">${[c.vehicle_brand,c.vehicle_model,c.plate,c.year,c.fuel_type,c.odometer?c.odometer+'km':''].filter(Boolean).join(' • ')}</div>
+                                <div class="text-gray-400">${c.country? ('Country: '+c.country) : ''}</div>
+                                <div class="text-gray-400">${[c.vin,c.serial].filter(Boolean).join(' • ')}</div>
                             </div>
                         </div>
-                    `).join('') || '<div class="text-sm text-gray-400">Nessun cliente test salvato</div>';
+                    `).join('') || `<div class="text-sm text-gray-400" data-en="No saved test clients" data-it="Nessun cliente test salvato">Nessun cliente test salvato</div>`;
+                    // Update bilingual elements for dynamically added content
+                    if (window.forceUpdateBilingualElements) {
+                        window.forceUpdateBilingualElements(list);
+                    }
                     list.querySelectorAll('.del-tc').forEach(btn=>{
                         btn.addEventListener('click', async()=>{
                             await fetch(`/api/communications/test-clients/${btn.dataset.id}/${dealerId}`, { method:'DELETE' });
                             refreshTestClients();
                         });
                     });
-                } catch { list.textContent = 'Errore caricamento'; }
+                } catch (e) { 
+                    console.error('Error loading test clients:', e);
+                    list.innerHTML = '<div class="text-sm text-gray-400">Errore caricamento clienti test</div>';
+                }
             }
 
             const saveSignatureBtn = document.getElementById('saveSignatureBtn');
@@ -603,7 +668,7 @@
                     if (!companyName) {
                         // Tooltip nativo + scroll
                         if (companyInput) {
-                            companyInput.setAttribute('title', 'Campo obbligatorio');
+                            companyInput.setAttribute('title', t('message.required_field'));
                             companyInput.scrollIntoView({behavior:'smooth', block:'center'});
                             companyInput.focus({preventScroll:true});
                             // Mostra tooltip nativo aggiornando l'attributo title
@@ -639,13 +704,19 @@
                     if (!firstName || !lastName) {
                         const target = !firstName ? firstInput : lastInput;
                         if (target) {
-                            target.setAttribute('title', 'Campo obbligatorio');
+                            target.setAttribute('title', t('message.required_field'));
                             target.scrollIntoView({behavior:'smooth', block:'center'});
                             target.focus({preventScroll:true});
                             target.setAttribute('data-tip-ts', Date.now().toString());
                         }
                         return;
                     }
+                    // Normalizza numerici
+                    const rawYear = document.getElementById('tc_year')?.value || '';
+                    const parsedYear = parseInt(rawYear, 10);
+                    const rawOdometer = document.getElementById('tc_odometer')?.value || '';
+                    const parsedOdometer = rawOdometer === '' ? null : parseInt(rawOdometer, 10);
+
                     const body = {
                         dealer_id: dealerId,
                         first_name: firstName,
@@ -656,14 +727,28 @@
                         city: document.getElementById('tc_city')?.value || '',
                         provincia: document.getElementById('tc_provincia')?.value || '',
                         postcode: document.getElementById('tc_postcode')?.value || '',
+                        country: document.getElementById('tc_country')?.value || '',
                         phone: document.getElementById('tc_phone')?.value || '',
                         email: document.getElementById('tc_email')?.value || '',
                         vehicle_brand: document.getElementById('tc_vehicle_brand')?.value || '',
                         vehicle_model: document.getElementById('tc_vehicle_model')?.value || '',
+                        plate: document.getElementById('tc_plate')?.value || '',
+                        year: Number.isFinite(parsedYear) ? parsedYear : null,
                         fuel_type: document.getElementById('tc_fuel_type')?.value || '',
-                        odometer: document.getElementById('tc_odometer')?.value || null
+                        odometer: parsedOdometer,
+                        vin: document.getElementById('tc_vin')?.value || '',
+                        serial: document.getElementById('tc_serial')?.value || ''
                     };
-                    await fetch('/api/communications/test-clients', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+                    try {
+                        const url = '/api/communications/test-clients';
+                        const r = (window.authManager
+                            ? await window.authManager.secureApiCall(url, { method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify(body) })
+                            : await fetch(url, { method:'POST', credentials: 'include', headers:{'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify(body) }));
+                        if (!r.ok) {
+                            const msg = (await r.text()) || t('message.test_client_save_error');
+                            console.error('Save test client failed:', msg);
+                        }
+                    } catch (e) { console.error('Save test client error:', e); }
                     refreshTestClients();
                 });
             }
@@ -684,6 +769,50 @@
             attachRequiredTooltipClear('sig_company_name');
             attachRequiredTooltipClear('tc_first_name');
             attachRequiredTooltipClear('tc_last_name');
+
+            // Populate country dropdown (tolerant to different API shapes)
+            (async function loadCountries(){
+                const sel = document.getElementById('tc_country');
+                if (!sel) return;
+                try {
+                    const url = '/api/countries';
+                    let r = null;
+                    try {
+                        r = (window.authManager
+                            ? await window.authManager.secureApiCall(url, { headers: { 'Accept': 'application/json' } })
+                            : await fetch(url, { credentials: 'include', headers: { 'Accept': 'application/json' } }));
+                    } catch (_) {
+                        r = await fetch(url, { credentials: 'include', headers: { 'Accept': 'application/json' } });
+                    }
+
+                    const ct = r && r.headers ? (r.headers.get('content-type')||'') : '';
+                    const j = ct.includes('application/json') ? await r.json() : {};
+                    let raw = Array.isArray(j) ? j : (j.data || j.rows || j.countries || []);
+                    if (!Array.isArray(raw) || !raw.length) {
+                        // Client-side fallback to avoid blocking the UI
+                        raw = [
+                            { code: 'IT', name_it: 'Italia', name_en: 'Italy' },
+                            { code: 'US', name_it: 'Stati Uniti', name_en: 'United States' },
+                            { code: 'GB', name_it: 'Regno Unito', name_en: 'United Kingdom' },
+                            { code: 'FR', name_it: 'Francia', name_en: 'France' },
+                            { code: 'DE', name_it: 'Germania', name_en: 'Germany' }
+                        ];
+                    }
+
+                    const lang = (localStorage.getItem('servicehub-language')||'it');
+                    const items = raw.map((c)=>{
+                        const code = c.code || c.iso2 || c.id || c.code2 || c.alpha2 || '';
+                        const nameIt = c.name_it || c.it || c.nome_it || c.nome || c.name || '';
+                        const nameEn = c.name_en || c.en || c.nome_en || c.name || '';
+                        const label = (lang==='en' ? (nameEn || nameIt) : (nameIt || nameEn)) || code;
+                        return { code, label };
+                    }).filter(x=> x.code);
+
+                    sel.innerHTML = '<option value="">-</option>' + items.map(x=> `<option value="${x.code}">${x.label}</option>`).join('');
+                } catch(e) {
+                    console.warn('Countries dropdown load failed:', e);
+                }
+            })();
         });
     </script>
 </body>
