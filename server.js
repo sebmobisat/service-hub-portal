@@ -313,7 +313,30 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
             results.push({ certificateId: r.id, message: finalMsg, sendResult });
         }
 
-        return res.json({ success: true, results });
+        // Calcola costi (stima per conferma)
+        const dealerId = bodyDealerId || 1;
+        const emailCount = send && channel === 'email' ? recipients.length : 0;
+        const waCount = send && channel === 'whatsapp' ? recipients.length : 0;
+        const email_cents = emailCount * 5;
+        const whatsapp_cents = waCount * 10;
+        const openai_cents = 20; // stima base
+        const total_cents = email_cents + whatsapp_cents + openai_cents;
+
+        if (!send) {
+            return res.json({ success: true, results, costs: { email_cents, whatsapp_cents, openai_cents, total_cents } });
+        }
+
+        // Se invio: registra gli addebiti aggregati
+        try {
+            if (openai_cents > 0) await supabaseAdmin.from('billing_usage_events').insert([{ dealer_id: dealerId, event_type: 'openai', quantity: 1, unit_cost_cents: openai_cents, total_cost_cents: openai_cents }]);
+            for (let i=0;i<emailCount;i++) await supabaseAdmin.from('billing_usage_events').insert([{ dealer_id: dealerId, event_type: 'email', quantity: 1, unit_cost_cents: 5, total_cost_cents: 5 }]);
+            for (let i=0;i<waCount;i++) await supabaseAdmin.from('billing_usage_events').insert([{ dealer_id: dealerId, event_type: 'whatsapp', quantity: 1, unit_cost_cents: 10, total_cost_cents: 10 }]);
+            const { data: bal } = await supabaseAdmin.from('dealer_billing_accounts').select('balance_cents').eq('dealer_id', dealerId).order('updated_at', { ascending: false }).limit(1);
+            const current = bal?.[0]?.balance_cents ?? 0;
+            await supabaseAdmin.from('dealer_billing_accounts').update({ balance_cents: current - total_cents, updated_at: new Date().toISOString() }).eq('dealer_id', dealerId);
+        } catch (e) { console.warn('billing aggregate failed', e.message); }
+
+        return res.json({ success: true, results, costs: { email_cents, whatsapp_cents, openai_cents, total_cents } });
     } catch (error) {
         console.error('Bulk communications error:', error);
         return res.status(500).json({ success: false, error: error.message });

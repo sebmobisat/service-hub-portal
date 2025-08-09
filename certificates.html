@@ -1101,6 +1101,7 @@
                         <div>
                             <p class="text-xs text-gray-400 mb-2" data-i18n="contact.preview">Anteprima messaggi</p>
                             <div id="aiResults" class="h-48 overflow-auto bg-gray-800 border border-gray-700 rounded p-3"></div>
+                            <div id="costSummary" class="mt-2 text-xs text-gray-300"></div>
                         </div>
                     </div>
                 </div>
@@ -2050,11 +2051,12 @@
             });
 
             const recipients = getSelectedCertificates();
-            // Solo clienti test per generazione/invio
+            // Solo clienti test per generazione/invio (match su email/phone)
             const dealerId = getCurrentDealerId();
             const testClients = await fetch(`/api/communications/test-clients/${dealerId}`).then(r=>r.json()).then(j=> j.data||[]);
-            const selectedIds = new Set(recipients.map(r=> r.id));
-            const onlyTestRecipients = recipients.filter(r=> selectedIds.has(r.id)); // placeholder (potremmo mappare con email/phone dai test_clients se necessario)
+            const tcEmails = new Set(testClients.map(c => (c.email||'').toLowerCase()).filter(Boolean));
+            const tcPhones = new Set(testClients.map(c => (c.phone||'')).filter(Boolean));
+            const onlyTestRecipients = recipients.filter(r => tcEmails.has((r.clientEmail||'').toLowerCase()) || tcPhones.has(r.clientPhone||''));
 
             // Firma dealer selezionata
             let dealerSignatureText = '';
@@ -2062,7 +2064,7 @@
             if (sel && sel.value && sel.value !== 'none') {
                 try {
                     const sig = JSON.parse(decodeURIComponent(sel.value));
-                    dealerSignatureText = `\n\n${sig.company_name||''}${sig.address1? `\n${sig.address1}`:''}${sig.postcode||sig.city? `\n${[sig.postcode||'', sig.city||''].filter(Boolean).join(' ')}`:''}${sig.phone? `\nTel: ${sig.phone}`:''}${sig.email? `\nEmail: ${sig.email}`:''}`.trim();
+                    dealerSignatureText = `${sig.company_name||''}${sig.address1? `\n${sig.address1}`:''}${sig.postcode||sig.city? `\n${[sig.postcode||'', sig.city||''].filter(Boolean).join(' ')}`:''}${sig.phone? `\nTel: ${sig.phone}`:''}${sig.email? `\nEmail: ${sig.email}`:''}`.trim();
                 } catch {}
             }
 
@@ -2083,7 +2085,7 @@
                 const response = await fetch('/api/communications/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ channel, style, prompt, recipients: onlyTestRecipients, useFields, language, send: sendNow, dealerSignatureText })
+                    body: JSON.stringify({ channel, style, prompt, recipients: onlyTestRecipients, useFields, language, send: sendNow, dealerSignatureText, dealerId })
                 });
                 const ct = response.headers.get('content-type') || '';
                 if (!response.ok) {
@@ -2100,9 +2102,19 @@
                 out.innerHTML = data.results.map(r => `
                     <div class="p-3 border border-gray-600 rounded mb-2">
                         <div class="text-xs text-gray-400 mb-1">#${r.certificateId}</div>
-                        <pre class="whitespace-pre-wrap text-sm">${((r.message || '') + (dealerSignatureText? ('\n\n' + dealerSignatureText) : '')).replace(/</g,'&lt;')}</pre>
+                        <pre class="whitespace-pre-wrap text-sm">${(r.message || '').replace(/</g,'&lt;')}</pre>
                     </div>
                 `).join('');
+
+                // Cost summary
+                if (data.costs) {
+                    window.lastCosts = data.costs;
+                    const el = document.getElementById('costSummary');
+                    if (el) {
+                        const euro = (c)=> (c/100).toLocaleString(undefined,{style:'currency',currency:'EUR'});
+                        el.textContent = `Costo invio: Email ${euro(data.costs.email_cents)} • WhatsApp ${euro(data.costs.whatsapp_cents)} • OpenAI ${euro(data.costs.openai_cents)} • Totale ${euro(data.costs.total_cents)}`;
+                    }
+                }
             } catch (err) {
                 out.textContent = (language === 'it' ? 'Errore di rete: ' : 'Network error: ') + err.message;
             } finally {
