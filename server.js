@@ -173,7 +173,7 @@ app.get('/api/billing/usage/:dealerId', async (req, res) => {
 // Bulk communication endpoint: generate AI messages and optionally send
 app.post('/api/communications/generate', express.json(), async (req, res) => {
     try {
-        const { channel, style, prompt, recipients, useFields, language = 'it', send = false, dealerSignatureText, dealerId: bodyDealerId, selectedCount = 0 } = req.body;
+        const { channel, style, prompt, recipients, useFields, language = 'it', send = false, dealerSignatureText, dealerCompanyName = '', selectedVehicles = [], dealerId: bodyDealerId, selectedCount = 0 } = req.body;
 
         if (!Array.isArray(recipients) || recipients.length === 0) {
             return res.status(400).json({ success: false, error: 'no_recipients' });
@@ -193,17 +193,20 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
 
         for (const r of recipients) {
             // r is expected to carry the certificate fields we need
-            const dataForPrompt = {};
-            if (useFields?.name) dataForPrompt.name = r.clientName;
-            if (useFields?.email) dataForPrompt.email = r.clientEmail;
-            if (useFields?.phone) dataForPrompt.phone = r.clientPhone;
-            if (useFields?.km) dataForPrompt.km = r.odometer;
-            if (useFields?.year) dataForPrompt.year = r.vehicleYear;
-            if (useFields?.fuel) dataForPrompt.fuel = r.fuelType;
-            if (useFields?.plate) dataForPrompt.plate = r.vehiclePlate;
-            if (useFields?.vin) dataForPrompt.vin = r.vin;
-            if (useFields?.brandModel) dataForPrompt.vehicle = r.vehicleInfo;
-            if (useFields?.serial) dataForPrompt.serial = r.serial;
+            // compila dati per prompt usando i chip attivi e la selezione veicoli
+            const vehicleSummary = selectedVehicles.map(v => ({
+                name: v.name,
+                email: v.email,
+                phone: v.phone,
+                vehicle: v.vehicle,
+                plate: v.plate,
+                year: v.year,
+                fuel: v.fuel,
+                km: v.km,
+                vin: v.vin,
+                serial: v.serial
+            }));
+            const dataForPrompt = { dealerCompanyName, vehicleSummary };
 
             let message = '';
             if (openai && process.env.OPENAI_API_KEY) {
@@ -294,7 +297,7 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
                     (dataForPrompt.km != null) && `${language === 'it' ? 'Km' : 'Mileage'}: ${dataForPrompt.km}`
                 ].filter(Boolean).join(' • ');
 
-                const dealerSig = useFields?.dealerSignature ? `\n\n— ${r.dealerName || ''}${r.dealerEmail ? ` | ${r.dealerEmail}` : ''}${r.dealerPhone ? ` | ${r.dealerPhone}` : ''}` : '';
+                const dealerSig = dealerSignatureText ? `\n\n${dealerSignatureText}` : '';
                 message = `${intro}\n\n${details ? details + '\n\n' : ''}${body}${dealerSig}`;
             }
 

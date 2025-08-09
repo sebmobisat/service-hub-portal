@@ -2074,10 +2074,12 @@
 
             // Firma dealer selezionata
             let dealerSignatureText = '';
+            let dealerCompanyName = '';
             const sel = document.getElementById('dealerSignatureSelect');
             if (sel && sel.value && sel.value !== 'none') {
                 try {
                     const sig = JSON.parse(decodeURIComponent(sel.value));
+                    dealerCompanyName = sig.company_name || '';
                     dealerSignatureText = `${sig.company_name||''}${sig.address1? `\n${sig.address1}`:''}${sig.postcode||sig.city? `\n${[sig.postcode||'', sig.city||''].filter(Boolean).join(' ')}`:''}${sig.phone? `\nTel: ${sig.phone}`:''}${sig.email? `\nEmail: ${sig.email}`:''}`.trim();
                 } catch {}
             }
@@ -2096,10 +2098,24 @@
                 if (sendBtn) { sendBtn.disabled = true; sendBtn.classList.add('opacity-70','cursor-not-allowed'); }
                 out.textContent = language === 'it' ? 'Generazione in corso...' : 'Generating...';
 
+                // Riassunto veicoli selezionati in base ai chip attivi
+                const selectedVehicles = selectedCerts.map(c => ({
+                    name: c.clientName,
+                    email: c.clientEmail,
+                    phone: c.clientPhone,
+                    vehicle: useFields.brandModel ? c.vehicleInfo : undefined,
+                    plate: useFields.plate ? c.vehiclePlate : undefined,
+                    year: useFields.year ? c.vehicleYear : undefined,
+                    fuel: useFields.fuel ? c.fuelType : undefined,
+                    km: useFields.km ? c.odometer : undefined,
+                    vin: useFields.vin ? c.vin : undefined,
+                    serial: useFields.serial ? c.serial : undefined
+                }));
+
                 const response = await fetch('/api/communications/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ channel, style, prompt, recipients, useFields, language, send: sendNow, dealerSignatureText, dealerId, selectedCount: selectedCerts.length })
+                    body: JSON.stringify({ channel, style, prompt, recipients, useFields, language, send: sendNow, dealerSignatureText, dealerCompanyName, selectedVehicles, dealerId, selectedCount: selectedCerts.length })
                 });
                 const ct = response.headers.get('content-type') || '';
                 if (!response.ok) {
@@ -2113,12 +2129,14 @@
                     return;
                 }
                 // Render previews e aggiungi firma
-                out.innerHTML = data.results.map(r => `
+                out.innerHTML = data.results.map(rr => {
+                    const replaced = dealerCompanyName ? (rr.message || '').replace(/\[Nome(?:\s+del)?\s+Concessionario\]/ig, dealerCompanyName) : (rr.message||'');
+                    return `
                     <div class="p-3 border border-gray-600 rounded mb-2">
-                        <div class="text-xs text-gray-400 mb-1">#${r.certificateId}</div>
-                        <pre class="whitespace-pre-wrap text-sm">${(r.message || '').replace(/</g,'&lt;')}</pre>
-                    </div>
-                `).join('');
+                        <div class="text-xs text-gray-400 mb-1">#${rr.certificateId}</div>
+                        <pre class="whitespace-pre-wrap text-sm">${replaced.replace(/</g,'&lt;')}</pre>
+                    </div>`;
+                }).join('');
 
                 // Cost summary
                 if (data.costs) {
