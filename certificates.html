@@ -1093,6 +1093,11 @@
                             <p class="text-xs text-gray-400 mb-2" data-i18n="contact.prompt">Prompt per l'AI</p>
                             <textarea id="aiPromptInput" rows="6" class="w-full rounded bg-gray-800 border border-gray-700 p-3" placeholder="Scrivi qui le istruzioni per l'AI..."></textarea>
                         </div>
+                        <!-- Dealer balance (read-only) -->
+                        <div class="mt-2 flex items-center justify-between">
+                            <p class="text-xs text-gray-400" data-i18n="billing.balance">Credito disponibile</p>
+                            <p id="dealerBalanceText" class="text-sm font-semibold">-</p>
+                        </div>
                         <div>
                             <p class="text-xs text-gray-400 mb-2" data-i18n="contact.preview">Anteprima messaggi</p>
                             <div id="aiResults" class="h-48 overflow-auto bg-gray-800 border border-gray-700 rounded p-3"></div>
@@ -1106,6 +1111,7 @@
                 </div>
             </div>
         </div>
+        <script>
         async function confirmAndSend(){
             const language = document.documentElement.lang || 'it';
             const dealerId = getCurrentDealerId();
@@ -1124,9 +1130,9 @@
             if (!proceed) return;
             await generateAndOptionallySend(true);
         }
+        </script>
 
-    
-    <script>
+        <script>
         // Global variables
         let allCertificates = [];
         let filteredCertificates = [];
@@ -2018,6 +2024,14 @@
                     sel.innerHTML = '<option value="none">Nessuna firma</option>' +
                         list.map(s=>`<option value="${encodeURIComponent(JSON.stringify(s))}">${(s.company_name||'Firma')}${s.phone? ' • '+s.phone:''}${s.email? ' • '+s.email:''}</option>`).join('');
                 }
+            } catch {}
+            // Carica saldo dealer
+            try {
+                const dealerId = getCurrentDealerId();
+                const b = await fetch(`/api/billing/balance/${dealerId}`).then(r=>r.json());
+                const text = (b?.balance_cents!=null) ? (b.balance_cents/100).toLocaleString(undefined,{style:'currency',currency:(b.currency||'EUR')}) : '-';
+                const el = document.getElementById('dealerBalanceText');
+                if (el) el.textContent = text;
             } catch {}
         }
 
