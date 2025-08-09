@@ -1129,7 +1129,28 @@
                 : `Are you sure? You will spend:\n- Email: €${emailCost.toFixed(2)}\n- WhatsApp: €${waCost.toFixed(2)}\n- OpenAI: ~€${openaiCost.toFixed(2)}\nEstimated total: ~€${total}`;
             const proceed = window.confirm(msg);
             if (!proceed) return;
-            await generateAndOptionallySend(true);
+            // Se ho una bozza pronta, invio senza rigenerare
+            if (lastDraft && lastDraft.recipients && lastDraft.recipients.length) {
+                try {
+                    const res = await fetch('/api/communications/generate', {
+                        method:'POST', headers:{'Content-Type':'application/json'},
+                        body: JSON.stringify({
+                            channel: lastDraft.channel,
+                            style: document.querySelector('#styleToggleGroup .active-chip')?.dataset.value || 'professional',
+                            prompt: document.getElementById('aiPromptInput').value || '',
+                            recipients: lastDraft.recipients,
+                            useFields: {}, language: lastDraft.language, send: true, dealerId: lastDraft.dealerId,
+                            selectedCount: selected.length
+                        })
+                    });
+                    if (!res.ok) throw new Error(await res.text());
+                    // opzionale: feedback visivo
+                } catch (e) {
+                    alert((language==='it'?'Errore invio: ':'Send error: ')+e.message);
+                }
+            } else {
+                await generateAndOptionallySend(true);
+            }
         }
         </script>
 
@@ -1140,6 +1161,7 @@
         let currentView = 'cards';
         let sortField = '';
         let sortOrder = 'asc';
+        let lastDraft = null;
 
         // Get current dealer ID from authentication
         function getCurrentDealerId() {
@@ -2147,6 +2169,16 @@
                         el.textContent = `Costo invio: Email ${euro(data.costs.email_cents)} • WhatsApp ${euro(data.costs.whatsapp_cents)} • OpenAI ${euro(data.costs.openai_cents)} • Totale ${euro(data.costs.total_cents)}`;
                     }
                 }
+
+                // Salva la bozza per l'invio (non rigenerare all'Invia)
+                lastDraft = {
+                    dealerId,
+                    channel,
+                    language,
+                    recipients,
+                    message: (data.results?.[0]?.message || ''),
+                    costs: data.costs || null
+                };
             } catch (err) {
                 out.textContent = (language === 'it' ? 'Errore di rete: ' : 'Network error: ') + err.message;
             } finally {
