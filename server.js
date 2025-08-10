@@ -402,10 +402,11 @@ app.post('/api/billing/stripe-webhook', express.raw({type: 'application/json'}),
 });
 
 // Stripe webhook endpoint (URL configurato su Stripe Dashboard)
-app.post('/webhooks/stripe', express.json(), async (req, res) => {
+app.post('/webhooks/stripe', express.raw({type: 'application/json'}), async (req, res) => {
     console.log('🔔 Webhook Stripe ricevuto su /webhooks/stripe:', new Date().toISOString());
     console.log('Headers:', req.headers);
-    console.log('Body:', req.body);
+    console.log('Body type:', typeof req.body);
+    console.log('Body length:', req.body?.length);
     
     const sig = req.headers['stripe-signature'];
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -420,16 +421,22 @@ app.post('/webhooks/stripe', express.json(), async (req, res) => {
     // Se il webhook secret è configurato, usa signature validation
     if (webhookSecret && sig) {
         try {
-            event = stripe.webhooks.constructEvent(JSON.stringify(req.body), sig, webhookSecret);
+            event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
             console.log('✅ Webhook verificato con signature:', event.type);
         } catch (err) {
             console.error('❌ Verifica firma webhook fallita:', err.message);
             return res.status(400).send(`Webhook Error: ${err.message}`);
         }
     } else {
-        // Fallback: usa il body direttamente (SOLO per test/debug)
-        console.log('⚠️ Webhook secret mancante - usando body direttamente');
-        event = req.body;
+        // Fallback: parse il body manualmente (SOLO se webhook secret mancante)
+        console.log('⚠️ Webhook secret mancante - parsing body direttamente');
+        try {
+            event = JSON.parse(req.body.toString());
+            console.log('✅ Body parsed successfully:', event.type);
+        } catch (parseErr) {
+            console.error('❌ Errore parsing body:', parseErr.message);
+            return res.status(400).send('Invalid JSON body');
+        }
     }
     
     try {
