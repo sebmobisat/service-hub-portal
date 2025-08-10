@@ -1081,6 +1081,22 @@ app.get('/api/billing/debug-pending/:dealerId', async (req, res) => {
     }
 });
 
+// Log di tutte le richieste al webhook per debug
+app.use('/webhooks/stripe', (req, res, next) => {
+    console.log('🔔 WEBHOOK REQUEST RECEIVED:', {
+        method: req.method,
+        url: req.url,
+        headers: {
+            'stripe-signature': req.headers['stripe-signature'] ? 'PRESENT' : 'MISSING',
+            'content-type': req.headers['content-type'],
+            'user-agent': req.headers['user-agent'],
+            'content-length': req.headers['content-length']
+        },
+        timestamp: new Date().toISOString()
+    });
+    next();
+});
+
 // Test endpoint per verificare se il webhook è raggiungibile
 app.get('/webhooks/stripe/test', (req, res) => {
     console.log('🧪 Webhook test endpoint chiamato:', new Date().toISOString());
@@ -1090,6 +1106,38 @@ app.get('/webhooks/stripe/test', (req, res) => {
         timestamp: new Date().toISOString(),
         url: req.url,
         method: req.method
+    });
+});
+
+// Endpoint per verificare se ci sono stati webhook calls recenti
+let webhookLogs = [];
+const MAX_WEBHOOK_LOGS = 50;
+
+// Middleware per salvare i logs
+app.use('/webhooks/stripe', (req, res, next) => {
+    const logEntry = {
+        timestamp: new Date().toISOString(),
+        method: req.method,
+        url: req.url,
+        hasStripeSignature: !!req.headers['stripe-signature'],
+        contentType: req.headers['content-type'],
+        userAgent: req.headers['user-agent']
+    };
+    
+    webhookLogs.unshift(logEntry);
+    if (webhookLogs.length > MAX_WEBHOOK_LOGS) {
+        webhookLogs = webhookLogs.slice(0, MAX_WEBHOOK_LOGS);
+    }
+    
+    next();
+});
+
+app.get('/api/billing/webhook-logs', (req, res) => {
+    res.json({
+        success: true,
+        logs: webhookLogs,
+        total_logs: webhookLogs.length,
+        last_webhook_call: webhookLogs[0]?.timestamp || 'Mai ricevuto'
     });
 });
 
