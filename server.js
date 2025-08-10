@@ -1237,14 +1237,14 @@ app.get('/api/billing/webhook-logs', (req, res) => {
 });
 
 // Endpoint alternativo per webhook senza middleware - test diretto
-app.post('/api/billing/stripe-webhook-direct', express.raw({type: 'application/json'}), async (req, res) => {
+app.post('/api/billing/stripe-webhook-direct', express.json(), async (req, res) => {
     console.log('🔔 WEBHOOK DIRETTO ricevuto:', new Date().toISOString());
+    console.log('Body:', req.body);
     console.log('Body type:', typeof req.body);
-    console.log('Body length:', req.body?.length);
     
     try {
-        // Parse body direttamente senza signature validation
-        const event = JSON.parse(req.body.toString());
+        // Il body è già un object con express.json()
+        const event = req.body;
         console.log('✅ Event type:', event.type);
         
         if (event.type === 'checkout.session.completed') {
