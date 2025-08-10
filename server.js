@@ -1236,6 +1236,59 @@ app.get('/api/billing/webhook-logs', (req, res) => {
     });
 });
 
+// Endpoint alternativo per webhook senza middleware - test diretto
+app.post('/api/billing/stripe-webhook-direct', express.raw({type: 'application/json'}), async (req, res) => {
+    console.log('🔔 WEBHOOK DIRETTO ricevuto:', new Date().toISOString());
+    console.log('Body type:', typeof req.body);
+    console.log('Body length:', req.body?.length);
+    
+    try {
+        // Parse body direttamente senza signature validation
+        const event = JSON.parse(req.body.toString());
+        console.log('✅ Event type:', event.type);
+        
+        if (event.type === 'checkout.session.completed') {
+            const session = event.data.object;
+            console.log('💳 Session ID:', session.id);
+            
+            // Processa la ricarica
+            const { supabaseAdmin } = require('./config/supabase.js');
+            
+            const dealerId = parseInt(session.metadata?.dealer_id || '1', 10);
+            
+            // Trova e aggiorna la ricarica
+            const { error: updateError } = await supabaseAdmin
+                .from('billing_recharges')
+                .update({ status: 'succeeded' })
+                .eq('stripe_checkout_session_id', session.id);
+            
+            if (updateError) throw updateError;
+            
+            // Aggiorna balance
+            const { data: account, error: accountError } = await supabaseAdmin
+                .from('dealer_billing_accounts')
+                .select('balance_cents')
+                .eq('dealer_id', dealerId)
+                .single();
+            
+            if (!accountError) {
+                const newBalance = account.balance_cents + session.amount_total;
+                
+                await supabaseAdmin
+                    .from('dealer_billing_accounts')
+                    .update({ balance_cents: newBalance })
+                    .eq('dealer_id', dealerId);
+            }
+        }
+        
+        res.status(200).json({ received: true, event_type: event.type });
+        
+    } catch (error) {
+        console.error('❌ Errore webhook diretto:', error);
+        res.status(400).json({ error: error.message });
+    }
+});
+
 // Bulk communication endpoint: generate AI messages and optionally send
 app.post('/api/communications/generate', express.json(), async (req, res) => {
     try {
