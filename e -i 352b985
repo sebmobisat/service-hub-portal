@@ -1,0 +1,10 @@
+[33mf6dacf0[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m)[m Migliora dialog successo ricarica con modal elegante
+[33m7d2b302[m Aggiunge guida deployment produzione con placeholder sicuri
+[33mab5d929[m Aggiunge guida completa deployment produzione e migliora dialog successo ricarica
+[33m352b985[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fix body parsing endpoint webhook diretto - usa express.json()
+[33m3f04cff[m Aggiunge endpoint webhook diretto per bypasso middleware
+[33m3856305[m Fix body parsing webhook - mantiene sicurezza con fallback controllato
+[33m41fe9f7[m RISOLVE webhook Stripe - gestisce mancanza webhook secret con fallback
+[33m059201c[m RISOLVE errore 400 webhook Stripe - rimuove middleware di logging conflittuale
+[33mb4c74d0[m Fix middleware - permette endpoint simulate
+[33ma8f862f[m Aggiunge simulatore webhook completo per test senza Stripe
