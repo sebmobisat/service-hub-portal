@@ -401,6 +401,118 @@ app.post('/api/billing/stripe-webhook', express.raw({type: 'application/json'}),
     }
 });
 
+// Stripe webhook endpoint (URL configurato su Stripe Dashboard)
+app.post('/webhooks/stripe', express.raw({type: 'application/json'}), async (req, res) => {
+    console.log('🔔 Webhook Stripe ricevuto su /webhooks/stripe:', new Date().toISOString());
+    console.log('Headers:', req.headers);
+    
+    const sig = req.headers['stripe-signature'];
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    
+    if (!stripe || !webhookSecret) {
+        console.error('❌ Stripe non configurato - webhook secret mancante');
+        return res.status(400).send('Stripe not configured');
+    }
+    
+    let event;
+    try {
+        event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+        console.log('✅ Webhook verificato:', event.type);
+    } catch (err) {
+        console.error('❌ Verifica firma webhook fallita:', err.message);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+    
+    try {
+        const { supabaseAdmin } = require('./config/supabase.js');
+        
+        switch (event.type) {
+            case 'checkout.session.completed':
+                const session = event.data.object;
+                console.log('💳 Checkout completato:', session.id, session.metadata);
+                
+                if (session.metadata?.type === 'recharge') {
+                    const dealerId = parseInt(session.metadata.dealer_id);
+                    console.log('🔄 Processando ricarica per dealer:', dealerId);
+                    
+                    // Update recharge status
+                    const updateResult = await supabaseAdmin
+                        .from('billing_recharges')
+                        .update({ 
+                            status: 'succeeded', 
+                            stripe_payment_intent_id: session.payment_intent,
+                            processed_at: new Date().toISOString()
+                        })
+                        .eq('stripe_checkout_session_id', session.id);
+                        
+                    console.log('📝 Update ricarica result:', updateResult);
+                    
+                    // Update dealer balance
+                    const { data: recharge } = await supabaseAdmin
+                        .from('billing_recharges')
+                        .select('amount_cents')
+                        .eq('stripe_checkout_session_id', session.id)
+                        .single();
+                        
+                    if (recharge) {
+                        console.log('💰 Ricarica trovata:', recharge.amount_cents, 'centesimi');
+                        
+                        // Get current balance
+                        const { data: account } = await supabaseAdmin
+                            .from('dealer_billing_accounts')
+                            .select('balance_cents')
+                            .eq('dealer_id', dealerId)
+                            .single();
+                            
+                        const currentBalance = account?.balance_cents || 0;
+                        const newBalance = currentBalance + recharge.amount_cents;
+                        console.log('💳 Balance update:', currentBalance, '->', newBalance);
+                        
+                        // Update balance
+                        const balanceResult = await supabaseAdmin
+                            .from('dealer_billing_accounts')
+                            .upsert({
+                                dealer_id: dealerId,
+                                balance_cents: newBalance,
+                                updated_at: new Date().toISOString()
+                            });
+                            
+                        console.log('✅ Balance aggiornato:', balanceResult);
+                    } else {
+                        console.error('❌ Ricarica non trovata per session:', session.id);
+                    }
+                }
+                break;
+                
+            case 'checkout.session.expired':
+            case 'payment_intent.canceled':
+                const canceledSession = event.data.object;
+                if (canceledSession.metadata?.type === 'recharge') {
+                    await supabaseAdmin
+                        .from('billing_recharges')
+                        .update({ status: 'canceled' })
+                        .eq('stripe_checkout_session_id', canceledSession.id);
+                }
+                break;
+                
+            case 'payment_intent.payment_failed':
+                const failedIntent = event.data.object;
+                // Find recharge by payment intent ID
+                await supabaseAdmin
+                    .from('billing_recharges')
+                    .update({ status: 'failed' })
+                    .eq('stripe_payment_intent_id', failedIntent.id);
+                break;
+        }
+        
+        res.json({ received: true });
+        
+    } catch (error) {
+        console.error('Webhook processing error:', error);
+        res.status(500).json({ error: 'webhook_processing_failed' });
+    }
+});
+
 // Endpoint per processare manualmente ricariche pending (per debug)
 app.post('/api/billing/process-pending-recharges', express.json(), async (req, res) => {
     if (!stripe) {
