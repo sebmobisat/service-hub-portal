@@ -787,6 +787,133 @@ app.get('/api/billing/debug-balance/:dealerId', async (req, res) => {
     }
 });
 
+// Endpoint per correggere il balance basandosi sulle ricariche (per debug/fix)
+app.post('/api/billing/fix-balance/:dealerId', async (req, res) => {
+    const dealerId = parseInt(req.params.dealerId, 10) || 1;
+    
+    try {
+        const { supabaseAdmin } = require('./config/supabase.js');
+        
+        // Get all successful recharges for this dealer
+        const { data: recharges, error: rechargesError } = await supabaseAdmin
+            .from('billing_recharges')
+            .select('amount_cents')
+            .eq('dealer_id', dealerId)
+            .eq('status', 'succeeded');
+            
+        if (rechargesError) throw rechargesError;
+        
+        // Calculate correct balance from all successful recharges
+        const correctBalance = recharges?.reduce((sum, r) => sum + (r.amount_cents || 0), 0) || 0;
+        
+        // Get current balance
+        const { data: account } = await supabaseAdmin
+            .from('dealer_billing_accounts')
+            .select('balance_cents')
+            .eq('dealer_id', dealerId)
+            .single();
+            
+        const currentBalance = account?.balance_cents || 0;
+        
+        console.log('🔧 Fix Balance - Dealer:', dealerId);
+        console.log('📊 Balance attuale:', currentBalance, 'centesimi');
+        console.log('📊 Balance corretto:', correctBalance, 'centesimi');
+        console.log('📊 Differenza:', correctBalance - currentBalance, 'centesimi');
+        
+        // Update balance to correct amount
+        const { data: updateResult, error: updateError } = await supabaseAdmin
+            .from('dealer_billing_accounts')
+            .upsert({
+                dealer_id: dealerId,
+                balance_cents: correctBalance,
+                updated_at: new Date().toISOString()
+            })
+            .select();
+            
+        if (updateError) throw updateError;
+        
+        res.json({ 
+            success: true, 
+            message: 'Balance corretto con successo',
+            dealer_id: dealerId,
+            old_balance: currentBalance,
+            new_balance: correctBalance,
+            difference: correctBalance - currentBalance,
+            total_recharges: recharges?.length || 0,
+            update_result: updateResult
+        });
+        
+    } catch (error) {
+        console.error('Fix balance error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Versione GET per fix balance (per facilità di utilizzo dal browser)
+app.get('/api/billing/fix-balance/:dealerId', async (req, res) => {
+    const dealerId = parseInt(req.params.dealerId, 10) || 1;
+    
+    try {
+        const { supabaseAdmin } = require('./config/supabase.js');
+        
+        // Get all successful recharges for this dealer
+        const { data: recharges, error: rechargesError } = await supabaseAdmin
+            .from('billing_recharges')
+            .select('amount_cents')
+            .eq('dealer_id', dealerId)
+            .eq('status', 'succeeded');
+            
+        if (rechargesError) throw rechargesError;
+        
+        // Calculate correct balance from all successful recharges
+        const correctBalance = recharges?.reduce((sum, r) => sum + (r.amount_cents || 0), 0) || 0;
+        
+        // Get current balance
+        const { data: account } = await supabaseAdmin
+            .from('dealer_billing_accounts')
+            .select('balance_cents')
+            .eq('dealer_id', dealerId)
+            .single();
+            
+        const currentBalance = account?.balance_cents || 0;
+        
+        console.log('🔧 Fix Balance (GET) - Dealer:', dealerId);
+        console.log('📊 Balance attuale:', currentBalance, 'centesimi');
+        console.log('📊 Balance corretto:', correctBalance, 'centesimi');
+        console.log('📊 Differenza:', correctBalance - currentBalance, 'centesimi');
+        
+        // Update balance to correct amount
+        const { data: updateResult, error: updateError } = await supabaseAdmin
+            .from('dealer_billing_accounts')
+            .upsert({
+                dealer_id: dealerId,
+                balance_cents: correctBalance,
+                updated_at: new Date().toISOString()
+            })
+            .select();
+            
+        if (updateError) throw updateError;
+        
+        res.json({ 
+            success: true, 
+            message: 'Balance corretto con successo',
+            dealer_id: dealerId,
+            old_balance_cents: currentBalance,
+            new_balance_cents: correctBalance,
+            old_balance_euros: (currentBalance / 100).toFixed(2),
+            new_balance_euros: (correctBalance / 100).toFixed(2),
+            difference_cents: correctBalance - currentBalance,
+            difference_euros: ((correctBalance - currentBalance) / 100).toFixed(2),
+            total_recharges: recharges?.length || 0,
+            recharges_total: correctBalance
+        });
+        
+    } catch (error) {
+        console.error('Fix balance error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Bulk communication endpoint: generate AI messages and optionally send
 app.post('/api/communications/generate', express.json(), async (req, res) => {
     try {
