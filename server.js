@@ -514,7 +514,7 @@ app.post('/webhooks/stripe', express.raw({type: 'application/json'}), async (req
 });
 
 // Endpoint per processare manualmente ricariche pending (per debug)
-app.post('/api/billing/process-pending-recharges', express.json(), async (req, res) => {
+app.get('/api/billing/process-pending-recharges', async (req, res) => {
     if (!stripe) {
         return res.status(500).json({ success: false, error: 'stripe_not_configured' });
     }
@@ -601,6 +601,135 @@ app.post('/api/billing/process-pending-recharges', express.json(), async (req, r
     } catch (error) {
         console.error('Process pending recharges error:', error);
         res.status(500).json({ success: false, error: 'process_failed' });
+    }
+});
+
+// Endpoint per verificare lo stato dei webhook (debug)
+app.get('/api/billing/webhook-status', async (req, res) => {
+    try {
+        const { supabaseAdmin } = require('./config/supabase.js');
+        
+        // Get recent recharges with their status
+        const { data: recharges, error } = await supabaseAdmin
+            .from('billing_recharges')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(10);
+            
+        if (error) throw error;
+        
+        const stats = {
+            total_recharges: recharges?.length || 0,
+            pending_count: recharges?.filter(r => r.status === 'pending').length || 0,
+            succeeded_count: recharges?.filter(r => r.status === 'succeeded').length || 0,
+            webhook_configured: !!process.env.STRIPE_WEBHOOK_SECRET,
+            stripe_configured: !!stripe,
+            recent_recharges: recharges?.map(r => ({
+                id: r.id,
+                dealer_id: r.dealer_id,
+                amount_cents: r.amount_cents,
+                status: r.status,
+                created_at: r.created_at,
+                processed_at: r.processed_at,
+                stripe_checkout_session_id: r.stripe_checkout_session_id?.substring(0, 20) + '...'
+            }))
+        };
+        
+        res.json({ success: true, stats });
+        
+    } catch (error) {
+        console.error('Webhook status error:', error);
+        res.status(500).json({ success: false, error: 'status_check_failed' });
+    }
+});
+
+// Test endpoint per simulare webhook Stripe (debug)
+app.get('/api/billing/test-webhook/:sessionId', async (req, res) => {
+    const { sessionId } = req.params;
+    
+    if (!stripe) {
+        return res.status(500).json({ success: false, error: 'stripe_not_configured' });
+    }
+    
+    try {
+        // Retrieve session from Stripe
+        const session = await stripe.checkout.sessions.retrieve(sessionId);
+        console.log('🔍 Session retrieved:', session.id, session.status, session.payment_status);
+        
+        if (session.status === 'complete' && session.payment_status === 'paid') {
+            // Simulate webhook processing
+            const { supabaseAdmin } = require('./config/supabase.js');
+            
+            if (session.metadata?.type === 'recharge') {
+                const dealerId = parseInt(session.metadata.dealer_id);
+                console.log('🔄 Simulando processamento webhook per dealer:', dealerId);
+                
+                // Update recharge status
+                const updateResult = await supabaseAdmin
+                    .from('billing_recharges')
+                    .update({ 
+                        status: 'succeeded', 
+                        stripe_payment_intent_id: session.payment_intent,
+                        processed_at: new Date().toISOString()
+                    })
+                    .eq('stripe_checkout_session_id', session.id);
+                    
+                console.log('📝 Update result:', updateResult);
+                
+                // Update dealer balance
+                const { data: recharge } = await supabaseAdmin
+                    .from('billing_recharges')
+                    .select('amount_cents')
+                    .eq('stripe_checkout_session_id', session.id)
+                    .single();
+                    
+                if (recharge) {
+                    const { data: account } = await supabaseAdmin
+                        .from('dealer_billing_accounts')
+                        .select('balance_cents')
+                        .eq('dealer_id', dealerId)
+                        .single();
+                        
+                    const currentBalance = account?.balance_cents || 0;
+                    const newBalance = currentBalance + recharge.amount_cents;
+                    
+                    const balanceResult = await supabaseAdmin
+                        .from('dealer_billing_accounts')
+                        .upsert({
+                            dealer_id: dealerId,
+                            balance_cents: newBalance,
+                            updated_at: new Date().toISOString()
+                        });
+                        
+                    res.json({ 
+                        success: true, 
+                        message: 'Webhook simulato con successo',
+                        session_id: session.id,
+                        dealer_id: dealerId,
+                        amount_cents: recharge.amount_cents,
+                        old_balance: currentBalance,
+                        new_balance: newBalance,
+                        update_result: updateResult,
+                        balance_result: balanceResult
+                    });
+                } else {
+                    res.status(404).json({ success: false, error: 'Ricarica non trovata' });
+                }
+            } else {
+                res.status(400).json({ success: false, error: 'Session non è una ricarica' });
+            }
+        } else {
+            res.json({ 
+                success: false, 
+                error: 'Session non completata',
+                status: session.status,
+                payment_status: session.payment_status
+            });
+        }
+        
+    } catch (error) {
+        console.error('Test webhook error:', error);
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 
