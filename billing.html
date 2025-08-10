@@ -69,7 +69,23 @@
       <div class="grid gap-4">
         <!-- Balance -->
         <div class="settings-card rounded-lg p-6 border">
-          <h2 class="settings-title text-lg font-semibold mb-4" data-i18n="billing.balance"></h2>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="settings-title text-lg font-semibold" data-i18n="billing.balance"></h2>
+            <div class="flex gap-2">
+              <button id="rechargeBtn" class="px-4 py-2 rounded text-sm font-medium text-white transition-colors" style="background-color: #00AE5D;" onmouseover="this.style.backgroundColor='#009951'" onmouseout="this.style.backgroundColor='#00AE5D'">
+                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                Ricarica Credito
+              </button>
+              <button id="rechargeHistoryBtn" class="px-4 py-2 border border-gray-600 rounded text-sm hover:border-emerald-500 transition-colors">
+                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                </svg>
+                Storico Ricariche
+              </button>
+            </div>
+          </div>
           <div class="text-2xl font-semibold"><span id="balanceValue">-</span> <span class="text-sm align-top" id="balanceCurrency">EUR</span></div>
         </div>
 
@@ -144,6 +160,78 @@
     </div>
   </div>
 
+  <!-- Modal per ricarica credito -->
+  <div id="rechargeModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop hidden items-center justify-center z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold">Ricarica Credito</h3>
+        <button id="closeRechargeModal" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      
+      <form id="rechargeForm" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-2">Importo da ricaricare (€)</label>
+          <div class="flex gap-2">
+            <button type="button" class="recharge-preset px-3 py-2 border border-gray-600 rounded text-sm hover:border-emerald-500 transition-colors" data-amount="10">10€</button>
+            <button type="button" class="recharge-preset px-3 py-2 border border-gray-600 rounded text-sm hover:border-emerald-500 transition-colors" data-amount="25">25€</button>
+            <button type="button" class="recharge-preset px-3 py-2 border border-gray-600 rounded text-sm hover:border-emerald-500 transition-colors" data-amount="50">50€</button>
+            <button type="button" class="recharge-preset px-3 py-2 border border-gray-600 rounded text-sm hover:border-emerald-500 transition-colors" data-amount="100">100€</button>
+          </div>
+        </div>
+        
+        <div>
+          <label for="customAmount" class="block text-sm font-medium mb-2">Importo personalizzato</label>
+          <input type="number" id="customAmount" min="1" max="1000" step="0.01" placeholder="0,00" class="form-input w-full" />
+        </div>
+        
+        <div class="flex gap-3 pt-4">
+          <button type="button" id="cancelRecharge" class="flex-1 px-4 py-2 border border-gray-600 rounded text-sm hover:border-gray-400 transition-colors">
+            Annulla
+          </button>
+          <button type="submit" class="flex-1 px-4 py-2 rounded text-sm font-medium text-white transition-colors" style="background-color: #00AE5D;" onmouseover="this.style.backgroundColor='#009951'" onmouseout="this.style.backgroundColor='#00AE5D'">
+            Procedi al Pagamento
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal per storico ricariche -->
+  <div id="rechargeHistoryModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop hidden items-center justify-center z-50">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-4xl mx-4 max-h-[80vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-semibold">Storico Ricariche</h3>
+        <button id="closeHistoryModal" class="text-gray-400 hover:text-gray-600">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm border border-gray-700 rounded overflow-hidden">
+          <thead class="bg-gray-800">
+            <tr>
+              <th class="text-left p-3 border-b border-gray-700">Data</th>
+              <th class="text-right p-3 border-b border-gray-700">Importo</th>
+              <th class="text-center p-3 border-b border-gray-700">Stato</th>
+              <th class="text-center p-3 border-b border-gray-700">Metodo</th>
+            </tr>
+          </thead>
+          <tbody id="rechargeHistoryBody">
+            <tr>
+              <td colspan="4" class="text-center p-8 text-gray-500">Caricamento...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <script src="/js/auth-guard.js"></script>
   <script src="/js/theme.js"></script>
@@ -159,6 +247,31 @@
       border-color: #00AE5D !important;
       background-color: rgba(0, 174, 93, 0.2) !important;
     }
+    
+    /* Stili per i modali */
+    .modal-backdrop {
+      backdrop-filter: blur(4px);
+    }
+    
+    /* Stili per i pulsanti di ricarica preset */
+    .recharge-preset.range-btn-active {
+      border-color: #00AE5D !important;
+      background-color: rgba(0, 174, 93, 0.1) !important;
+      color: #00AE5D !important;
+    }
+    
+    /* Status badges per lo storico ricariche */
+    .status-pending { @apply bg-yellow-100 text-yellow-800; }
+    .status-succeeded { @apply bg-green-100 text-green-800; }
+    .status-failed { @apply bg-red-100 text-red-800; }
+    .status-canceled { @apply bg-gray-100 text-gray-800; }
+    .status-refunded { @apply bg-orange-100 text-orange-800; }
+    
+    .dark .status-pending { @apply bg-yellow-900 text-yellow-200; }
+    .dark .status-succeeded { @apply bg-green-900 text-green-200; }
+    .dark .status-failed { @apply bg-red-900 text-red-200; }
+    .dark .status-canceled { @apply bg-gray-700 text-gray-300; }
+    .dark .status-refunded { @apply bg-orange-900 text-orange-200; }
     
     /* Fix per icona calendario in dark mode */
     .dark input[type="date"]::-webkit-calendar-picker-indicator {
@@ -200,6 +313,22 @@
         return;
       }
       const dealerId = (JSON.parse(localStorage.getItem('authData')||'{}').dealerId) || 1;
+      
+      // Check for recharge status from URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const rechargeStatus = urlParams.get('recharge');
+      if (rechargeStatus === 'success') {
+        // Show success message and refresh balance
+        setTimeout(() => {
+          alert('✅ Ricarica completata con successo! Il tuo credito è stato aggiornato.');
+          window.location.href = '/billing.html'; // Remove URL parameters
+        }, 500);
+      } else if (rechargeStatus === 'cancelled') {
+        setTimeout(() => {
+          alert('❌ Ricarica annullata. Nessun addebito è stato effettuato.');
+          window.location.href = '/billing.html'; // Remove URL parameters
+        }, 500);
+      }
       // Balance
       try {
         const b = await fetch(`/api/billing/balance/${dealerId}`).then(r=>r.json());
@@ -335,8 +464,7 @@
               console.log('total_cost_cents raw:', rawValue, typeof rawValue);
             }
             
-            // If it's a small number (< 100), it's probably already in euros, so convert
-            // If it's a large number (>= 100), it's probably in cents already
+            // total_cost_cents from backend is already in cents, no conversion needed
             if (typeof rawValue === 'number') {
               if (!Number.isFinite(rawValue)) {
                 if (window.location.search.includes('debug=1')) {
@@ -344,9 +472,9 @@
                 }
                 return 0;
               }
-              const result = rawValue < 100 ? Math.round(rawValue * 100) : Math.round(rawValue);
+              const result = Math.round(rawValue); // Already in cents, just ensure integer
               if (window.location.search.includes('debug=1')) {
-                console.log('total_cost_cents converted to cents:', result);
+                console.log('total_cost_cents (already in cents):', result);
               }
               return result;
             }
@@ -502,6 +630,132 @@
       // Imposta "Oggi" come attivo di default
       const todayBtn = document.querySelector('[data-range="today"]');
       if (todayBtn) todayBtn.classList.add('range-btn-active');
+
+      // Modal management
+      const rechargeModal = document.getElementById('rechargeModal');
+      const rechargeHistoryModal = document.getElementById('rechargeHistoryModal');
+      
+      // Recharge modal handlers
+      document.getElementById('rechargeBtn').addEventListener('click', () => {
+        rechargeModal.classList.remove('hidden');
+        rechargeModal.classList.add('flex');
+      });
+
+      document.getElementById('closeRechargeModal').addEventListener('click', () => {
+        rechargeModal.classList.add('hidden');
+        rechargeModal.classList.remove('flex');
+      });
+
+      document.getElementById('cancelRecharge').addEventListener('click', () => {
+        rechargeModal.classList.add('hidden');
+        rechargeModal.classList.remove('flex');
+      });
+
+      // History modal handlers
+      document.getElementById('rechargeHistoryBtn').addEventListener('click', async () => {
+        rechargeHistoryModal.classList.remove('hidden');
+        rechargeHistoryModal.classList.add('flex');
+        await loadRechargeHistory();
+      });
+
+      document.getElementById('closeHistoryModal').addEventListener('click', () => {
+        rechargeHistoryModal.classList.add('hidden');
+        rechargeHistoryModal.classList.remove('flex');
+      });
+
+      // Preset amount buttons
+      document.querySelectorAll('.recharge-preset').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.recharge-preset').forEach(b => b.classList.remove('range-btn-active'));
+          btn.classList.add('range-btn-active');
+          document.getElementById('customAmount').value = btn.dataset.amount;
+        });
+      });
+
+      // Custom amount input
+      document.getElementById('customAmount').addEventListener('input', () => {
+        document.querySelectorAll('.recharge-preset').forEach(b => b.classList.remove('range-btn-active'));
+      });
+
+      // Recharge form submission
+      document.getElementById('rechargeForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const amount = parseFloat(document.getElementById('customAmount').value);
+        if (!amount || amount < 1) {
+          alert('Inserisci un importo valido (minimo 1€)');
+          return;
+        }
+        
+        try {
+          const response = await fetch('/api/billing/create-recharge', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              dealerId: dealerId,
+              amount_cents: Math.round(amount * 100),
+              currency: 'EUR'
+            })
+          });
+          
+          const result = await response.json();
+          if (result.success && result.checkout_url) {
+            window.location.href = result.checkout_url;
+          } else {
+            alert('Errore nella creazione della ricarica: ' + (result.error || 'Errore sconosciuto'));
+          }
+        } catch (error) {
+          console.error('Errore ricarica:', error);
+          alert('Errore nella richiesta di ricarica');
+        }
+      });
+
+      // Load recharge history
+      async function loadRechargeHistory() {
+        try {
+          const response = await fetch(`/api/billing/recharges/${dealerId}`);
+          const result = await response.json();
+          
+          const tbody = document.getElementById('rechargeHistoryBody');
+          if (result.success && result.data && result.data.length > 0) {
+            tbody.innerHTML = result.data.map(recharge => {
+              const date = new Date(recharge.created_at).toLocaleDateString('it-IT');
+              const amount = (recharge.amount_cents / 100).toLocaleString('it-IT', {style: 'currency', currency: 'EUR'});
+              const statusMap = {
+                'pending': '<span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-xs">In attesa</span>',
+                'succeeded': '<span class="px-2 py-1 bg-green-100 text-green-800 rounded text-xs">Completato</span>',
+                'failed': '<span class="px-2 py-1 bg-red-100 text-red-800 rounded text-xs">Fallito</span>',
+                'canceled': '<span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-xs">Annullato</span>',
+                'refunded': '<span class="px-2 py-1 bg-orange-100 text-orange-800 rounded text-xs">Rimborsato</span>'
+              };
+              const status = statusMap[recharge.status] || recharge.status;
+              
+              return `<tr>
+                <td class="p-3 border-b border-gray-800">${date}</td>
+                <td class="p-3 border-b border-gray-800 text-right font-medium">${amount}</td>
+                <td class="p-3 border-b border-gray-800 text-center">${status}</td>
+                <td class="p-3 border-b border-gray-800 text-center">Stripe</td>
+              </tr>`;
+            }).join('');
+          } else {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center p-8 text-gray-500">Nessuna ricarica trovata</td></tr>';
+          }
+        } catch (error) {
+          console.error('Errore caricamento storico:', error);
+          document.getElementById('rechargeHistoryBody').innerHTML = '<tr><td colspan="4" class="text-center p-8 text-red-500">Errore nel caricamento</td></tr>';
+        }
+      }
+
+      // Close modals on outside click
+      window.addEventListener('click', (e) => {
+        if (e.target === rechargeModal) {
+          rechargeModal.classList.add('hidden');
+          rechargeModal.classList.remove('flex');
+        }
+        if (e.target === rechargeHistoryModal) {
+          rechargeHistoryModal.classList.add('hidden');
+          rechargeHistoryModal.classList.remove('flex');
+        }
+      });
     });
   </script>
 </body>

@@ -180,6 +180,210 @@ app.get('/api/billing/usage/:dealerId', async (req, res) => {
     }
 });
 
+// Billing: create Stripe checkout session for recharge
+app.post('/api/billing/create-recharge', express.json(), async (req, res) => {
+    const { dealerId, amount_cents, currency = 'EUR' } = req.body;
+    
+    if (!dealerId || !amount_cents || amount_cents < 100) { // min 1€
+        return res.status(400).json({ success: false, error: 'invalid_amount' });
+    }
+    
+    if (!stripe) {
+        return res.status(500).json({ success: false, error: 'stripe_not_configured' });
+    }
+    
+    try {
+        const { supabaseAdmin } = require('./config/supabase.js');
+        
+        // Get or create dealer billing account
+        let { data: account } = await supabaseAdmin
+            .from('dealer_billing_accounts')
+            .select('stripe_customer_id')
+            .eq('dealer_id', dealerId)
+            .single();
+            
+        let customerId = account?.stripe_customer_id;
+        
+        // Create Stripe customer if not exists
+        if (!customerId) {
+            const customer = await stripe.customers.create({
+                metadata: { dealer_id: dealerId.toString() }
+            });
+            customerId = customer.id;
+            
+            // Update or create dealer account with customer ID
+            await supabaseAdmin
+                .from('dealer_billing_accounts')
+                .upsert({ 
+                    dealer_id: dealerId, 
+                    stripe_customer_id: customerId,
+                    updated_at: new Date().toISOString()
+                });
+        }
+        
+        // Create checkout session
+        const session = await stripe.checkout.sessions.create({
+            customer: customerId,
+            payment_method_types: ['card'],
+            line_items: [{
+                price_data: {
+                    currency: currency.toLowerCase(),
+                    product_data: {
+                        name: 'Ricarica Credito Service Hub',
+                        description: `Ricarica di ${(amount_cents/100).toFixed(2)}€ per dealer ${dealerId}`
+                    },
+                    unit_amount: amount_cents,
+                },
+                quantity: 1,
+            }],
+            mode: 'payment',
+            success_url: `${req.protocol}://${req.get('host')}/billing.html?recharge=success`,
+            cancel_url: `${req.protocol}://${req.get('host')}/billing.html?recharge=cancelled`,
+            metadata: {
+                dealer_id: dealerId.toString(),
+                type: 'recharge'
+            }
+        });
+        
+        // Store recharge record
+        await supabaseAdmin
+            .from('billing_recharges')
+            .insert({
+                dealer_id: dealerId,
+                stripe_customer_id: customerId,
+                stripe_checkout_session_id: session.id,
+                amount_cents: amount_cents,
+                currency: currency,
+                status: 'pending'
+            });
+            
+        res.json({ success: true, checkout_url: session.url });
+        
+    } catch (error) {
+        console.error('Create recharge error:', error);
+        res.status(500).json({ success: false, error: 'recharge_creation_failed' });
+    }
+});
+
+// Billing: get recharge history
+app.get('/api/billing/recharges/:dealerId', async (req, res) => {
+    const dealerId = parseInt(req.params.dealerId, 10) || 1;
+    
+    try {
+        const { supabaseAdmin } = require('./config/supabase.js');
+        
+        const { data, error } = await supabaseAdmin
+            .from('billing_recharges')
+            .select('*')
+            .eq('dealer_id', dealerId)
+            .order('created_at', { ascending: false })
+            .limit(50);
+            
+        if (error) throw error;
+        
+        res.json({ success: true, data: data || [] });
+        
+    } catch (error) {
+        console.error('Get recharges error:', error);
+        res.status(500).json({ success: false, error: 'recharges_fetch_failed' });
+    }
+});
+
+// Stripe webhook to handle payment events
+app.post('/api/billing/stripe-webhook', express.raw({type: 'application/json'}), async (req, res) => {
+    const sig = req.headers['stripe-signature'];
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    
+    if (!stripe || !webhookSecret) {
+        return res.status(400).send('Stripe not configured');
+    }
+    
+    let event;
+    try {
+        event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+    } catch (err) {
+        console.error('Webhook signature verification failed:', err.message);
+        return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+    
+    try {
+        const { supabaseAdmin } = require('./config/supabase.js');
+        
+        switch (event.type) {
+            case 'checkout.session.completed':
+                const session = event.data.object;
+                if (session.metadata?.type === 'recharge') {
+                    const dealerId = parseInt(session.metadata.dealer_id);
+                    
+                    // Update recharge status
+                    await supabaseAdmin
+                        .from('billing_recharges')
+                        .update({ 
+                            status: 'succeeded', 
+                            stripe_payment_intent_id: session.payment_intent,
+                            processed_at: new Date().toISOString()
+                        })
+                        .eq('stripe_checkout_session_id', session.id);
+                    
+                    // Update dealer balance
+                    const { data: recharge } = await supabaseAdmin
+                        .from('billing_recharges')
+                        .select('amount_cents')
+                        .eq('stripe_checkout_session_id', session.id)
+                        .single();
+                        
+                    if (recharge) {
+                        // Get current balance
+                        const { data: account } = await supabaseAdmin
+                            .from('dealer_billing_accounts')
+                            .select('balance_cents')
+                            .eq('dealer_id', dealerId)
+                            .single();
+                            
+                        const currentBalance = account?.balance_cents || 0;
+                        const newBalance = currentBalance + recharge.amount_cents;
+                        
+                        // Update balance
+                        await supabaseAdmin
+                            .from('dealer_billing_accounts')
+                            .upsert({
+                                dealer_id: dealerId,
+                                balance_cents: newBalance,
+                                updated_at: new Date().toISOString()
+                            });
+                    }
+                }
+                break;
+                
+            case 'checkout.session.expired':
+            case 'payment_intent.canceled':
+                const canceledSession = event.data.object;
+                if (canceledSession.metadata?.type === 'recharge') {
+                    await supabaseAdmin
+                        .from('billing_recharges')
+                        .update({ status: 'canceled' })
+                        .eq('stripe_checkout_session_id', canceledSession.id);
+                }
+                break;
+                
+            case 'payment_intent.payment_failed':
+                const failedIntent = event.data.object;
+                // Find recharge by payment intent ID
+                await supabaseAdmin
+                    .from('billing_recharges')
+                    .update({ status: 'failed' })
+                    .eq('stripe_payment_intent_id', failedIntent.id);
+                break;
+        }
+        
+        res.json({ received: true });
+        
+    } catch (error) {
+        console.error('Webhook processing error:', error);
+        res.status(500).json({ error: 'webhook_processing_failed' });
+    }
+});
+
 // Bulk communication endpoint: generate AI messages and optionally send
 app.post('/api/communications/generate', express.json(), async (req, res) => {
     try {
