@@ -291,18 +291,23 @@ app.get('/api/billing/recharges/:dealerId', async (req, res) => {
 
 // Stripe webhook to handle payment events
 app.post('/api/billing/stripe-webhook', express.raw({type: 'application/json'}), async (req, res) => {
+    console.log('🔔 Webhook ricevuto:', new Date().toISOString());
+    console.log('Headers:', req.headers);
+    
     const sig = req.headers['stripe-signature'];
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
     
     if (!stripe || !webhookSecret) {
+        console.error('❌ Stripe non configurato - webhook secret mancante');
         return res.status(400).send('Stripe not configured');
     }
     
     let event;
     try {
         event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+        console.log('✅ Webhook verificato:', event.type);
     } catch (err) {
-        console.error('Webhook signature verification failed:', err.message);
+        console.error('❌ Verifica firma webhook fallita:', err.message);
         return res.status(400).send(`Webhook Error: ${err.message}`);
     }
     
@@ -312,11 +317,14 @@ app.post('/api/billing/stripe-webhook', express.raw({type: 'application/json'}),
         switch (event.type) {
             case 'checkout.session.completed':
                 const session = event.data.object;
+                console.log('💳 Checkout completato:', session.id, session.metadata);
+                
                 if (session.metadata?.type === 'recharge') {
                     const dealerId = parseInt(session.metadata.dealer_id);
+                    console.log('🔄 Processando ricarica per dealer:', dealerId);
                     
                     // Update recharge status
-                    await supabaseAdmin
+                    const updateResult = await supabaseAdmin
                         .from('billing_recharges')
                         .update({ 
                             status: 'succeeded', 
@@ -324,6 +332,8 @@ app.post('/api/billing/stripe-webhook', express.raw({type: 'application/json'}),
                             processed_at: new Date().toISOString()
                         })
                         .eq('stripe_checkout_session_id', session.id);
+                        
+                    console.log('📝 Update ricarica result:', updateResult);
                     
                     // Update dealer balance
                     const { data: recharge } = await supabaseAdmin
@@ -333,6 +343,8 @@ app.post('/api/billing/stripe-webhook', express.raw({type: 'application/json'}),
                         .single();
                         
                     if (recharge) {
+                        console.log('💰 Ricarica trovata:', recharge.amount_cents, 'centesimi');
+                        
                         // Get current balance
                         const { data: account } = await supabaseAdmin
                             .from('dealer_billing_accounts')
@@ -342,15 +354,20 @@ app.post('/api/billing/stripe-webhook', express.raw({type: 'application/json'}),
                             
                         const currentBalance = account?.balance_cents || 0;
                         const newBalance = currentBalance + recharge.amount_cents;
+                        console.log('💳 Balance update:', currentBalance, '->', newBalance);
                         
                         // Update balance
-                        await supabaseAdmin
+                        const balanceResult = await supabaseAdmin
                             .from('dealer_billing_accounts')
                             .upsert({
                                 dealer_id: dealerId,
                                 balance_cents: newBalance,
                                 updated_at: new Date().toISOString()
                             });
+                            
+                        console.log('✅ Balance aggiornato:', balanceResult);
+                    } else {
+                        console.error('❌ Ricarica non trovata per session:', session.id);
                     }
                 }
                 break;
@@ -381,6 +398,97 @@ app.post('/api/billing/stripe-webhook', express.raw({type: 'application/json'}),
     } catch (error) {
         console.error('Webhook processing error:', error);
         res.status(500).json({ error: 'webhook_processing_failed' });
+    }
+});
+
+// Endpoint per processare manualmente ricariche pending (per debug)
+app.post('/api/billing/process-pending-recharges', express.json(), async (req, res) => {
+    if (!stripe) {
+        return res.status(500).json({ success: false, error: 'stripe_not_configured' });
+    }
+    
+    try {
+        const { supabaseAdmin } = require('./config/supabase.js');
+        
+        // Get all pending recharges
+        const { data: pendingRecharges, error } = await supabaseAdmin
+            .from('billing_recharges')
+            .select('*')
+            .eq('status', 'pending');
+            
+        if (error) throw error;
+        
+        console.log('🔍 Trovate', pendingRecharges?.length || 0, 'ricariche pending');
+        
+        const results = [];
+        
+        for (const recharge of pendingRecharges || []) {
+            try {
+                // Check Stripe session status
+                const session = await stripe.checkout.sessions.retrieve(recharge.stripe_checkout_session_id);
+                console.log('📊 Session', session.id, 'status:', session.status, 'payment_status:', session.payment_status);
+                
+                if (session.status === 'complete' && session.payment_status === 'paid') {
+                    // Process this recharge
+                    console.log('🔄 Processando ricarica:', recharge.id);
+                    
+                    // Update recharge status
+                    await supabaseAdmin
+                        .from('billing_recharges')
+                        .update({ 
+                            status: 'succeeded', 
+                            stripe_payment_intent_id: session.payment_intent,
+                            processed_at: new Date().toISOString()
+                        })
+                        .eq('id', recharge.id);
+                    
+                    // Update dealer balance
+                    const { data: account } = await supabaseAdmin
+                        .from('dealer_billing_accounts')
+                        .select('balance_cents')
+                        .eq('dealer_id', recharge.dealer_id)
+                        .single();
+                        
+                    const currentBalance = account?.balance_cents || 0;
+                    const newBalance = currentBalance + recharge.amount_cents;
+                    
+                    await supabaseAdmin
+                        .from('dealer_billing_accounts')
+                        .upsert({
+                            dealer_id: recharge.dealer_id,
+                            balance_cents: newBalance,
+                            updated_at: new Date().toISOString()
+                        });
+                        
+                    results.push({ 
+                        recharge_id: recharge.id, 
+                        status: 'processed',
+                        amount_cents: recharge.amount_cents,
+                        new_balance: newBalance
+                    });
+                } else {
+                    results.push({ 
+                        recharge_id: recharge.id, 
+                        status: 'still_pending',
+                        stripe_status: session.status,
+                        payment_status: session.payment_status
+                    });
+                }
+            } catch (sessionError) {
+                console.error('Errore controllo session:', recharge.stripe_checkout_session_id, sessionError);
+                results.push({ 
+                    recharge_id: recharge.id, 
+                    status: 'error', 
+                    error: sessionError.message 
+                });
+            }
+        }
+        
+        res.json({ success: true, processed: results });
+        
+    } catch (error) {
+        console.error('Process pending recharges error:', error);
+        res.status(500).json({ success: false, error: 'process_failed' });
     }
 });
 
