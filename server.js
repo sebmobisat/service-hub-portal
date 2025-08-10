@@ -1210,8 +1210,8 @@ app.post('/webhooks/stripe/simulate', express.raw({ type: 'application/json' }),
 
 // Middleware per salvare i logs di tutti i webhook calls (DOPO i test endpoints)
 app.use('/webhooks/stripe', (req, res, next) => {
-    // Skip logging per gli endpoint di test
-    if (req.url === '/test') {
+    // Skip logging per gli endpoint di test e simulate
+    if (req.url === '/test' || req.url === '/simulate') {
         return next();
     }
     
