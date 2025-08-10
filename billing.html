@@ -10,6 +10,27 @@
   <link rel="manifest" href="/favicon/manifest.json" />
   <script src="/js/auth-config.js"></script>
   <script src="/js/custom-dialog.js"></script>
+  <style>
+    /* Stili per i pulsanti preset attivi */
+    .range-btn-active {
+      background-color: #00AE5D !important;
+      color: white !important;
+      border-color: #00AE5D !important;
+    }
+    
+    /* Stili per i display delle date */
+    #fromDateDisplay, #toDateDisplay {
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    #fromDateDisplay:hover, #toDateDisplay:hover {
+      border-color: #00AE5D;
+      background-color: rgba(0, 174, 93, 0.1);
+    }
+    
+
+  </style>
 </head>
 <body class="min-h-screen theme-transition">
   <!-- Sidebar (same as other pages) -->
@@ -91,7 +112,7 @@
               </button>
             </div>
           </div>
-          <div class="text-2xl font-semibold"><span id="balanceValue">-</span> <span class="text-sm align-top" id="balanceCurrency">EUR</span></div>
+          <div class="text-2xl font-semibold"><span id="balanceValue">-</span></div>
         </div>
 
         <!-- Filters + Chart -->
@@ -106,13 +127,22 @@
               <button class="px-3 py-1.5 border border-gray-600 rounded-full text-sm hover:border-emerald-500 transition-colors" data-range="this_month" data-i18n="billing.presets.this_month"></button>
               <button class="px-3 py-1.5 border border-gray-600 rounded-full text-sm hover:border-emerald-500 transition-colors" data-range="this_year" data-i18n="billing.presets.this_year"></button>
             </div>
-            <!-- Date range personalizzato -->
-            <div class="flex items-center gap-2">
-              <label class="settings-description text-sm whitespace-nowrap">Date range</label>
-              <input id="fromDate" type="date" class="form-input" />
-              <input id="toDate" type="date" class="form-input" />
-              <button id="applyRange" class="px-4 py-2 rounded text-sm font-medium text-white transition-colors" style="background-color: #00AE5D;" onmouseover="this.style.backgroundColor='#009951'" onmouseout="this.style.backgroundColor='#00AE5D'">Search</button>
+            
+            <!-- Date Range GeeksforGeeks approach -->
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-2">
+                <label class="text-sm" data-i18n="billing.date.from" data-it="Da:" data-en="From:">Da:</label>
+                <span id="fromDateDisplay" class="text-sm font-mono border border-gray-600 rounded px-3 py-1.5 min-w-[100px] bg-gray-50 dark:bg-gray-800 cursor-pointer">-</span>
+                <input type="date" id="fromDateInput" class="hidden">
+              </div>
+              <div class="flex items-center gap-2">
+                <label class="text-sm" data-i18n="billing.date.to" data-it="A:" data-en="To:">A:</label>
+                <span id="toDateDisplay" class="text-sm font-mono border border-gray-600 rounded px-3 py-1.5 min-w-[100px] bg-gray-50 dark:bg-gray-800 cursor-pointer">-</span>
+                <input type="date" id="toDateInput" class="hidden">
+              </div>
+              <button id="searchBtn" class="px-4 py-1.5 bg-emerald-600 text-white rounded text-sm hover:bg-emerald-700" data-i18n="common.search">Cerca</button>
             </div>
+
           </div>
 
           <h3 class="text-base font-semibold mb-4" data-i18n="billing.chart.title"></h3>
@@ -300,6 +330,8 @@
       width: 20px;
       height: 20px;
     }
+    
+
   </style>
   <script>
     function formatEuroCents(c){ return (c/100).toLocaleString('it-IT',{style:'currency',currency:'EUR'}); }
@@ -319,6 +351,102 @@
       }
       const dealerId = (JSON.parse(localStorage.getItem('authData')||'{}').dealerId) || 1;
       
+      // Forza aggiornamento traduzioni i18n
+      if (window.i18n) {
+        window.i18n.updateAllTranslations();
+        console.log('🌐 Traduzioni billing aggiornate');
+      }
+      
+      // Date Range GeeksforGeeks Implementation
+      const fromDateInput = document.getElementById('fromDateInput');
+      const toDateInput = document.getElementById('toDateInput');
+      const fromDateDisplay = document.getElementById('fromDateDisplay');
+      const toDateDisplay = document.getElementById('toDateDisplay');
+      const searchBtn = document.getElementById('searchBtn');
+      
+      // Function to format date - SEMPLICE E DIRETTO
+      function formatDateToDDMMYYYY(date) {
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`; // SEMPRE DD/MM/YYYY
+      }
+      
+      // Set default dates (today)
+      const today = new Date();
+      fromDateInput.value = today.toISOString().split('T')[0];
+      toDateInput.value = today.toISOString().split('T')[0];
+      
+      // Update displays
+      function updateDateDisplays() {
+        if (fromDateInput.value) {
+          const date = new Date(fromDateInput.value);
+          fromDateDisplay.textContent = formatDateToDDMMYYYY(date);
+        }
+        if (toDateInput.value) {
+          const date = new Date(toDateInput.value);
+          toDateDisplay.textContent = formatDateToDDMMYYYY(date);
+        }
+      }
+      
+      // Initial display update
+      updateDateDisplays();
+      
+      // Click handlers to show date pickers
+      fromDateDisplay.addEventListener('click', () => {
+        fromDateInput.showPicker();
+      });
+      
+      toDateDisplay.addEventListener('click', () => {
+        toDateInput.showPicker();
+      });
+      
+      // Update displays when dates change
+      fromDateInput.addEventListener('change', updateDateDisplays);
+      toDateInput.addEventListener('change', updateDateDisplays);
+      
+      // Update date format when language changes
+      const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+          if (mutation.type === 'attributes' && mutation.attributeName === 'lang') {
+            updateDateDisplays();
+          }
+        });
+      });
+      observer.observe(document.documentElement, { attributes: true });
+      
+      // Search button handler
+      searchBtn.addEventListener('click', () => {
+        const fromValue = fromDateInput.value;
+        const toValue = toDateInput.value;
+        
+        if (!fromValue || !toValue) {
+          alert('Seleziona entrambe le date per procedere');
+          return;
+        }
+        
+        if (fromValue > toValue) {
+          alert('La data di inizio non può essere successiva alla data di fine');
+          return;
+        }
+        
+        const fromDate = new Date(fromValue);
+        const toDate = new Date(toValue);
+        
+        // Set time to cover full day
+        fromDate.setHours(0, 0, 0, 0);
+        toDate.setHours(23, 59, 59, 999);
+        
+        // Determine aggregation type
+        const isSameDay = fromValue === toValue;
+        const aggregationType = isSameDay ? 'hour' : null;
+        
+        // Remove active from preset buttons
+        document.querySelectorAll('[data-range]').forEach(b => b.classList.remove('range-btn-active'));
+        
+        loadRange(fromDate.toISOString(), toDate.toISOString(), aggregationType);
+      });
+
       // Check for recharge status from URL parameters
       const urlParams = new URLSearchParams(window.location.search);
       const rechargeStatus = urlParams.get('recharge');
@@ -634,14 +762,7 @@
         });
       });
 
-      document.getElementById('applyRange').addEventListener('click', ()=>{
-        // Rimuovi active da tutti i pulsanti preset
-        document.querySelectorAll('[data-range]').forEach(b => b.classList.remove('range-btn-active'));
-        const f = document.getElementById('fromDate').value; const t = document.getElementById('toDate').value;
-        const from = f? new Date(f).toISOString(): null;
-        const to = t? new Date(new Date(t).getTime()+86400000-1).toISOString(): null;
-        loadRange(from,to);
-      });
+      
 
       loadRange();
       // Imposta "Oggi" come attivo di default
