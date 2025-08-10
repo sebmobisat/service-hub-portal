@@ -1012,6 +1012,75 @@ app.get('/api/billing/recalculate-balance/:dealerId', async (req, res) => {
     }
 });
 
+// Debug endpoint per vedere dettagli ricariche pending
+app.get('/api/billing/debug-pending/:dealerId', async (req, res) => {
+    const dealerId = parseInt(req.params.dealerId, 10) || 1;
+    
+    if (!stripe) {
+        return res.status(500).json({ success: false, error: 'stripe_not_configured' });
+    }
+    
+    try {
+        const { supabaseAdmin } = require('./config/supabase.js');
+        
+        // Get all pending recharges with full details
+        const { data: pendingRecharges, error } = await supabaseAdmin
+            .from('billing_recharges')
+            .select('*')
+            .eq('dealer_id', dealerId)
+            .eq('status', 'pending')
+            .order('created_at', { ascending: false });
+            
+        if (error) throw error;
+        
+        const results = [];
+        
+        for (const recharge of pendingRecharges || []) {
+            try {
+                console.log('🔍 Checking recharge:', recharge.id, recharge.stripe_checkout_session_id);
+                
+                // Check Stripe session status
+                const session = await stripe.checkout.sessions.retrieve(recharge.stripe_checkout_session_id);
+                
+                results.push({
+                    recharge_id: recharge.id,
+                    amount_cents: recharge.amount_cents,
+                    amount_euros: (recharge.amount_cents / 100).toFixed(2),
+                    created_at: recharge.created_at,
+                    stripe_session_id: recharge.stripe_checkout_session_id,
+                    stripe_status: session.status,
+                    stripe_payment_status: session.payment_status,
+                    stripe_payment_intent: session.payment_intent,
+                    can_process: session.status === 'complete' && session.payment_status === 'paid'
+                });
+                
+            } catch (sessionError) {
+                console.error('❌ Error checking session:', recharge.stripe_checkout_session_id, sessionError.message);
+                results.push({
+                    recharge_id: recharge.id,
+                    amount_cents: recharge.amount_cents,
+                    amount_euros: (recharge.amount_cents / 100).toFixed(2),
+                    created_at: recharge.created_at,
+                    stripe_session_id: recharge.stripe_checkout_session_id,
+                    error: sessionError.message,
+                    can_process: false
+                });
+            }
+        }
+        
+        res.json({ 
+            success: true, 
+            dealer_id: dealerId,
+            pending_count: pendingRecharges?.length || 0,
+            pending_recharges: results
+        });
+        
+    } catch (error) {
+        console.error('Debug pending error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Test endpoint per verificare se il webhook è raggiungibile
 app.get('/webhooks/stripe/test', (req, res) => {
     console.log('🧪 Webhook test endpoint chiamato:', new Date().toISOString());
