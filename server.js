@@ -1208,41 +1208,8 @@ app.post('/webhooks/stripe/simulate', express.raw({ type: 'application/json' }),
     }
 });
 
-// Middleware per salvare i logs di tutti i webhook calls (DOPO i test endpoints)
-app.use('/webhooks/stripe', (req, res, next) => {
-    // Skip logging per gli endpoint di test e simulate
-    if (req.url === '/test' || req.url === '/simulate') {
-        return next();
-    }
-    
-    console.log('🔔 WEBHOOK REQUEST RECEIVED:', {
-        method: req.method,
-        url: req.url,
-        headers: {
-            'stripe-signature': req.headers['stripe-signature'] ? 'PRESENT' : 'MISSING',
-            'content-type': req.headers['content-type'],
-            'user-agent': req.headers['user-agent'],
-            'content-length': req.headers['content-length']
-        },
-        timestamp: new Date().toISOString()
-    });
-    
-    const logEntry = {
-        timestamp: new Date().toISOString(),
-        method: req.method,
-        url: req.url,
-        hasStripeSignature: !!req.headers['stripe-signature'],
-        contentType: req.headers['content-type'],
-        userAgent: req.headers['user-agent']
-    };
-    
-    webhookLogs.unshift(logEntry);
-    if (webhookLogs.length > MAX_WEBHOOK_LOGS) {
-        webhookLogs = webhookLogs.slice(0, MAX_WEBHOOK_LOGS);
-    }
-    
-    next();
-});
+// Rimosso middleware di logging che causava errore 400 con Stripe
+// Il logging è già presente nei singoli endpoint webhook
 
 app.get('/api/billing/webhook-logs', (req, res) => {
     res.json({
