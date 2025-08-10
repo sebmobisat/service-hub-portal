@@ -1085,8 +1085,40 @@ app.get('/api/billing/debug-pending/:dealerId', async (req, res) => {
 let webhookLogs = [];
 const MAX_WEBHOOK_LOGS = 50;
 
-// Middleware per salvare i logs di tutti i webhook calls
+// Test endpoint per verificare se il webhook è raggiungibile
+app.get('/webhooks/stripe/test', (req, res) => {
+    console.log('🧪 Webhook test endpoint chiamato:', new Date().toISOString());
+    res.json({ 
+        success: true, 
+        message: 'Webhook endpoint raggiungibile',
+        timestamp: new Date().toISOString(),
+        url: req.url,
+        method: req.method
+    });
+});
+
+// Test endpoint POST per simulare chiamata Stripe
+app.post('/webhooks/stripe/test', express.raw({ type: 'application/json' }), (req, res) => {
+    console.log('🧪 POST Webhook test chiamato:', new Date().toISOString());
+    console.log('Headers:', req.headers);
+    console.log('Body length:', req.body?.length || 0);
+    
+    res.status(200).json({ 
+        success: true, 
+        message: 'POST Webhook test successful',
+        timestamp: new Date().toISOString(),
+        received_headers: Object.keys(req.headers),
+        body_received: !!req.body
+    });
+});
+
+// Middleware per salvare i logs di tutti i webhook calls (DOPO i test endpoints)
 app.use('/webhooks/stripe', (req, res, next) => {
+    // Skip logging per gli endpoint di test
+    if (req.url === '/test') {
+        return next();
+    }
+    
     console.log('🔔 WEBHOOK REQUEST RECEIVED:', {
         method: req.method,
         url: req.url,
@@ -1114,18 +1146,6 @@ app.use('/webhooks/stripe', (req, res, next) => {
     }
     
     next();
-});
-
-// Test endpoint per verificare se il webhook è raggiungibile
-app.get('/webhooks/stripe/test', (req, res) => {
-    console.log('🧪 Webhook test endpoint chiamato:', new Date().toISOString());
-    res.json({ 
-        success: true, 
-        message: 'Webhook endpoint raggiungibile',
-        timestamp: new Date().toISOString(),
-        url: req.url,
-        method: req.method
-    });
 });
 
 app.get('/api/billing/webhook-logs', (req, res) => {
