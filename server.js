@@ -1112,6 +1112,102 @@ app.post('/webhooks/stripe/test', express.raw({ type: 'application/json' }), (re
     });
 });
 
+// Simulatore di webhook Stripe - bypassa signature validation
+app.post('/webhooks/stripe/simulate', express.raw({ type: 'application/json' }), async (req, res) => {
+    console.log('🎭 Simulazione webhook Stripe:', new Date().toISOString());
+    
+    try {
+        const { supabaseAdmin } = require('./config/supabase.js');
+        
+        // Simula un evento checkout.session.completed
+        const mockEvent = {
+            type: 'checkout.session.completed',
+            data: {
+                object: {
+                    id: 'cs_test_simulation_' + Date.now(),
+                    amount_total: 100000, // 1000€ in centesimi
+                    customer: 'cus_test_simulation',
+                    metadata: {
+                        dealer_id: '1'
+                    }
+                }
+            }
+        };
+        
+        const dealerId = parseInt(mockEvent.data.object.metadata.dealer_id, 10);
+        const sessionId = mockEvent.data.object.id;
+        const amountCents = mockEvent.data.object.amount_total;
+        
+        console.log('🎭 Processing simulated event:', { dealerId, sessionId, amountCents });
+        
+        // Trova la ricarica pending con questo session ID (o crea una simulata)
+        let { data: recharge, error } = await supabaseAdmin
+            .from('billing_recharges')
+            .select('*')
+            .eq('stripe_checkout_session_id', sessionId)
+            .single();
+        
+        if (error && error.code === 'PGRST116') {
+            // Crea una ricarica simulata
+            const { data: newRecharge, error: insertError } = await supabaseAdmin
+                .from('billing_recharges')
+                .insert([{
+                    dealer_id: dealerId,
+                    amount_cents: amountCents,
+                    stripe_checkout_session_id: sessionId,
+                    status: 'pending',
+                    created_at: new Date().toISOString()
+                }])
+                .select()
+                .single();
+            
+            if (insertError) throw insertError;
+            recharge = newRecharge;
+        }
+        
+        // Aggiorna lo status a succeeded
+        const { error: updateError } = await supabaseAdmin
+            .from('billing_recharges')
+            .update({ status: 'succeeded' })
+            .eq('id', recharge.id);
+        
+        if (updateError) throw updateError;
+        
+        // Aggiorna il balance del dealer
+        const { data: account, error: accountError } = await supabaseAdmin
+            .from('dealer_billing_accounts')
+            .select('balance_cents')
+            .eq('dealer_id', dealerId)
+            .single();
+        
+        if (accountError) throw accountError;
+        
+        const newBalance = account.balance_cents + amountCents;
+        
+        const { error: balanceError } = await supabaseAdmin
+            .from('dealer_billing_accounts')
+            .update({ balance_cents: newBalance })
+            .eq('dealer_id', dealerId);
+        
+        if (balanceError) throw balanceError;
+        
+        res.status(200).json({
+            success: true,
+            message: 'Webhook simulato con successo',
+            simulated_event: mockEvent.type,
+            dealer_id: dealerId,
+            session_id: sessionId,
+            amount_cents: amountCents,
+            old_balance: account.balance_cents,
+            new_balance: newBalance
+        });
+        
+    } catch (error) {
+        console.error('❌ Errore simulazione webhook:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Middleware per salvare i logs di tutti i webhook calls (DOPO i test endpoints)
 app.use('/webhooks/stripe', (req, res, next) => {
     // Skip logging per gli endpoint di test
