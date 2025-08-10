@@ -1012,6 +1012,18 @@ app.get('/api/billing/recalculate-balance/:dealerId', async (req, res) => {
     }
 });
 
+// Test endpoint per verificare se il webhook è raggiungibile
+app.get('/webhooks/stripe/test', (req, res) => {
+    console.log('🧪 Webhook test endpoint chiamato:', new Date().toISOString());
+    res.json({ 
+        success: true, 
+        message: 'Webhook endpoint raggiungibile',
+        timestamp: new Date().toISOString(),
+        url: req.url,
+        method: req.method
+    });
+});
+
 // Bulk communication endpoint: generate AI messages and optionally send
 app.post('/api/communications/generate', express.json(), async (req, res) => {
     try {
