@@ -1081,7 +1081,11 @@ app.get('/api/billing/debug-pending/:dealerId', async (req, res) => {
     }
 });
 
-// Log di tutte le richieste al webhook per debug
+// Endpoint per verificare se ci sono stati webhook calls recenti
+let webhookLogs = [];
+const MAX_WEBHOOK_LOGS = 50;
+
+// Middleware per salvare i logs di tutti i webhook calls
 app.use('/webhooks/stripe', (req, res, next) => {
     console.log('🔔 WEBHOOK REQUEST RECEIVED:', {
         method: req.method,
@@ -1094,27 +1098,7 @@ app.use('/webhooks/stripe', (req, res, next) => {
         },
         timestamp: new Date().toISOString()
     });
-    next();
-});
-
-// Test endpoint per verificare se il webhook è raggiungibile
-app.get('/webhooks/stripe/test', (req, res) => {
-    console.log('🧪 Webhook test endpoint chiamato:', new Date().toISOString());
-    res.json({ 
-        success: true, 
-        message: 'Webhook endpoint raggiungibile',
-        timestamp: new Date().toISOString(),
-        url: req.url,
-        method: req.method
-    });
-});
-
-// Endpoint per verificare se ci sono stati webhook calls recenti
-let webhookLogs = [];
-const MAX_WEBHOOK_LOGS = 50;
-
-// Middleware per salvare i logs
-app.use('/webhooks/stripe', (req, res, next) => {
+    
     const logEntry = {
         timestamp: new Date().toISOString(),
         method: req.method,
@@ -1130,6 +1114,18 @@ app.use('/webhooks/stripe', (req, res, next) => {
     }
     
     next();
+});
+
+// Test endpoint per verificare se il webhook è raggiungibile
+app.get('/webhooks/stripe/test', (req, res) => {
+    console.log('🧪 Webhook test endpoint chiamato:', new Date().toISOString());
+    res.json({ 
+        success: true, 
+        message: 'Webhook endpoint raggiungibile',
+        timestamp: new Date().toISOString(),
+        url: req.url,
+        method: req.method
+    });
 });
 
 app.get('/api/billing/webhook-logs', (req, res) => {
