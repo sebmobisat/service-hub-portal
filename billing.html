@@ -90,7 +90,7 @@
           <h1 class="page-title text-xl font-semibold" data-i18n="page.billing.title"></h1>
           <p class="page-subtitle text-sm" data-i18n="page.billing.subtitle"></p>
         </div>
-        <div class="flex items-center space-x-4">
+        <div class="flex items-center space-x-4 pr-4">
           <img id="headerLogo" src="/images/header_logo_light_theme.png?v10" alt="Mobisat" class="h-8 w-auto object-contain" />
         </div>
       </div>
@@ -488,7 +488,11 @@
             </div>
           `;
           document.body.appendChild(dialog);
-          window.location.href = '/billing.html'; // Remove URL parameters
+          
+          // Ritarda il redirect per permettere di vedere il dialog
+          setTimeout(() => {
+            window.location.href = '/billing.html'; // Remove URL parameters
+          }, 3000);
         }, 500);
       } else if (rechargeStatus === 'cancelled') {
         setTimeout(() => {
@@ -514,7 +518,11 @@
             </div>
           `;
           document.body.appendChild(dialog);
-          window.location.href = '/billing.html'; // Remove URL parameters
+          
+          // Ritarda il redirect per permettere di vedere il dialog
+          setTimeout(() => {
+            window.location.href = '/billing.html'; // Remove URL parameters
+          }, 3000);
         }, 500);
       }
       
