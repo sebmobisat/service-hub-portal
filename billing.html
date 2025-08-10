@@ -29,6 +29,16 @@
       background-color: rgba(0, 174, 93, 0.1);
     }
     
+    /* Nasconde il testo nativo degli input date */
+    .date-input {
+      color: transparent;
+    }
+    
+    .date-input::-webkit-calendar-picker-indicator {
+      position: relative;
+      z-index: 10;
+    }
+    
 
   </style>
 </head>
@@ -132,13 +142,17 @@
             <div class="flex items-center gap-3">
               <div class="flex items-center gap-2">
                 <label class="text-sm" data-i18n="billing.date.from" data-it="Da:" data-en="From:">Da:</label>
-                <span id="fromDateDisplay" class="text-sm font-mono border border-gray-600 rounded px-3 py-1.5 min-w-[100px] bg-gray-50 dark:bg-gray-800 cursor-pointer">-</span>
-                <input type="date" id="fromDateInput" class="hidden">
+                <div class="relative">
+                  <input type="date" id="fromDateInput" class="text-sm border border-gray-600 rounded px-3 py-1.5 min-w-[100px] bg-gray-50 dark:bg-gray-800 date-input">
+                  <span id="fromDateDisplay" class="absolute inset-0 flex items-center px-3 py-1.5 text-sm font-mono pointer-events-none">-</span>
+                </div>
               </div>
               <div class="flex items-center gap-2">
                 <label class="text-sm" data-i18n="billing.date.to" data-it="A:" data-en="To:">A:</label>
-                <span id="toDateDisplay" class="text-sm font-mono border border-gray-600 rounded px-3 py-1.5 min-w-[100px] bg-gray-50 dark:bg-gray-800 cursor-pointer">-</span>
-                <input type="date" id="toDateInput" class="hidden">
+                <div class="relative">
+                  <input type="date" id="toDateInput" class="text-sm border border-gray-600 rounded px-3 py-1.5 min-w-[100px] bg-gray-50 dark:bg-gray-800 date-input">
+                  <span id="toDateDisplay" class="absolute inset-0 flex items-center px-3 py-1.5 text-sm font-mono pointer-events-none">-</span>
+                </div>
               </div>
               <button id="searchBtn" class="px-4 py-1.5 bg-emerald-600 text-white rounded text-sm hover:bg-emerald-700" data-i18n="common.search">Cerca</button>
             </div>
@@ -369,7 +383,13 @@
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
-        return `${day}/${month}/${year}`; // SEMPRE DD/MM/YYYY
+        
+        const currentLang = document.documentElement.lang || 'it';
+        if (currentLang === 'en') {
+          return `${month}/${day}/${year}`; // MM/DD/YYYY per inglese
+        } else {
+          return `${day}/${month}/${year}`; // DD/MM/YYYY per italiano
+        }
       }
       
       // Set default dates (today)
@@ -392,14 +412,7 @@
       // Initial display update
       updateDateDisplays();
       
-      // Click handlers to show date pickers
-      fromDateDisplay.addEventListener('click', () => {
-        fromDateInput.showPicker();
-      });
-      
-      toDateDisplay.addEventListener('click', () => {
-        toDateInput.showPicker();
-      });
+      // Gli input sono ora visibili, quindi il click funziona automaticamente
       
       // Update displays when dates change
       fromDateInput.addEventListener('change', updateDateDisplays);
