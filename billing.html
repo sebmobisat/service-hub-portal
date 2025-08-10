@@ -72,6 +72,11 @@
           <div class="flex items-center justify-between mb-4">
             <h2 class="settings-title text-lg font-semibold" data-i18n="billing.balance"></h2>
             <div class="flex gap-2">
+              <button id="refreshBalanceBtn" class="px-3 py-1.5 border border-gray-600 rounded text-sm hover:border-emerald-500 transition-colors" title="Aggiorna credito">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+              </button>
               <button id="rechargeBtn" class="px-4 py-2 rounded text-sm font-medium text-white transition-colors" style="background-color: #00AE5D;" onmouseover="this.style.backgroundColor='#009951'" onmouseout="this.style.backgroundColor='#00AE5D'">
                 <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -329,14 +334,26 @@
           window.location.href = '/billing.html'; // Remove URL parameters
         }, 500);
       }
-      // Balance
-      try {
-        const b = await fetch(`/api/billing/balance/${dealerId}`).then(r=>r.json());
-        if (b?.success){
-          document.getElementById('balanceValue').textContent = formatEuroCents(b.balance_cents);
-          document.getElementById('balanceCurrency').textContent = b.currency || 'EUR';
+      
+      // Balance loading function
+      async function loadBalance() {
+        try {
+          const timestamp = Date.now(); // Cache busting
+          const b = await fetch(`/api/billing/balance/${dealerId}?_t=${timestamp}`).then(r=>r.json());
+          if (b?.success){
+            document.getElementById('balanceValue').textContent = formatEuroCents(b.balance_cents);
+            document.getElementById('balanceCurrency').textContent = b.currency || 'EUR';
+            console.log('💳 Balance aggiornato:', b.balance_cents, 'centesimi');
+          } else {
+            console.error('❌ Errore caricamento balance:', b);
+          }
+        } catch (error) {
+          console.error('❌ Errore fetch balance:', error);
         }
-      } catch {}
+      }
+      
+      // Load initial balance
+      await loadBalance();
 
       // Chart
       const ctx = document.getElementById('usageChart').getContext('2d');
@@ -630,6 +647,25 @@
       // Imposta "Oggi" come attivo di default
       const todayBtn = document.querySelector('[data-range="today"]');
       if (todayBtn) todayBtn.classList.add('range-btn-active');
+
+      // Refresh balance button
+      document.getElementById('refreshBalanceBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('refreshBalanceBtn');
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        
+        await loadBalance();
+        
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        
+        // Show feedback
+        const originalTitle = btn.title;
+        btn.title = '✅ Credito aggiornato!';
+        setTimeout(() => {
+          btn.title = originalTitle;
+        }, 2000);
+      });
 
       // Modal management
       const rechargeModal = document.getElementById('rechargeModal');

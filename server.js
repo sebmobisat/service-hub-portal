@@ -733,6 +733,60 @@ app.get('/api/billing/test-webhook/:sessionId', async (req, res) => {
     }
 });
 
+// Debug endpoint per verificare balance direttamente nel database
+app.get('/api/billing/debug-balance/:dealerId', async (req, res) => {
+    const dealerId = parseInt(req.params.dealerId, 10) || 1;
+    
+    try {
+        const { supabaseAdmin } = require('./config/supabase.js');
+        
+        // Get all billing accounts for this dealer
+        const { data: accounts, error: accountsError } = await supabaseAdmin
+            .from('dealer_billing_accounts')
+            .select('*')
+            .eq('dealer_id', dealerId)
+            .order('updated_at', { ascending: false });
+            
+        if (accountsError) throw accountsError;
+        
+        // Get recent recharges
+        const { data: recharges, error: rechargesError } = await supabaseAdmin
+            .from('billing_recharges')
+            .select('*')
+            .eq('dealer_id', dealerId)
+            .order('created_at', { ascending: false })
+            .limit(5);
+            
+        if (rechargesError) throw rechargesError;
+        
+        // Calculate expected balance from recharges
+        const totalRecharges = recharges
+            ?.filter(r => r.status === 'succeeded')
+            .reduce((sum, r) => sum + (r.amount_cents || 0), 0) || 0;
+            
+        const debug = {
+            dealer_id: dealerId,
+            accounts_found: accounts?.length || 0,
+            current_balance: accounts?.[0]?.balance_cents || 0,
+            total_successful_recharges: totalRecharges,
+            accounts: accounts,
+            recent_recharges: recharges?.map(r => ({
+                id: r.id,
+                amount_cents: r.amount_cents,
+                status: r.status,
+                created_at: r.created_at,
+                processed_at: r.processed_at
+            }))
+        };
+        
+        res.json({ success: true, debug });
+        
+    } catch (error) {
+        console.error('Debug balance error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Bulk communication endpoint: generate AI messages and optionally send
 app.post('/api/communications/generate', express.json(), async (req, res) => {
     try {
