@@ -914,6 +914,104 @@ app.get('/api/billing/fix-balance/:dealerId', async (req, res) => {
     }
 });
 
+// Endpoint per calcolare il balance corretto considerando balance iniziale + ricariche - consumi
+app.get('/api/billing/recalculate-balance/:dealerId', async (req, res) => {
+    const dealerId = parseInt(req.params.dealerId, 10) || 1;
+    
+    try {
+        const { supabaseAdmin } = require('./config/supabase.js');
+        
+        // Get all successful recharges
+        const { data: recharges, error: rechargesError } = await supabaseAdmin
+            .from('billing_recharges')
+            .select('amount_cents, created_at')
+            .eq('dealer_id', dealerId)
+            .eq('status', 'succeeded')
+            .order('created_at', { ascending: true });
+            
+        if (rechargesError) throw rechargesError;
+        
+        // Get all usage events (consumi)
+        const { data: usageEvents, error: usageError } = await supabaseAdmin
+            .from('billing_usage_events')
+            .select('total_cost_cents, created_at')
+            .eq('dealer_id', dealerId)
+            .order('created_at', { ascending: true });
+            
+        if (usageError) throw usageError;
+        
+        // Get current balance
+        const { data: account } = await supabaseAdmin
+            .from('dealer_billing_accounts')
+            .select('balance_cents, created_at')
+            .eq('dealer_id', dealerId)
+            .single();
+            
+        const currentBalance = account?.balance_cents || 0;
+        
+        // Calculate totals
+        const totalRecharges = recharges?.reduce((sum, r) => sum + (r.amount_cents || 0), 0) || 0;
+        const totalUsage = usageEvents?.reduce((sum, u) => sum + (u.total_cost_cents || 0), 0) || 0;
+        
+        // Determine if we had an initial balance before first recharge
+        const firstRechargeDate = recharges?.[0]?.created_at;
+        const accountCreatedDate = account?.created_at;
+        
+        // If account was created before first recharge, assume initial balance
+        let initialBalance = 0;
+        if (accountCreatedDate && firstRechargeDate && new Date(accountCreatedDate) < new Date(firstRechargeDate)) {
+            // The 540 cents was probably the initial balance
+            initialBalance = 540; // 5.40€
+        }
+        
+        // Correct balance = Initial + Recharges - Usage
+        const correctBalance = initialBalance + totalRecharges - totalUsage;
+        
+        console.log('🧮 Recalculate Balance - Dealer:', dealerId);
+        console.log('📊 Balance iniziale stimato:', initialBalance, 'centesimi');
+        console.log('📊 Totale ricariche:', totalRecharges, 'centesimi');
+        console.log('📊 Totale consumi:', totalUsage, 'centesimi');
+        console.log('📊 Balance corretto calcolato:', correctBalance, 'centesimi');
+        console.log('📊 Balance attuale nel DB:', currentBalance, 'centesimi');
+        
+        // Update balance to correct amount
+        const { data: updateResult, error: updateError } = await supabaseAdmin
+            .from('dealer_billing_accounts')
+            .update({
+                balance_cents: correctBalance,
+                updated_at: new Date().toISOString()
+            })
+            .eq('dealer_id', dealerId)
+            .select();
+            
+        if (updateError) throw updateError;
+        
+        res.json({ 
+            success: true, 
+            message: 'Balance ricalcolato correttamente',
+            dealer_id: dealerId,
+            calculation: {
+                initial_balance_cents: initialBalance,
+                total_recharges_cents: totalRecharges,
+                total_usage_cents: totalUsage,
+                calculated_balance_cents: correctBalance
+            },
+            current_balance_cents: currentBalance,
+            new_balance_cents: correctBalance,
+            current_balance_euros: (currentBalance / 100).toFixed(2),
+            new_balance_euros: (correctBalance / 100).toFixed(2),
+            difference_cents: correctBalance - currentBalance,
+            difference_euros: ((correctBalance - currentBalance) / 100).toFixed(2),
+            recharges_count: recharges?.length || 0,
+            usage_events_count: usageEvents?.length || 0
+        });
+        
+    } catch (error) {
+        console.error('Recalculate balance error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Bulk communication endpoint: generate AI messages and optionally send
 app.post('/api/communications/generate', express.json(), async (req, res) => {
     try {
