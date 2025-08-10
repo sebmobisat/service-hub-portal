@@ -693,13 +693,13 @@ app.get('/api/billing/test-webhook/:sessionId', async (req, res) => {
                     const currentBalance = account?.balance_cents || 0;
                     const newBalance = currentBalance + recharge.amount_cents;
                     
-                    const balanceResult = await supabaseAdmin
-                        .from('dealer_billing_accounts')
-                        .upsert({
-                            dealer_id: dealerId,
-                            balance_cents: newBalance,
-                            updated_at: new Date().toISOString()
-                        });
+                                            const balanceResult = await supabaseAdmin
+                            .from('dealer_billing_accounts')
+                            .update({
+                                balance_cents: newBalance,
+                                updated_at: new Date().toISOString()
+                            })
+                            .eq('dealer_id', dealerId);
                         
                     res.json({ 
                         success: true, 
