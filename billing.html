@@ -701,7 +701,13 @@
           if (result.success && result.checkout_url) {
             window.location.href = result.checkout_url;
           } else {
-            alert('Errore nella creazione della ricarica: ' + (result.error || 'Errore sconosciuto'));
+            const errorMessages = {
+              'stripe_not_configured': 'Sistema di pagamento non configurato. Contatta il supporto.',
+              'invalid_amount': 'Importo non valido. Inserisci un valore tra 1€ e 1000€.',
+              'recharge_creation_failed': 'Errore nella creazione della ricarica. Riprova più tardi.'
+            };
+            const userMessage = errorMessages[result.error] || `Errore: ${result.error || 'Errore sconosciuto'}`;
+            alert(userMessage);
           }
         } catch (error) {
           console.error('Errore ricarica:', error);
