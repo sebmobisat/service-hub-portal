@@ -1464,12 +1464,20 @@ ${channel === 'email' ? (language === 'it' ? 'Restituisci in formato JSON con su
             const replacements = {
                 '{SALUTATION}': buildSalutation(name),
                 '{NAME}': name || (language === 'it' ? 'Cliente' : 'Customer'),
+                '{NOME}': v.firstName || r.firstName || name.split(' ')[0] || (language === 'it' ? 'Cliente' : 'Customer'),
+                '{COGNOME}': v.lastName || r.lastName || name.split(' ').slice(1).join(' ') || '',
+                '{COMPANY_NAME}': v.companyName || r.companyName || '',
                 '{EMAIL}': v.email || r.clientEmail || '',
                 '{PHONE}': v.phone || r.clientPhone || '',
+                '{TELEFONO}': v.phone || r.clientPhone || '',
                 '{VEHICLE}': v.vehicle || '',
+                '{VEICOLO}': v.vehicle || '',
                 '{PLATE}': v.plate || '',
+                '{TARGA}': v.plate || '',
                 '{YEAR}': v.year || '',
+                '{ANNO}': v.year || '',
                 '{FUEL}': v.fuel || '',
+                '{CARBURANTE}': v.fuel || '',
                 '{KM}': (v.km != null ? String(v.km) : ''),
                 '{VIN}': v.vin || '',
                 '{SERIAL}': v.serial || '',
@@ -1607,7 +1615,9 @@ app.post('/api/communications/send-manual', express.json(), async (req, res) => 
             try {
                 // Replace tags in message
                 const tagReplacements = {
-                    '{NOME}': recipient.name || '',
+                    '{NOME}': recipient.firstName || recipient.name || '',
+                    '{COGNOME}': recipient.lastName || '',
+                    '{COMPANY_NAME}': recipient.companyName || '',
                     '{EMAIL}': recipient.email || '',
                     '{TELEFONO}': recipient.phone || '',
                     '{VEICOLO}': recipient.vehicle || '',
