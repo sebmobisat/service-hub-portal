@@ -359,11 +359,11 @@ app.post('/api/billing/stripe-webhook', express.raw({type: 'application/json'}),
                         // Update balance
                         const balanceResult = await supabaseAdmin
                             .from('dealer_billing_accounts')
-                            .upsert({
-                                dealer_id: dealerId,
+                            .update({
                                 balance_cents: newBalance,
                                 updated_at: new Date().toISOString()
-                            });
+                            })
+                            .eq('dealer_id', dealerId);
                             
                         console.log('✅ Balance aggiornato:', balanceResult);
                     } else {
@@ -471,11 +471,11 @@ app.post('/webhooks/stripe', express.raw({type: 'application/json'}), async (req
                         // Update balance
                         const balanceResult = await supabaseAdmin
                             .from('dealer_billing_accounts')
-                            .upsert({
-                                dealer_id: dealerId,
+                            .update({
                                 balance_cents: newBalance,
                                 updated_at: new Date().toISOString()
-                            });
+                            })
+                            .eq('dealer_id', dealerId);
                             
                         console.log('✅ Balance aggiornato:', balanceResult);
                     } else {
@@ -823,11 +823,11 @@ app.post('/api/billing/fix-balance/:dealerId', async (req, res) => {
         // Update balance to correct amount
         const { data: updateResult, error: updateError } = await supabaseAdmin
             .from('dealer_billing_accounts')
-            .upsert({
-                dealer_id: dealerId,
+            .update({
                 balance_cents: correctBalance,
                 updated_at: new Date().toISOString()
             })
+            .eq('dealer_id', dealerId)
             .select();
             
         if (updateError) throw updateError;
@@ -885,11 +885,11 @@ app.get('/api/billing/fix-balance/:dealerId', async (req, res) => {
         // Update balance to correct amount
         const { data: updateResult, error: updateError } = await supabaseAdmin
             .from('dealer_billing_accounts')
-            .upsert({
-                dealer_id: dealerId,
+            .update({
                 balance_cents: correctBalance,
                 updated_at: new Date().toISOString()
             })
+            .eq('dealer_id', dealerId)
             .select();
             
         if (updateError) throw updateError;
