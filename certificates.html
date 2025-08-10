@@ -276,30 +276,30 @@
             z-index: 1000;
         }
 
-        /* Different tag colors for variety */
+        /* Uniform tag colors - all using NOME purple color */
         .draggable-tag[data-type="client"] {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
         .draggable-tag[data-type="vehicle"] {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-            box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
         .draggable-tag[data-type="technical"] {
-            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
         .draggable-tag[data-type="contact"] {
-            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-            box-shadow: 0 4px 15px rgba(67, 233, 123, 0.4);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
         .draggable-tag[data-type="cta"] {
-            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-            box-shadow: 0 4px 15px rgba(250, 112, 154, 0.4);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
         }
 
         .draggable-tag .tag-icon {
@@ -1264,6 +1264,14 @@
                             <input id="sendToTestClientsNoAI" type="checkbox" class="form-checkbox h-4 w-4 text-green-500" checked>
                             <span data-en="Send to test clients" data-it="Invia ai clienti test">Invia ai clienti test</span>
                         </label>
+
+                        <!-- Test Client Selection for Preview -->
+                        <div id="testClientSelectorNoAI" class="space-y-2 bg-gray-800 border border-gray-700 rounded p-3">
+                            <label class="text-xs text-gray-400" data-en="Preview with Test Client" data-it="Anteprima con Cliente Test">Anteprima con Cliente Test</label>
+                            <select id="testClientSelectNoAI" class="w-full rounded bg-gray-900 border border-gray-700 p-2 text-sm">
+                                <option value="sample" data-en="Sample Data" data-it="Dati di Esempio">Dati di Esempio</option>
+                            </select>
+                        </div>
                     </div>
 
                     <!-- Middle Column: Draggable Tags -->
@@ -5542,6 +5550,28 @@
                 if (el) el.textContent = text;
             } catch {}
 
+            // Load test clients for preview selector
+            try {
+                const dealerId = getCurrentDealerId();
+                const r = await fetch(`/api/communications/test-clients/${dealerId}`).then(r=>r.json());
+                const testClients = r?.data || [];
+                const sel = document.getElementById('testClientSelectNoAI');
+                if (sel) {
+                    sel.innerHTML = '<option value="sample" data-en="Sample Data" data-it="Dati di Esempio">Dati di Esempio</option>' +
+                        testClients.map(c => {
+                            const name = [c.first_name, c.last_name].filter(Boolean).join(' ').trim() || 'Cliente Test';
+                            const vehicle = [c.vehicle_brand, c.vehicle_model].filter(Boolean).join(' ') || '';
+                            const display = vehicle ? `${name} (${vehicle})` : name;
+                            return `<option value="${c.id}">${display}</option>`;
+                        }).join('');
+                    
+                    // Add event listener for preview updates
+                    sel.addEventListener('change', () => {
+                        updateManualMessagePreview();
+                    });
+                }
+            } catch {}
+
             // Initialize drag & drop tags
             initDragDropTags();
             
@@ -5600,7 +5630,9 @@
                 textarea.addEventListener('dragleave', handleDragLeave);
                 
                 // Update preview on input
-                textarea.addEventListener('input', updateManualMessagePreview);
+                textarea.addEventListener('input', () => {
+                    updateManualMessagePreview();
+                });
             }
         }
 
@@ -5692,8 +5724,8 @@
             }
         }
 
-        // Update message preview with sample data
-        function updateManualMessagePreview() {
+        // Update message preview with sample data or selected test client data
+        async function updateManualMessagePreview() {
             const message = document.getElementById('manualMessageInput').value;
             const preview = document.getElementById('manualMessagePreview');
             
@@ -5702,8 +5734,7 @@
                 return;
             }
 
-            // Sample data for preview
-            const sampleData = {
+            let sampleData = {
                 'NOME': 'Mario Rossi',
                 'EMAIL': 'mario.rossi@email.com',
                 'TELEFONO': '+39 123 456 7890',
@@ -5717,6 +5748,35 @@
                 'CTA_TAGLIANDO': 'Prenota il tuo tagliando su: https://mobisat.com/tagliando'
             };
 
+            // Check if a specific test client is selected
+            const testClientSelect = document.getElementById('testClientSelectNoAI');
+            if (testClientSelect && testClientSelect.value !== 'sample') {
+                try {
+                    const dealerId = getCurrentDealerId();
+                    const r = await fetch(`/api/communications/test-clients/${dealerId}`).then(r=>r.json());
+                    const testClients = r?.data || [];
+                    const selectedClient = testClients.find(c => c.id === testClientSelect.value);
+                    
+                    if (selectedClient) {
+                        sampleData = {
+                            'NOME': [selectedClient.first_name, selectedClient.last_name].filter(Boolean).join(' ').trim() || 'Cliente Test',
+                            'EMAIL': selectedClient.email || 'email@esempio.com',
+                            'TELEFONO': selectedClient.phone || '+39 000 000 0000',
+                            'VEICOLO': [selectedClient.vehicle_brand, selectedClient.vehicle_model].filter(Boolean).join(' ') || 'Veicolo',
+                            'TARGA': selectedClient.plate || 'XX000XX',
+                            'ANNO': selectedClient.year || '2020',
+                            'CARBURANTE': selectedClient.fuel_type || 'Benzina',
+                            'KM': selectedClient.odometer ? selectedClient.odometer.toLocaleString() : '0',
+                            'VIN': selectedClient.vin || 'WVWZZZ1JZ3W123456',
+                            'SERIAL': selectedClient.serial || 'SN123456789',
+                            'CTA_TAGLIANDO': 'Prenota il tuo tagliando su: https://mobisat.com/tagliando'
+                        };
+                    }
+                } catch (error) {
+                    console.error('Error loading test client data:', error);
+                }
+            }
+
             let previewText = message;
             Object.keys(sampleData).forEach(key => {
                 const regex = new RegExp(`\\{${key}\\}`, 'g');
@@ -5727,8 +5787,8 @@
         }
 
         // Preview manual message
-        function previewManualMessage() {
-            updateManualMessagePreview();
+        async function previewManualMessage() {
+            await updateManualMessagePreview();
             
             // Scroll to preview
             const preview = document.getElementById('manualMessagePreview');
