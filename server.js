@@ -107,7 +107,10 @@ app.get('/status', (req, res) => {
 
 // Billing: get dealer balance (Stripe + Supabase fallback)
 app.get('/api/billing/balance/:dealerId', async (req, res) => {
-    const dealerId = parseInt(req.params.dealerId, 10) || 1;
+    const dealerId = parseInt(req.params.dealerId, 10);
+    if (!dealerId) {
+        return res.status(400).json({ success: false, error: 'invalid_dealer_id' });
+    }
     try {
         const { supabaseAdmin } = require('./config/supabase.js');
         // Be tolerant: pick latest row if multiple, allow empty without error
@@ -129,7 +132,10 @@ app.get('/api/billing/balance/:dealerId', async (req, res) => {
 
 // Billing: usage daily series for charts
 app.get('/api/billing/usage/:dealerId', async (req, res) => {
-    const dealerId = parseInt(req.params.dealerId, 10) || 1;
+    const dealerId = parseInt(req.params.dealerId, 10);
+    if (!dealerId) {
+        return res.status(400).json({ success: false, error: 'invalid_dealer_id' });
+    }
     const { from, to, granularity } = req.query; // ISO dates + granularity (day|hour)
     try {
         const { supabaseAdmin } = require('./config/supabase.js');
@@ -267,7 +273,10 @@ app.post('/api/billing/create-recharge', express.json(), async (req, res) => {
 
 // Billing: get recharge history
 app.get('/api/billing/recharges/:dealerId', async (req, res) => {
-    const dealerId = parseInt(req.params.dealerId, 10) || 1;
+    const dealerId = parseInt(req.params.dealerId, 10);
+    if (!dealerId) {
+        return res.status(400).json({ success: false, error: 'invalid_dealer_id' });
+    }
     
     try {
         const { supabaseAdmin } = require('./config/supabase.js');
@@ -751,7 +760,10 @@ app.get('/api/billing/test-webhook/:sessionId', async (req, res) => {
 
 // Debug endpoint per verificare balance direttamente nel database
 app.get('/api/billing/debug-balance/:dealerId', async (req, res) => {
-    const dealerId = parseInt(req.params.dealerId, 10) || 1;
+    const dealerId = parseInt(req.params.dealerId, 10);
+    if (!dealerId) {
+        return res.status(400).json({ success: false, error: 'invalid_dealer_id' });
+    }
     
     try {
         const { supabaseAdmin } = require('./config/supabase.js');
@@ -805,7 +817,10 @@ app.get('/api/billing/debug-balance/:dealerId', async (req, res) => {
 
 // Endpoint per correggere il balance basandosi sulle ricariche (per debug/fix)
 app.post('/api/billing/fix-balance/:dealerId', async (req, res) => {
-    const dealerId = parseInt(req.params.dealerId, 10) || 1;
+    const dealerId = parseInt(req.params.dealerId, 10);
+    if (!dealerId) {
+        return res.status(400).json({ success: false, error: 'invalid_dealer_id' });
+    }
     
     try {
         const { supabaseAdmin } = require('./config/supabase.js');
@@ -867,7 +882,10 @@ app.post('/api/billing/fix-balance/:dealerId', async (req, res) => {
 
 // Versione GET per fix balance (per facilità di utilizzo dal browser)
 app.get('/api/billing/fix-balance/:dealerId', async (req, res) => {
-    const dealerId = parseInt(req.params.dealerId, 10) || 1;
+    const dealerId = parseInt(req.params.dealerId, 10);
+    if (!dealerId) {
+        return res.status(400).json({ success: false, error: 'invalid_dealer_id' });
+    }
     
     try {
         const { supabaseAdmin } = require('./config/supabase.js');
@@ -932,7 +950,10 @@ app.get('/api/billing/fix-balance/:dealerId', async (req, res) => {
 
 // Endpoint per calcolare il balance corretto considerando balance iniziale + ricariche - consumi
 app.get('/api/billing/recalculate-balance/:dealerId', async (req, res) => {
-    const dealerId = parseInt(req.params.dealerId, 10) || 1;
+    const dealerId = parseInt(req.params.dealerId, 10);
+    if (!dealerId) {
+        return res.status(400).json({ success: false, error: 'invalid_dealer_id' });
+    }
     
     try {
         const { supabaseAdmin } = require('./config/supabase.js');
@@ -1030,7 +1051,10 @@ app.get('/api/billing/recalculate-balance/:dealerId', async (req, res) => {
 
 // Debug endpoint per vedere dettagli ricariche pending
 app.get('/api/billing/debug-pending/:dealerId', async (req, res) => {
-    const dealerId = parseInt(req.params.dealerId, 10) || 1;
+    const dealerId = parseInt(req.params.dealerId, 10);
+    if (!dealerId) {
+        return res.status(400).json({ success: false, error: 'invalid_dealer_id' });
+    }
     
     if (!stripe) {
         return res.status(500).json({ success: false, error: 'stripe_not_configured' });
@@ -1254,7 +1278,15 @@ app.post('/api/billing/stripe-webhook-direct', express.json(), async (req, res) 
             // Processa la ricarica
             const { supabaseAdmin } = require('./config/supabase.js');
             
-            const dealerId = parseInt(session.metadata?.dealer_id || '1', 10);
+            if (!session.metadata?.dealer_id) {
+                console.error('❌ No dealer_id in session metadata');
+                return res.status(400).json({ error: 'missing_dealer_id_in_metadata' });
+            }
+            const dealerId = parseInt(session.metadata.dealer_id, 10);
+            if (!dealerId) {
+                console.error('❌ Invalid dealer_id in session metadata');
+                return res.status(400).json({ error: 'invalid_dealer_id_in_metadata' });
+            }
             
             // Trova e aggiorna la ricarica
             const { error: updateError } = await supabaseAdmin
@@ -1421,7 +1453,10 @@ ${channel === 'email' ? (language === 'it' ? 'Restituisci in formato JSON con su
 
         // Personalize per recipient from the single base message
         const results = [];
-        const dealerId = bodyDealerId || 1;
+        if (!bodyDealerId) {
+            return res.status(400).json({ success: false, error: 'missing_dealer_id' });
+        }
+        const dealerId = bodyDealerId;
 
         const buildSalutation = (fullName) => {
             const firstName = (fullName || '').trim().split(/\s+/)[0] || '';
@@ -2813,7 +2848,9 @@ app.get('/api/dealer/:dealerId', async (req, res) => {
         console.log(` Fetching dealer info for ID: ${dealerId}`);
         
         const query = `
-            SELECT *
+            SELECT id, "companyName", "companyLoginEmail", "brand", 
+                   "companyTaxCode", "companyAddress1", "companyCity", 
+                   "companyProvincia", "companyPhoneNumber", "createdAt", "updatedAt"
             FROM dealer 
             WHERE id = $1
         `;

@@ -464,13 +464,37 @@
         // Load dealer information from database
         async function loadDealerInfo() {
             try {
-                // Get current dealer ID from localStorage
-                const authData = localStorage.getItem('authData');
-                let dealerId = 1; // default
+                // Get current dealer ID from localStorage - support both auth systems
+                let dealerId = null;
                 
-                if (authData) {
-                    const parsed = JSON.parse(authData);
-                    dealerId = parsed.dealerId || 1;
+                // Try servicehub-user first (new system)
+                const servicehubUser = localStorage.getItem('servicehub-user');
+                if (servicehubUser) {
+                    try {
+                        const parsed = JSON.parse(servicehubUser);
+                        dealerId = parsed.id;
+                        console.log('✅ Found dealer ID in servicehub-user:', dealerId);
+                    } catch (e) {
+                        console.warn('⚠️ Invalid servicehub-user format');
+                    }
+                }
+                
+                // Fallback to legacy authData
+                if (!dealerId) {
+                    const authData = localStorage.getItem('authData');
+                    if (authData) {
+                        try {
+                            const parsed = JSON.parse(authData);
+                            dealerId = parsed.dealerId;
+                            console.log('✅ Found dealer ID in authData:', dealerId);
+                        } catch (e) {
+                            console.warn('⚠️ Invalid authData format');
+                        }
+                    }
+                }
+                
+                if (!dealerId) {
+                    throw new Error('❌ CRITICAL: No dealerId found in any auth data');
                 }
                 
 
@@ -504,24 +528,23 @@
                     set('companyLoginEmail', d.companyLoginEmail);
 
                 } else {
-                    // Fallback to localStorage or defaults
+                    // Fallback to stored dealer name
                     if (dealerIdEl) dealerIdEl.textContent = dealerId;
                     if (dealerNameEl) {
-                        const fallbackName = authData ? (JSON.parse(authData).dealerName || 'Mobisat Dealer') : 'Mobisat Dealer';
+                        const fallbackName = parsed.dealerName || 'Unknown Dealer';
                         dealerNameEl.textContent = fallbackName;
                     }
-
                 }
                 
             } catch (error) {
                 console.error('Error loading dealer info:', error);
                 
-                // Fallback on error
+                // Show error message
                 const dealerIdEl = document.getElementById('dealerIdDisplay');
                 const dealerNameEl = document.getElementById('dealerNameDisplay');
                 
-                if (dealerIdEl) dealerIdEl.textContent = '1';
-                if (dealerNameEl) dealerNameEl.textContent = 'Mobisat Dealer';
+                if (dealerIdEl) dealerIdEl.textContent = 'Error';
+                if (dealerNameEl) dealerNameEl.textContent = 'Error loading dealer info';
             }
         }
 
@@ -576,8 +599,38 @@
             // Update DB status (Mobisat + Supabase)
             updateDbStatus();
 
-            // Comunicazioni: wire handlers
-            const dealerId = (JSON.parse(localStorage.getItem('authData')||'{}').dealerId) || 1;
+            // Comunicazioni: wire handlers - support both auth systems
+            let dealerId = null;
+            
+            // Try servicehub-user first (new system)
+            const servicehubUser = localStorage.getItem('servicehub-user');
+            if (servicehubUser) {
+                try {
+                    const parsed = JSON.parse(servicehubUser);
+                    dealerId = parsed.id;
+                } catch (e) {
+                    console.warn('⚠️ Invalid servicehub-user format');
+                }
+            }
+            
+            // Fallback to legacy authData
+            if (!dealerId) {
+                const authData = localStorage.getItem('authData');
+                if (authData) {
+                    try {
+                        const parsed = JSON.parse(authData);
+                        dealerId = parsed.dealerId;
+                    } catch (e) {
+                        console.warn('⚠️ Invalid authData format');
+                    }
+                }
+            }
+            
+            if (!dealerId) {
+                console.error('No dealer ID found. User should be redirected to login.');
+                window.location.href = '/pages/login.html';
+                return;
+            }
 
             async function refreshSignatures() {
                 const list = document.getElementById('signaturesList');

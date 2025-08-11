@@ -1,0 +1,18 @@
+warning: in the working copy of 'billing.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'certificates.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'config/database.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'index.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'js/auth.js', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'pages/login.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'settings.html', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tatus', LF will be replaced by CRLF the next time Git touches it
+billing.html
+certificates.html
+config/database.js
+index.html
+js/auth.js
+pages/login.html
+server.js
+settings.html
+tatus
+vehicle.html

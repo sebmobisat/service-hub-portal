@@ -1373,12 +1373,40 @@
 
         // Get current dealer ID from authentication
         function getCurrentDealerId() {
+            console.log('🔍 Getting current dealer ID...');
+            
+            // Check for servicehub authentication first (new system)
+            const servicehubUser = localStorage.getItem('servicehub-user');
+            if (servicehubUser) {
+                try {
+                    const parsed = JSON.parse(servicehubUser);
+                    if (parsed.id) {
+                        console.log('✅ Found dealer ID in servicehub-user:', parsed.id);
+                        return parsed.id;
+                    }
+                } catch (e) {
+                    console.warn('⚠️ Invalid servicehub-user format');
+                }
+            }
+            
+            // Fallback to legacy authData system
             const authData = localStorage.getItem('authData');
             if (authData) {
-                const parsed = JSON.parse(authData);
-                return parsed.dealerId || 1;
+                try {
+                    const parsed = JSON.parse(authData);
+                    if (parsed.dealerId) {
+                        console.log('✅ Found dealer ID in authData:', parsed.dealerId);
+                        return parsed.dealerId;
+                    }
+                } catch (e) {
+                    console.warn('⚠️ Invalid authData format');
+                }
             }
-            return 1; // Default dealer ID
+            
+            // No authentication found
+            console.error('❌ No dealer ID found - redirecting to login');
+            window.location.href = '/pages/login.html';
+            return null;
         }
 
         // Load certificates for current dealer
@@ -2988,20 +3016,7 @@
             };
         }
 
-        // Get current dealer ID (from URL, session, or other source)
-        function getCurrentDealerId() {
-            // Try to get from URL params first
-            const urlParams = new URLSearchParams(window.location.search);
-            const dealerIdFromUrl = urlParams.get('dealerId');
-            if (dealerIdFromUrl) return dealerIdFromUrl;
-            
-            // Try to get from session storage
-            const dealerIdFromSession = sessionStorage.getItem('currentDealerId');
-            if (dealerIdFromSession) return dealerIdFromSession;
-            
-            // Default to dealer ID 1 (for backward compatibility)
-            return '1';
-        }
+        // getCurrentDealerId function is defined earlier in the file - this duplicate has been removed
 
         // Load customization settings from cookies
         function loadCustomizationSettings() {
@@ -3482,12 +3497,20 @@
             
             setupEventListeners();
              
-             // Initialize auth data if needed
-             const authData = localStorage.getItem('authData');
-             if (!authData) {
-                 const defaultAuth = { dealerId: 1, dealerName: 'Mobisat Dealer' };
-                 localStorage.setItem('authData', JSON.stringify(defaultAuth));
+             // Check authentication - support both new and legacy systems
+             console.log('🔧 Certificates page: Checking authentication');
+             
+             // Check for servicehub authentication (new system)
+             const hasServicehubAuth = localStorage.getItem('servicehub-auth-token') && localStorage.getItem('servicehub-user');
+             const hasLegacyAuth = localStorage.getItem('authData');
+             
+             if (!hasServicehubAuth && !hasLegacyAuth) {
+                 console.log('❌ No authentication found - redirecting to login');
+                 window.location.href = '/pages/login.html';
+                 return;
              }
+             
+             console.log('✅ Authentication found - proceeding with certificates page');
 
              // Set up logo error handling
              const logo = document.getElementById('sidebarLogo');
@@ -4523,8 +4546,40 @@
         // Load vehicle groups for current dealer
         async function loadVehicleGroups() {
             try {
-                // Get current dealer ID from localStorage or default to 1
-                currentDealerId = localStorage.getItem('currentDealerId') || 1;
+                // Get current dealer ID from localStorage - support both auth systems
+                let dealerId = null;
+                
+                // Try servicehub-user first (new system)
+                const servicehubUser = localStorage.getItem('servicehub-user');
+                if (servicehubUser) {
+                    try {
+                        const parsed = JSON.parse(servicehubUser);
+                        dealerId = parsed.id;
+                    } catch (e) {
+                        console.warn('⚠️ Invalid servicehub-user format');
+                    }
+                }
+                
+                // Fallback to legacy authData
+                if (!dealerId) {
+                    const authData = localStorage.getItem('authData');
+                    if (authData) {
+                        try {
+                            const parsed = JSON.parse(authData);
+                            dealerId = parsed.dealerId;
+                        } catch (e) {
+                            console.warn('⚠️ Invalid authData format');
+                        }
+                    }
+                }
+                
+                if (!dealerId) {
+                    console.error('No dealer ID found. User should be redirected to login.');
+                    window.location.href = '/pages/login.html';
+                    return;
+                }
+                
+                currentDealerId = dealerId;
                 
                 // Show loading state
                 const loadingState = document.getElementById('groupsLoadingState');

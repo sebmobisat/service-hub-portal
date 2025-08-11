@@ -260,18 +260,53 @@
         // Function to load dealer information for welcome message
         async function loadWelcomeMessage() {
             try {
-                // Get current dealer ID from localStorage
-                const authData = localStorage.getItem('authData');
-                let dealerId = 1; // default
+                let dealerId = null;
                 
-                if (authData) {
-                    const parsed = JSON.parse(authData);
-                    dealerId = parsed.dealerId || 1;
+                // Try servicehub-user first (new system)
+                const servicehubUser = localStorage.getItem('servicehub-user');
+                if (servicehubUser) {
+                    try {
+                        const parsed = JSON.parse(servicehubUser);
+                        dealerId = parsed.id;
+                        console.log('✅ Found dealer ID in servicehub-user:', dealerId);
+                    } catch (e) {
+                        console.warn('⚠️ Invalid servicehub-user format');
+                    }
+                }
+                
+                // Fallback to legacy authData
+                if (!dealerId) {
+                    const authData = localStorage.getItem('authData');
+                    if (authData) {
+                        try {
+                            const parsed = JSON.parse(authData);
+                            dealerId = parsed.dealerId;
+                            console.log('✅ Found dealer ID in authData:', dealerId);
+                        } catch (e) {
+                            console.warn('⚠️ Invalid authData format');
+                        }
+                    }
+                }
+                
+                if (!dealerId) {
+                    throw new Error('No dealer ID found in any auth data');
                 }
                 
 
                 
-                const response = await fetch(`/api/dealer/${dealerId}`);
+                // Get auth token for API call
+                const authToken = localStorage.getItem('servicehub-auth-token');
+                const headers = {
+                    'Content-Type': 'application/json'
+                };
+                if (authToken) {
+                    headers['Authorization'] = `Bearer ${authToken}`;
+                }
+                
+                const response = await fetch(`/api/dealer/${dealerId}`, {
+                    method: 'GET',
+                    headers: headers
+                });
                 const data = await response.json();
 
                 const companyNameElement = document.getElementById('companyName');
@@ -281,17 +316,41 @@
                     companyNameElement.textContent = companyName;
 
                 } else {
-                    // Fallback to stored dealer name or default
-                    const fallbackName = authData ? (JSON.parse(authData).dealerName || 'Mobisat Dealer') : 'Mobisat Dealer';
+                    // Fallback to stored dealer name from servicehub-user or authData
+                    let fallbackName = 'Unknown Dealer';
+                    
+                    // Try to get name from servicehub-user
+                    const servicehubUser = localStorage.getItem('servicehub-user');
+                    if (servicehubUser) {
+                        try {
+                            const parsed = JSON.parse(servicehubUser);
+                            fallbackName = parsed.companyName || parsed.name || 'Unknown Dealer';
+                        } catch (e) {
+                            // Ignore parse error
+                        }
+                    }
+                    
+                    // If still unknown, try authData
+                    if (fallbackName === 'Unknown Dealer') {
+                        const authData = localStorage.getItem('authData');
+                        if (authData) {
+                            try {
+                                const parsed = JSON.parse(authData);
+                                fallbackName = parsed.dealerName || 'Unknown Dealer';
+                            } catch (e) {
+                                // Ignore parse error
+                            }
+                        }
+                    }
+                    
                     companyNameElement.textContent = fallbackName;
-
                 }
                 
             } catch (error) {
                 console.error('Error loading welcome message:', error);
-                // Show fallback name
+                // Show error message
                 const companyNameElement = document.getElementById('companyName');
-                companyNameElement.textContent = 'Mobisat Dealer';
+                companyNameElement.textContent = 'Error loading dealer info';
             }
         }
     </script>
@@ -330,19 +389,28 @@
 
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
-            // Check authentication first
-            if (window.authManager && !window.authManager.isAuthenticated()) {
-                window.authManager.redirectToLogin();
+            // Check if auth data exists - respect development mode
+            const isProduction = window.location.hostname !== 'localhost' && 
+                                window.location.hostname !== '127.0.0.1' && 
+                                window.location.hostname !== '0.0.0.0';
+            
+            console.log('🔧 Auth check - Production:', isProduction);
+            console.log('Storage contents:');
+            console.log('- authData:', localStorage.getItem('authData'));
+            console.log('- servicehub-auth-token:', localStorage.getItem('servicehub-auth-token'));
+            console.log('- servicehub-user:', localStorage.getItem('servicehub-user'));
+            
+            // Only check authData if we don't have servicehub tokens (backward compatibility)
+            const hasServicehubAuth = localStorage.getItem('servicehub-auth-token') && localStorage.getItem('servicehub-user');
+            const hasLegacyAuth = localStorage.getItem('authData');
+            
+            if (!hasServicehubAuth && !hasLegacyAuth) {
+                console.log('❌ No authentication found - redirecting to login');
+                window.location.href = 'pages/login.html';
                 return;
             }
             
-            // Initialize auth data if needed
-            const authData = localStorage.getItem('authData');
-            if (!authData) {
-                // Create default auth data
-                const defaultAuth = { dealerId: 1, dealerName: 'Mobisat Dealer' };
-                localStorage.setItem('authData', JSON.stringify(defaultAuth));
-            }
+            console.log('✅ Authentication found - proceeding');
 
             // Load dealer information for welcome message
             loadWelcomeMessage();

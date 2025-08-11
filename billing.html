@@ -398,7 +398,40 @@
         window.authManager.redirectToLogin();
         return;
       }
-      const dealerId = (JSON.parse(localStorage.getItem('authData')||'{}').dealerId) || 1;
+      // Get dealer ID - support both auth systems
+      let dealerId = null;
+      
+      // Try servicehub-user first (new system)
+      const servicehubUser = localStorage.getItem('servicehub-user');
+      if (servicehubUser) {
+          try {
+              const parsed = JSON.parse(servicehubUser);
+              dealerId = parsed.id;
+              console.log('✅ Found dealer ID in servicehub-user:', dealerId);
+          } catch (e) {
+              console.warn('⚠️ Invalid servicehub-user format');
+          }
+      }
+      
+      // Fallback to legacy authData
+      if (!dealerId) {
+          const authData = localStorage.getItem('authData');
+          if (authData) {
+              try {
+                  const parsed = JSON.parse(authData);
+                  dealerId = parsed.dealerId;
+                  console.log('✅ Found dealer ID in authData:', dealerId);
+              } catch (e) {
+                  console.warn('⚠️ Invalid authData format');
+              }
+          }
+      }
+      
+      if (!dealerId) {
+        console.error('❌ CRITICAL: No dealerId found. Redirecting to login.');
+        window.location.href = '/pages/login.html';
+        return;
+      }
       
       // Forza aggiornamento traduzioni i18n
       if (window.i18n) {

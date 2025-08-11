@@ -3939,7 +3939,12 @@
                     
                     if (authData) {
                         const userData = JSON.parse(authData);
-                        const dealerId = userData.dealerId || 1; // Default to dealer 1 if not specified
+                        const dealerId = userData.dealerId;
+                        
+                        if (!dealerId) {
+                            console.error('❌ No dealer ID found in auth data');
+                            return 'Unknown Company';
+                        }
                         
                         
                         const response = await secureApiCall(`/api/dealer/${dealerId}`);

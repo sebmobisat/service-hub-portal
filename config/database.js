@@ -50,11 +50,10 @@ class DatabaseManager {
     // Get dealer by email
     static async getDealerByEmail(email) {
         const query = `
-            SELECT id, "companyLoginEmail", "companyName", "firstName", "lastName", 
-                   "dealerType", active, created_at, updated_at
+            SELECT id, "companyLoginEmail", "companyName", "brand", 
+                   "dealerForceVehicleType", "createdAt", "updatedAt"
             FROM dealer 
-            WHERE LOWER("companyLoginEmail") = LOWER($1) 
-            AND active = true
+            WHERE LOWER("companyLoginEmail") = LOWER($1)
         `;
         
         try {
@@ -85,8 +84,9 @@ class DatabaseManager {
                     id: dealer.id,
                     email: dealer.companyLoginEmail,
                     companyName: dealer.companyName,
-                    name: `${dealer.firstName} ${dealer.lastName}`,
-                    dealerType: dealer.dealerType
+                    name: dealer.companyName, // Use company name as the display name
+                    dealerType: dealer.brand || 'Unknown',
+                    brand: dealer.brand
                 }
             };
         }
@@ -115,11 +115,10 @@ class DatabaseManager {
     // Get all dealers (for admin purposes)
     static async getAllDealers() {
         const query = `
-            SELECT id, companyLoginEmail, companyName, firstName, lastName, 
-                   dealerType, active, created_at, updated_at
+            SELECT id, "companyLoginEmail", "companyName", "brand", 
+                   "dealerForceVehicleType", "createdAt", "updatedAt"
             FROM dealer 
-            WHERE active = true
-            ORDER BY companyName
+            ORDER BY "companyName"
         `;
         
         try {

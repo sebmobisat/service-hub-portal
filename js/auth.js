@@ -116,6 +116,10 @@ class AuthManager {
             
             const data = await response.json();
             
+            console.log('🔍 DEBUG - API Response:', data);
+            console.log('🔍 DEBUG - Dealer object:', data.dealer);
+            console.log('🔍 DEBUG - Dealer ID:', data.dealer?.id);
+            
             if (data.success) {
                 // Store authentication data (compatible with existing system)
                 localStorage.setItem('servicehub-user', JSON.stringify(data.dealer));
@@ -129,6 +133,7 @@ class AuthManager {
                     email: data.dealer.email,
                     name: data.dealer.name
                 };
+                console.log('🔍 DEBUG - AuthData being stored:', authData);
                 localStorage.setItem('authData', JSON.stringify(authData));
                 
                 this.showMessage('Login successful! Redirecting...', 'success');
