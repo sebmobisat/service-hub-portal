@@ -393,6 +393,27 @@
     document.addEventListener('DOMContentLoaded', updateHeaderLogo);
     new MutationObserver(m=>m.forEach(mm=>{ if(mm.type==='attributes' && mm.attributeName==='class') updateHeaderLogo(); })).observe(document.documentElement,{attributes:true,attributeFilter:['class']});
 
+    // Logout function
+    async function logout() {
+        const confirmed = await window.customDialog.confirm(
+            'Conferma Logout',
+            'Sei sicuro di voler uscire?',
+            'Esci',
+            'Annulla'
+        );
+        
+        if (confirmed) {
+            // Use auth manager if available, otherwise clear localStorage
+            if (window.authManager) {
+                window.authManager.clearAuthData();
+                window.authManager.redirectToLogout();
+            } else {
+                localStorage.clear();
+                window.location.href = '/pages/login.html';
+            }
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', async function(){
       if (window.authManager && !window.authManager.isAuthenticated()) {
         window.authManager.redirectToLogin();
