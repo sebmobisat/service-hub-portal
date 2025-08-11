@@ -19,12 +19,15 @@ const { SupabasePinManager } = require('./js/supabase-pin-manager.js');
 
 // Initialize Twilio for WhatsApp (if credentials are available)
 let twilioClient = null;
-if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
+
+try {
     const twilio = require('twilio');
-    twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-    console.log('Twilio client initialized for WhatsApp');
-} else {
-    console.log('Twilio credentials not provided - WhatsApp features will be disabled');
+    
+    if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
+        twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+    }
+} catch (error) {
+    console.error('Failed to load Twilio module:', error.message);
 }
 
 const app = express();
@@ -1561,6 +1564,7 @@ ${channel === 'email' ? (language === 'it' ? 'Restituisci in formato JSON con su
                         } catch (e) { console.warn('billing whatsapp event failed', e.message); }
                     }
                 } catch (e) {
+                    console.error('WhatsApp sending failed:', e.message);
                     sendResult = { success: false, error: e.message };
                 }
             }
@@ -2098,8 +2102,6 @@ app.post('/api/auth/request-pin', async (req, res) => {
             if (deliveryMethod === 'whatsapp') {
                 // Send via WhatsApp
                 if (twilioClient) {
-                    console.log(`📱 Sending WhatsApp PIN to: ${phone}`);
-                    
                     const message = language === 'it' 
                         ? `🔐 *Service Hub Portal*\n\nIl tuo codice PIN di accesso è: *${realPin}*\n\nQuesto codice è valido per 10 minuti.\nNon condividere questo codice con nessuno.\n\nAccount: ${dealer.companyLoginEmail}\n\n---\nService Hub Portal\nPiattaforma Telematica Avanzata`
                         : `🔐 *Service Hub Portal*\n\nYour access PIN code is: *${realPin}*\n\nThis code is valid for 10 minutes.\nDo not share this code with anyone.\n\nAccount: ${dealer.companyLoginEmail}\n\n---\nService Hub Portal\nAdvanced Telematics Platform`;
@@ -2111,9 +2113,8 @@ app.post('/api/auth/request-pin', async (req, res) => {
                     });
                     
                     pinSent = true;
-                    console.log(`✅ WhatsApp PIN sent successfully. Message SID: ${whatsappMessage.sid}`);
                 } else {
-                    console.error('❌ Twilio client not available for WhatsApp');
+                    console.error('Twilio client not available for WhatsApp');
                     sendError = 'WhatsApp service not available';
                 }
             } else {
