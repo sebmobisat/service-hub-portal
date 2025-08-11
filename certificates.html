@@ -1313,8 +1313,8 @@
                 </div>
 
                 <div class="flex justify-end gap-2 mt-6">
-                    <button onclick="previewManualMessage()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm" data-i18n="manual_contact.preview_button">Anteprima</button>
-                    <button onclick="sendManualMessage()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm" data-i18n="manual_contact.send_button">Invia</button>
+                    <button id="sendToTestClientsBtn" onclick="sendToTestClients()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm hidden" data-i18n="manual_contact.send_to_test_clients_button">Invia ai Clienti Test</button>
+                    <button id="sendToSelectedBtn" onclick="sendToSelected()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm" data-i18n="manual_contact.send_to_selected">Invia ai Selezionati</button>
                 </div>
             </div>
         </div>
@@ -1373,15 +1373,12 @@
 
         // Get current dealer ID from authentication
         function getCurrentDealerId() {
-            console.log('🔍 Getting current dealer ID...');
-            
             // Check for servicehub authentication first (new system)
             const servicehubUser = localStorage.getItem('servicehub-user');
             if (servicehubUser) {
                 try {
                     const parsed = JSON.parse(servicehubUser);
                     if (parsed.id) {
-                        console.log('✅ Found dealer ID in servicehub-user:', parsed.id);
                         return parsed.id;
                     }
                 } catch (e) {
@@ -1395,7 +1392,6 @@
                 try {
                     const parsed = JSON.parse(authData);
                     if (parsed.dealerId) {
-                        console.log('✅ Found dealer ID in authData:', parsed.dealerId);
                         return parsed.dealerId;
                     }
                 } catch (e) {
@@ -2257,6 +2253,9 @@
                 const counter = document.getElementById('selectedCount');
                 if (counter) counter.textContent = count.toString();
             }
+            
+            // Update button counter in manual communication dialog
+            updateSelectedCountInButton();
             // Update tri-state for header checkbox
             const master = document.getElementById('selectAllCheckbox');
             if (master) {
@@ -3497,20 +3496,14 @@
             
             setupEventListeners();
              
-             // Check authentication - support both new and legacy systems
-             console.log('🔧 Certificates page: Checking authentication');
-             
-             // Check for servicehub authentication (new system)
-             const hasServicehubAuth = localStorage.getItem('servicehub-auth-token') && localStorage.getItem('servicehub-user');
-             const hasLegacyAuth = localStorage.getItem('authData');
-             
-             if (!hasServicehubAuth && !hasLegacyAuth) {
-                 console.log('❌ No authentication found - redirecting to login');
-                 window.location.href = '/pages/login.html';
-                 return;
-             }
-             
-             console.log('✅ Authentication found - proceeding with certificates page');
+                         // Check authentication - support both new and legacy systems
+            const hasServicehubAuth = localStorage.getItem('servicehub-auth-token') && localStorage.getItem('servicehub-user');
+            const hasLegacyAuth = localStorage.getItem('authData');
+            
+            if (!hasServicehubAuth && !hasLegacyAuth) {
+                window.location.href = '/pages/login.html';
+                return;
+            }
 
              // Set up logo error handling
              const logo = document.getElementById('sidebarLogo');
@@ -5643,16 +5636,38 @@
                 }
             } catch {}
 
-            // Initialize drag & drop tags
+            // Initialize drag & drop tags (force refresh for current language)
             initDragDropTags();
             
             // Initialize channel toggle functionality
             initChannelToggleNoAI();
             
+            // Initialize test clients checkbox listener
+            const testClientsCheckbox = document.getElementById('sendToTestClientsNoAI');
+            if (testClientsCheckbox) {
+                testClientsCheckbox.addEventListener('change', toggleTestClientsButton);
+                toggleTestClientsButton(); // Set initial state
+            }
+            
+            // Update selected count in button
+            updateSelectedCountInButton();
+            
             // Update translations for dynamically created elements
             if (window.i18n && typeof window.i18n.updateAllTranslations === 'function') {
                 window.i18n.updateAllTranslations();
             }
+            
+            // Force update placeholder for current language
+            const messageInput = document.getElementById('manualMessageInput');
+            if (messageInput && window.i18n) {
+                const placeholderText = window.i18n.t('manual_contact.message_placeholder');
+                messageInput.placeholder = placeholderText;
+            }
+            
+            // Re-update button counter after translations (fix for counter disappearing)
+            setTimeout(() => {
+                updateSelectedCountInButton();
+            }, 100);
         }
 
         // Close the Contact Without AI Dialog
@@ -5666,16 +5681,20 @@
             const container = document.getElementById('draggableTagsContainer');
             if (!container) return;
 
+            // Use language-specific tags
+            const currentLanguage = window.i18n?.currentLanguage || 'it';
+            const isEnglish = currentLanguage === 'en';
+            
             const tags = [
-                { key: 'NOME', translationKey: 'tags.name', type: 'client', icon: '👤' },
-                { key: 'COGNOME', translationKey: 'tags.surname', type: 'client', icon: '👤' },
+                { key: isEnglish ? 'NAME' : 'NOME', translationKey: 'tags.name', type: 'client', icon: '👤' },
+                { key: isEnglish ? 'SURNAME' : 'COGNOME', translationKey: 'tags.surname', type: 'client', icon: '👤' },
                 { key: 'COMPANY_NAME', translationKey: 'tags.company_name', type: 'client', icon: '🏢' },
                 { key: 'EMAIL', translationKey: 'tags.email', type: 'contact', icon: '📧' },
-                { key: 'TELEFONO', translationKey: 'tags.phone', type: 'contact', icon: '📱' },
-                { key: 'VEICOLO', translationKey: 'tags.vehicle', type: 'vehicle', icon: '🚗' },
-                { key: 'TARGA', translationKey: 'tags.plate', type: 'vehicle', icon: '🏷️' },
-                { key: 'ANNO', translationKey: 'tags.year', type: 'technical', icon: '📅' },
-                { key: 'CARBURANTE', translationKey: 'tags.fuel', type: 'technical', icon: '⛽' },
+                { key: isEnglish ? 'PHONE' : 'TELEFONO', translationKey: 'tags.phone', type: 'contact', icon: '📱' },
+                { key: isEnglish ? 'VEHICLE' : 'VEICOLO', translationKey: 'tags.vehicle', type: 'vehicle', icon: '🚗' },
+                { key: isEnglish ? 'PLATE' : 'TARGA', translationKey: 'tags.plate', type: 'vehicle', icon: '🏷️' },
+                { key: isEnglish ? 'YEAR' : 'ANNO', translationKey: 'tags.year', type: 'technical', icon: '📅' },
+                { key: isEnglish ? 'FUEL' : 'CARBURANTE', translationKey: 'tags.fuel', type: 'technical', icon: '⛽' },
                 { key: 'KM', translationKey: 'tags.km', type: 'technical', icon: '📏' },
                 { key: 'VIN', translationKey: 'tags.vin', type: 'technical', icon: '🔢' },
                 { key: 'SERIAL', translationKey: 'tags.serial', type: 'technical', icon: '🏷️' }
@@ -5833,16 +5852,28 @@
                 return;
             }
 
+            // Use language-specific tag keys
+            const currentLanguage = window.i18n?.currentLanguage || 'it';
+            const isEnglish = currentLanguage === 'en';
+            
             let sampleData = {
+                // Italian and English tags
                 'NOME': window.i18n ? window.i18n.t('manual_contact.sample.name') : 'Mario',
+                'NAME': window.i18n ? window.i18n.t('manual_contact.sample.name') : 'John',
                 'COGNOME': window.i18n ? window.i18n.t('manual_contact.sample.surname') : 'Rossi',
-                'COMPANY_NAME': window.i18n ? window.i18n.t('manual_contact.sample.company') : 'Azienda Esempio S.r.l.',
-                'EMAIL': window.i18n ? window.i18n.t('manual_contact.sample.email') : 'mario.rossi@email.com',
+                'SURNAME': window.i18n ? window.i18n.t('manual_contact.sample.surname') : 'Smith',
+                'COMPANY_NAME': window.i18n ? window.i18n.t('manual_contact.sample.company') : (isEnglish ? 'Example Company Ltd.' : 'Azienda Esempio S.r.l.'),
+                'EMAIL': window.i18n ? window.i18n.t('manual_contact.sample.email') : (isEnglish ? 'john.smith@email.com' : 'mario.rossi@email.com'),
                 'TELEFONO': window.i18n ? window.i18n.t('manual_contact.sample.phone') : '+39 123 456 7890',
+                'PHONE': window.i18n ? window.i18n.t('manual_contact.sample.phone') : '+1 234 567 8900',
                 'VEICOLO': window.i18n ? window.i18n.t('manual_contact.sample.vehicle') : 'Fiat Panda',
+                'VEHICLE': window.i18n ? window.i18n.t('manual_contact.sample.vehicle') : 'Ford Focus',
                 'TARGA': window.i18n ? window.i18n.t('manual_contact.sample.plate') : 'AB123CD',
+                'PLATE': window.i18n ? window.i18n.t('manual_contact.sample.plate') : 'ABC123',
                 'ANNO': window.i18n ? window.i18n.t('manual_contact.sample.year') : '2020',
+                'YEAR': window.i18n ? window.i18n.t('manual_contact.sample.year') : '2020',
                 'CARBURANTE': window.i18n ? window.i18n.t('manual_contact.sample.fuel') : 'Benzina',
+                'FUEL': window.i18n ? window.i18n.t('manual_contact.sample.fuel') : 'Gasoline',
                 'KM': window.i18n ? window.i18n.t('manual_contact.sample.km') : '45.000',
                 'VIN': window.i18n ? window.i18n.t('manual_contact.sample.vin') : 'WVWZZZ1JZ3W123456',
                 'SERIAL': window.i18n ? window.i18n.t('manual_contact.sample.serial') : 'SN123456789',
@@ -5889,116 +5920,295 @@
             preview.innerHTML = `<div class="text-sm">${previewText.replace(/\n/g, '<br>')}</div>`;
         }
 
-        // Preview manual message
-        async function previewManualMessage() {
-            await updateManualMessagePreview();
+        // Toggle test clients button visibility
+        function toggleTestClientsButton() {
+            const checkbox = document.getElementById('sendToTestClientsNoAI');
+            const button = document.getElementById('sendToTestClientsBtn');
             
-            // Scroll to preview
-            const preview = document.getElementById('manualMessagePreview');
-            if (preview) {
-                preview.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (checkbox && button) {
+                if (checkbox.checked) {
+                    button.classList.remove('hidden');
+                } else {
+                    button.classList.add('hidden');
+                }
             }
         }
 
-        // Send manual message
-        async function sendManualMessage() {
+        // Update selected count in button text
+        function updateSelectedCountInButton() {
+            const selectedCerts = getSelectedCertificates();
+            const button = document.getElementById('sendToSelectedBtn');
+            
+            if (button) {
+                const baseText = window.i18n ? window.i18n.t('manual_contact.send_to_selected') : 'Invia ai Selezionati';
+                const count = selectedCerts.length;
+                
+                if (count > 0) {
+                    button.textContent = `${baseText} (${count})`;
+                    // Store the counter in a data attribute to prevent translation overwrites
+                    button.setAttribute('data-has-counter', 'true');
+                    button.setAttribute('data-counter-value', count);
+                } else {
+                    button.textContent = baseText;
+                    button.removeAttribute('data-has-counter');
+                    button.removeAttribute('data-counter-value');
+                }
+            }
+        }
+
+        // Custom dialog functions for manual communication
+        function showManualContactError(message) {
+            const title = window.i18n ? window.i18n.t('manual_contact.dialog.error_title') : 'Errore';
+            return window.customDialog.alert(title, message, 'OK');
+        }
+
+        function showManualContactSuccess(message) {
+            const title = window.i18n ? window.i18n.t('manual_contact.dialog.success_title') : 'Successo';
+            return window.customDialog.alert(title, message, 'OK');
+        }
+
+        function showManualContactValidation(message) {
+            const title = window.i18n ? window.i18n.t('manual_contact.dialog.validation_title') : 'Attenzione';
+            return window.customDialog.alert(title, message, 'OK');
+        }
+
+        // Send to test clients
+        async function sendToTestClients() {
             const channel = document.querySelector('#channelToggleGroupNoAI .active-chip')?.dataset.value || 'email';
             const message = document.getElementById('manualMessageInput').value.trim();
             const subject = document.getElementById('emailSubjectInputNoAI').value.trim();
-            const sendToTest = document.getElementById('sendToTestClientsNoAI').checked;
             
             // Validation
             if (!message) {
-                alert(window.i18n ? window.i18n.t('manual_contact.error.enter_message') : 'Inserisci un messaggio');
+                await showManualContactValidation(window.i18n ? window.i18n.t('manual_contact.error.enter_message') : 'Inserisci un messaggio');
                 return;
             }
             
             if (channel === 'email' && !subject) {
-                alert(window.i18n ? window.i18n.t('manual_contact.error.email_subject_required') : 'L\'oggetto email è obbligatorio');
+                await showManualContactValidation(window.i18n ? window.i18n.t('manual_contact.error.email_subject_required') : 'L\'oggetto email è obbligatorio');
                 document.getElementById('emailSubjectInputNoAI').focus();
                 return;
             }
 
-            const confirmed = confirm(window.i18n ? window.i18n.t('manual_contact.confirm_send', { channel: channel.toUpperCase() }) : `Sei sicuro di voler inviare questo messaggio via ${channel.toUpperCase()}?`);
+            try {
+                const dealerId = getCurrentDealerId();
+                
+                // Get test clients count for confirmation
+                const testClientsResponse = await fetch(`/api/communications/test-clients/${dealerId}`);
+                const testClientsData = await testClientsResponse.json();
+                const testClients = testClientsData.data || [];
+                
+                if (testClients.length === 0) {
+                    await showManualContactValidation('Nessun cliente test trovato per questo dealer.');
+                    return;
+                }
+                
+                // Calculate cost
+                const costPerMessage = channel === 'email' ? 5 : 10; // in cents
+                const totalCost = testClients.length * costPerMessage;
+                const costEuro = (totalCost / 100).toLocaleString('it-IT', {style: 'currency', currency: 'EUR'});
+                
+                // Show confirmation dialog
+                const confirmMessage = channel === 'email' 
+                    ? window.i18n ? window.i18n.t('manual_contact.confirm_send_email', { count: testClients.length, cost: costEuro }) : `Stai per inviare ${testClients.length} email al costo di ${costEuro}. Sei sicuro di voler procedere?`
+                    : window.i18n ? window.i18n.t('manual_contact.confirm_send_whatsapp', { count: testClients.length, cost: costEuro }) : `Stai per inviare ${testClients.length} WhatsApp al costo di ${costEuro}. Sei sicuro di voler procedere?`;
+                
+                const confirmed = await window.customDialog.confirm(
+                    'Conferma Invio',
+                    confirmMessage,
+                    'Invia',
+                    'Annulla'
+                );
+                
+                if (!confirmed) return;
+
+                await sendManualCommunication(true); // true = send to test clients
+                
+            } catch (error) {
+                console.error('Error sending to test clients:', error);
+                await showManualContactError(window.i18n ? window.i18n.t('manual_contact.error_sending', { error: error.message }) : `Errore nell'invio: ${error.message}`);
+            }
+        }
+
+        // Send to selected certificates
+        async function sendToSelected() {
+            const channel = document.querySelector('#channelToggleGroupNoAI .active-chip')?.dataset.value || 'email';
+            const message = document.getElementById('manualMessageInput').value.trim();
+            const subject = document.getElementById('emailSubjectInputNoAI').value.trim();
+            
+            // Validation
+            if (!message) {
+                await showManualContactValidation(window.i18n ? window.i18n.t('manual_contact.error.enter_message') : 'Inserisci un messaggio');
+                return;
+            }
+            
+            if (channel === 'email' && !subject) {
+                await showManualContactValidation(window.i18n ? window.i18n.t('manual_contact.error.email_subject_required') : 'L\'oggetto email è obbligatorio');
+                document.getElementById('emailSubjectInputNoAI').focus();
+                return;
+            }
+
+            // Get selected certificates count
+            const selectedCerts = getSelectedCertificates();
+            if (selectedCerts.length === 0) {
+                await showManualContactValidation('Seleziona almeno un certificato per inviare la comunicazione.');
+                return;
+            }
+
+            // Calculate cost
+            const costPerMessage = channel === 'email' ? 5 : 10; // in cents
+            const totalCost = selectedCerts.length * costPerMessage;
+            const costEuro = (totalCost / 100).toLocaleString('it-IT', {style: 'currency', currency: 'EUR'});
+            
+            // Show confirmation dialog
+            const confirmMessage = channel === 'email' 
+                ? window.i18n ? window.i18n.t('manual_contact.confirm_send_email', { count: selectedCerts.length, cost: costEuro }) : `Stai per inviare ${selectedCerts.length} email al costo di ${costEuro}. Sei sicuro di voler procedere?`
+                : window.i18n ? window.i18n.t('manual_contact.confirm_send_whatsapp', { count: selectedCerts.length, cost: costEuro }) : `Stai per inviare ${selectedCerts.length} WhatsApp al costo di ${costEuro}. Sei sicuro di voler procedere?`;
+            
+            const confirmed = await window.customDialog.confirm(
+                'Conferma Invio',
+                confirmMessage,
+                'Invia',
+                'Annulla'
+            );
+            
             if (!confirmed) return;
 
             try {
-                const dealerId = getCurrentDealerId();
-                const selectedCerts = sendToTest ? [] : getSelectedCertificates();
-                
-                // Get dealer signature
-                let dealerSignatureText = '';
-                const sigSelect = document.getElementById('dealerSignatureSelectNoAI');
-                if (sigSelect && sigSelect.value !== 'none') {
-                    try {
-                        const sig = JSON.parse(decodeURIComponent(sigSelect.value));
-                        dealerSignatureText = `${sig.company_name||''}${sig.address1? `\n${sig.address1}`:''}${sig.postcode||sig.city? `\n${[sig.postcode||'', sig.city||''].filter(Boolean).join(' ')}`:''}${sig.phone? `\nTel: ${sig.phone}`:''}${sig.email? `\nEmail: ${sig.email}`:''}`.trim();
-                    } catch {}
-                }
-
-                // Build recipients list
-                let recipients = [];
-                if (sendToTest) {
-                    const testClients = await fetch(`/api/communications/test-clients/${dealerId}`).then(r=>r.json()).then(j=> j.data||[]);
-                    recipients = testClients.map(c => ({
-                        name: [c.first_name, c.last_name].filter(Boolean).join(' ').trim(),
-                        firstName: c.first_name || '',
-                        lastName: c.last_name || '',
-                        companyName: c.company || '',
-                        email: c.email?.toLowerCase() || '',
-                        phone: c.phone || '',
-                        vehicle: [c.vehicle_brand, c.vehicle_model].filter(Boolean).join(' '),
-                        plate: c.plate || '',
-                        year: c.year || '',
-                        fuel: c.fuel_type || '',
-                        km: c.odometer || '',
-                        vin: c.vin || '',
-                        serial: c.serial || ''
-                    }));
-                } else {
-                    recipients = selectedCerts.map(cert => ({
-                        name: `${cert.client?.firstName || ''} ${cert.client?.lastName || ''}`.trim(),
-                        firstName: cert.client?.firstName || '',
-                        lastName: cert.client?.lastName || '',
-                        companyName: cert.client?.company || '',
-                        email: cert.client?.email?.toLowerCase() || '',
-                        phone: cert.client?.phone || '',
-                        vehicle: `${cert.brand || ''} ${cert.model || ''}`.trim(),
-                        plate: cert.license_plate || '',
-                        year: cert.year || '',
-                        fuel: cert.fuel_type || '',
-                        km: cert.odometer || '',
-                        vin: cert.vin || '',
-                        serial: cert.serial || ''
-                    }));
-                }
-
-                // Send manual communication
-                const response = await fetch('/api/communications/send-manual', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        dealerId,
-                        channel,
-                        subject: channel === 'email' ? subject : undefined,
-                        message,
-                        signature: dealerSignatureText,
-                        recipients
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(await response.text());
-                }
-
-                const result = await response.json();
-                alert(window.i18n ? window.i18n.t('manual_contact.success_sent', { count: result.sent }) : `Messaggio inviato con successo a ${result.sent} destinatari!`);
-                closeBulkContactWithoutAIDialog();
-
+                await sendManualCommunication(false); // false = send to selected
             } catch (error) {
-                console.error('Error sending manual message:', error);
-                alert(window.i18n ? window.i18n.t('manual_contact.error_sending', { error: error.message }) : `Errore nell'invio: ${error.message}`);
+                console.error('Error sending to selected:', error);
+                await showManualContactError(window.i18n ? window.i18n.t('manual_contact.error_sending', { error: error.message }) : `Errore nell'invio: ${error.message}`);
             }
+        }
+
+        // Shared function to send manual communication
+        async function sendManualCommunication(sendToTest = false) {
+            const channel = document.querySelector('#channelToggleGroupNoAI .active-chip')?.dataset.value || 'email';
+            const message = document.getElementById('manualMessageInput').value.trim();
+            const subject = document.getElementById('emailSubjectInputNoAI').value.trim();
+            const dealerId = getCurrentDealerId();
+            
+            // Get dealer signature
+            let dealerSignatureText = '';
+            const sigSelect = document.getElementById('dealerSignatureSelectNoAI');
+            if (sigSelect && sigSelect.value !== 'none') {
+                try {
+                    const sig = JSON.parse(decodeURIComponent(sigSelect.value));
+                    dealerSignatureText = `${sig.company_name||''}${sig.address1? `\n${sig.address1}`:''}${sig.postcode||sig.city? `\n${[sig.postcode||'', sig.city||''].filter(Boolean).join(' ')}`:''}${sig.phone? `\nTel: ${sig.phone}`:''}${sig.email? `\nEmail: ${sig.email}`:''}`.trim();
+                } catch {}
+            }
+
+            // Build recipients list
+            let recipients = [];
+            if (sendToTest) {
+                const testClients = await fetch(`/api/communications/test-clients/${dealerId}`).then(r=>r.json()).then(j=> j.data||[]);
+                recipients = testClients.map(c => ({
+                    name: [c.first_name, c.last_name].filter(Boolean).join(' ').trim(),
+                    firstName: c.first_name || '',
+                    lastName: c.last_name || '',
+                    companyName: c.company || '',
+                    email: c.email?.toLowerCase() || '',
+                    phone: c.phone || '',
+                    vehicle: [c.vehicle_brand, c.vehicle_model].filter(Boolean).join(' '),
+                    plate: c.plate || '',
+                    year: c.year || '',
+                    fuel: c.fuel_type || '',
+                    km: c.odometer || '',
+                    vin: c.vin || '',
+                    serial: c.serial || ''
+                }));
+            } else {
+                const selectedCerts = getSelectedCertificates();
+                recipients = selectedCerts.map(cert => ({
+                    name: `${cert.client?.firstName || ''} ${cert.client?.lastName || ''}`.trim(),
+                    firstName: cert.client?.firstName || '',
+                    lastName: cert.client?.lastName || '',
+                    companyName: cert.client?.company || '',
+                    email: cert.client?.email?.toLowerCase() || '',
+                    phone: cert.client?.phone || '',
+                    vehicle: `${cert.brand || ''} ${cert.model || ''}`.trim(),
+                    plate: cert.license_plate || '',
+                    year: cert.year || '',
+                    fuel: cert.fuel_type || '',
+                    km: cert.odometer || '',
+                    vin: cert.vin || '',
+                    serial: cert.serial || ''
+                }));
+            }
+
+            // Send manual communication
+            const currentLanguage = window.i18n?.currentLanguage || 'it';
+            const response = await fetch('/api/communications/send-manual', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    dealerId,
+                    channel,
+                    subject: channel === 'email' ? subject : undefined,
+                    message,
+                    signature: dealerSignatureText,
+                    recipients,
+                    language: currentLanguage
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
+
+            const result = await response.json();
+            
+            // Update credit display dynamically
+            if (result.newBalance !== undefined) {
+                const balanceElement = document.getElementById('dealerBalanceTextNoAI');
+                
+                if (balanceElement) {
+                    const currentLanguage = window.i18n?.currentLanguage || 'it';
+                    const locale = currentLanguage === 'it' ? 'it-IT' : 'en-US';
+                    const newBalanceEuro = (result.newBalance / 100).toLocaleString(locale, {style: 'currency', currency: 'EUR'});
+                    
+                    balanceElement.textContent = newBalanceEuro;
+                } else {
+                    console.error('💰 Balance element not found!');
+                }
+            } else {
+                console.warn('💰 No newBalance in server response - fetching manually');
+                // Fallback: fetch balance manually
+                try {
+                    const dealerId = getCurrentDealerId();
+                    const balanceResponse = await fetch(`/api/billing/balance/${dealerId}`);
+                    const balanceData = await balanceResponse.json();
+                    
+                    if (balanceData.balance_cents !== undefined) {
+                        const balanceElement = document.getElementById('dealerBalanceTextNoAI');
+                        if (balanceElement) {
+                            const currentLanguage = window.i18n?.currentLanguage || 'it';
+                            const locale = currentLanguage === 'it' ? 'it-IT' : 'en-US';
+                            const newBalanceEuro = (balanceData.balance_cents / 100).toLocaleString(locale, {style: 'currency', currency: 'EUR'});
+                            balanceElement.textContent = newBalanceEuro;
+                            console.log('💰 Balance updated manually:', newBalanceEuro);
+                        }
+                    }
+                } catch (e) {
+                    console.warn('💰 Failed to fetch balance manually:', e);
+                }
+            }
+            
+            // Show success message with updated credit info
+            const successMessage = window.i18n ? window.i18n.t('manual_contact.dialog.message_sent_success', { count: result.sent }) : `Messaggio inviato con successo a ${result.sent} destinatari!`;
+            let fullMessage = successMessage;
+            
+            if (result.newBalance !== undefined) {
+                const newBalanceEuro = (result.newBalance / 100).toLocaleString('it-IT', {style: 'currency', currency: 'EUR'});
+                const creditMessage = window.i18n ? window.i18n.t('manual_contact.dialog.credit_updated', { credit: newBalanceEuro }) : `Il tuo credito è stato aggiornato a ${newBalanceEuro}`;
+                fullMessage += `\n\n${creditMessage}`;
+            }
+            
+            await showManualContactSuccess(fullMessage);
+            
+            // DON'T close the dialog - keep it open for more communications
+            // closeBulkContactWithoutAIDialog();
         }
 
         // Show email subject field in AI dialog when email is selected

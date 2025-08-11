@@ -268,7 +268,7 @@
                     try {
                         const parsed = JSON.parse(servicehubUser);
                         dealerId = parsed.id;
-                        console.log('✅ Found dealer ID in servicehub-user:', dealerId);
+
                     } catch (e) {
                         console.warn('⚠️ Invalid servicehub-user format');
                     }
@@ -281,7 +281,7 @@
                         try {
                             const parsed = JSON.parse(authData);
                             dealerId = parsed.dealerId;
-                            console.log('✅ Found dealer ID in authData:', dealerId);
+
                         } catch (e) {
                             console.warn('⚠️ Invalid authData format');
                         }
@@ -394,7 +394,7 @@
                                 window.location.hostname !== '127.0.0.1' && 
                                 window.location.hostname !== '0.0.0.0';
             
-            console.log('🔧 Auth check - Production:', isProduction);
+
             console.log('Storage contents:');
             console.log('- authData:', localStorage.getItem('authData'));
             console.log('- servicehub-auth-token:', localStorage.getItem('servicehub-auth-token'));
@@ -410,7 +410,7 @@
                 return;
             }
             
-            console.log('✅ Authentication found - proceeding');
+
 
             // Load dealer information for welcome message
             loadWelcomeMessage();

@@ -1625,7 +1625,8 @@ ${channel === 'email' ? (language === 'it' ? 'Restituisci in formato JSON con su
 // Manual communication endpoint (without AI)
 app.post('/api/communications/send-manual', express.json(), async (req, res) => {
     try {
-        const { dealerId, channel, subject, message, signature, recipients } = req.body;
+        const { dealerId, channel, subject, message, signature, recipients, language = 'it' } = req.body;
+        console.log('🌐 Server received language:', language);
 
         if (!Array.isArray(recipients) || recipients.length === 0) {
             return res.status(400).json({ success: false, error: 'no_recipients' });
@@ -1648,21 +1649,33 @@ app.post('/api/communications/send-manual', express.json(), async (req, res) => 
 
         for (const recipient of recipients) {
             try {
-                // Replace tags in message
+                // Replace tags in message (support both languages)
                 const tagReplacements = {
+                    // Italian tags
                     '{NOME}': recipient.firstName || recipient.name || '',
                     '{COGNOME}': recipient.lastName || '',
-                    '{COMPANY_NAME}': recipient.companyName || '',
-                    '{EMAIL}': recipient.email || '',
                     '{TELEFONO}': recipient.phone || '',
                     '{VEICOLO}': recipient.vehicle || '',
                     '{TARGA}': recipient.plate || '',
                     '{ANNO}': recipient.year || '',
                     '{CARBURANTE}': recipient.fuel || '',
+                    // English tags
+                    '{NAME}': recipient.firstName || recipient.name || '',
+                    '{SURNAME}': recipient.lastName || '',
+                    '{PHONE}': recipient.phone || '',
+                    '{VEHICLE}': recipient.vehicle || '',
+                    '{PLATE}': recipient.plate || '',
+                    '{YEAR}': recipient.year || '',
+                    '{FUEL}': recipient.fuel || '',
+                    // Common tags
+                    '{COMPANY_NAME}': recipient.companyName || '',
+                    '{EMAIL}': recipient.email || '',
                     '{KM}': recipient.km || '',
                     '{VIN}': recipient.vin || '',
                     '{SERIAL}': recipient.serial || '',
-                    '{CTA_TAGLIANDO}': 'Prenota il tuo tagliando su: https://mobisat.com/tagliando'
+                    '{CTA_TAGLIANDO}': language === 'it' ? 
+                        'Prenota il tuo tagliando su: https://mobisat.com/tagliando' : 
+                        'Book your service at: https://mobisat.com/service'
                 };
 
                 let personalizedMessage = message;
@@ -1765,11 +1778,35 @@ app.post('/api/communications/send-manual', express.json(), async (req, res) => 
             }
         }
 
+        // Get updated balance
+        let newBalance = null;
+        try {
+            console.log('💰 Fetching balance for dealer:', dealerId);
+            const { data: balanceData, error } = await supabaseAdmin
+                .from('dealer_billing_accounts')
+                .select('balance_cents')
+                .eq('dealer_id', dealerId)
+                .order('updated_at', { ascending: false })
+                .limit(1);
+            
+            console.log('💰 Balance query result:', { data: balanceData, error });
+            
+            if (error) {
+                console.error('💰 Balance query error:', error);
+            }
+            
+            newBalance = balanceData?.[0]?.balance_cents ?? 0;
+            console.log('💰 Final balance for dealer', dealerId, ':', newBalance, 'cents');
+        } catch (e) {
+            console.error('💰 Failed to get updated balance:', e);
+        }
+
         return res.json({
             success: true,
             sent: sentCount,
             total: recipients.length,
-            results
+            results,
+            newBalance
         });
 
     } catch (error) {

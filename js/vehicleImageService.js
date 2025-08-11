@@ -412,7 +412,6 @@ class VehicleImageService {
 
         const results = await Promise.allSettled(preloadPromises);
         const loaded = results.filter(r => r.status === 'fulfilled' && r.value).length;
-        console.log(`Preloaded ${loaded}/${fallbackUrls.length} fallback images`);
     }
 
     /**

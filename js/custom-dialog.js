@@ -204,6 +204,57 @@ class CustomDialog {
             dialog.onclick = handleOutsideClick;
         });
     }
+
+    /**
+     * Show alert dialog (like alert() but with custom styling)
+     * @param {string} title - Dialog title
+     * @param {string} message - Dialog message
+     * @param {string} buttonText - Button text
+     * @returns {Promise<void>} - Resolves when user clicks button
+     */
+    alert(title, message, buttonText = 'OK') {
+        // Ensure dialog is ready
+        if (!document.getElementById(this.dialogId)) {
+            console.warn('Dialog not ready, creating now...');
+            this.createDialogElement();
+        }
+
+        return new Promise((resolve) => {
+            const titleElement = document.getElementById('dialog-title');
+            const messageElement = document.getElementById('dialog-message');
+            const confirmBtn = document.getElementById('dialog-confirm');
+            const cancelBtn = document.getElementById('dialog-cancel');
+
+            // Update content
+            titleElement.textContent = title;
+            messageElement.textContent = message;
+            confirmBtn.textContent = buttonText;
+
+            // Hide cancel button for alert
+            cancelBtn.style.display = 'none';
+
+            // Set up callback
+            this.onConfirm = () => {
+                // Show cancel button again for future dialogs
+                cancelBtn.style.display = 'block';
+                resolve();
+            };
+
+            // Show dialog
+            this.show();
+
+            // Handle click outside (close dialog)
+            const dialog = document.getElementById(this.dialogId);
+            const handleOutsideClick = (e) => {
+                if (e.target === dialog) {
+                    this.hide();
+                    cancelBtn.style.display = 'block';
+                    resolve();
+                }
+            };
+            dialog.onclick = handleOutsideClick;
+        });
+    }
 }
 
 // Create global dialog instance

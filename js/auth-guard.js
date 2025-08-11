@@ -74,13 +74,11 @@ class AuthGuard {
     protectPage() {
         // Skip protection in development
         if (!this.isProduction) {
-            console.log('Development mode: Authentication bypassed');
             return true;
         }
 
         // Allow public pages
         if (this.isPublicPage()) {
-            console.log('Public page: No authentication required');
             return true;
         }
 
@@ -145,8 +143,6 @@ class AuthGuard {
      * Initialize auth guard
      */
     init() {
-        console.log(`Auth Guard initialized - Production: ${this.isProduction}`);
-        
         // Protect page on load
         this.protectPage();
         

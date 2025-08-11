@@ -30,7 +30,6 @@ class I18nManager {
      */
     getStoredLanguage() {
         const stored = localStorage.getItem(this.storageKey);
-        console.log('Stored language:', stored);
         return stored || 'en';
     }
 
@@ -475,8 +474,16 @@ class I18nManager {
                 'manual_contact.available_credit': 'Credito Disponibile',
                 'manual_contact.cost_email': '📧 Email: €0,05 per invio',
                 'manual_contact.cost_whatsapp': '📱 WhatsApp: €0,10 per invio',
-                'manual_contact.preview_button': 'Anteprima',
-                'manual_contact.send_button': 'Invia',
+                'manual_contact.send_to_selected': 'Invia ai Selezionati',
+                'manual_contact.send_to_test_clients_button': 'Invia ai Clienti Test',
+                'manual_contact.confirm_send_email': 'Stai per inviare {count} email al costo di {cost}. Sei sicuro di voler procedere?',
+                'manual_contact.confirm_send_whatsapp': 'Stai per inviare {count} WhatsApp al costo di {cost}. Sei sicuro di voler procedere?',
+                'manual_contact.updated_credit': 'Credito aggiornato: {credit}',
+                'manual_contact.dialog.error_title': 'Errore',
+                'manual_contact.dialog.success_title': 'Successo',
+                'manual_contact.dialog.validation_title': 'Attenzione',
+                'manual_contact.dialog.message_sent_success': 'Messaggio inviato con successo a {count} destinatari!',
+                'manual_contact.dialog.credit_updated': 'Il tuo credito è stato aggiornato a {credit}',
                 
                 // Manual Contact Error Messages
                 'manual_contact.error.enter_message': 'Inserisci un messaggio',
@@ -951,8 +958,16 @@ class I18nManager {
                 'manual_contact.available_credit': 'Available Credit',
                 'manual_contact.cost_email': '📧 Email: €0.05 per send',
                 'manual_contact.cost_whatsapp': '📱 WhatsApp: €0.10 per send',
-                'manual_contact.preview_button': 'Preview',
-                'manual_contact.send_button': 'Send',
+                'manual_contact.send_to_selected': 'Send to Selected',
+                'manual_contact.send_to_test_clients_button': 'Send to Test Clients',
+                'manual_contact.confirm_send_email': 'You are about to send {count} emails at a cost of {cost}. Are you sure you want to proceed?',
+                'manual_contact.confirm_send_whatsapp': 'You are about to send {count} WhatsApp messages at a cost of {cost}. Are you sure you want to proceed?',
+                'manual_contact.updated_credit': 'Updated credit: {credit}',
+                'manual_contact.dialog.error_title': 'Error',
+                'manual_contact.dialog.success_title': 'Success',
+                'manual_contact.dialog.validation_title': 'Warning',
+                'manual_contact.dialog.message_sent_success': 'Message sent successfully to {count} recipients!',
+                'manual_contact.dialog.credit_updated': 'Your credit has been updated to {credit}',
                 
                 // Manual Contact Error Messages
                 'manual_contact.error.enter_message': 'Please enter a message',
@@ -1251,23 +1266,18 @@ class I18nManager {
      * Initialize i18n system
      */
     init() {
-        console.log('🌐 I18nManager initializing with language:', this.currentLanguage);
-        
         // Apply current language immediately
         document.documentElement.lang = this.currentLanguage;
         
         // Wait for DOM to be ready, then update UI
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', () => {
-                console.log('🌐 DOM loaded, updating i18n...');
                 this.updatePageMeta();
                 this.updateAllTranslations();
                 this.updateLanguageButtons();
                 this.setupLanguageButtons();
-                console.log('🌐 I18n initialization complete');
             });
         } else {
-            console.log('🌐 DOM already ready, updating i18n immediately...');
             this.updatePageMeta();
             this.updateAllTranslations();
             this.updateLanguageButtons();
