@@ -1184,7 +1184,7 @@
                                 <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover-border-emerald-500" data-field="km">Km</button>
                                 <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover-border-emerald-500" data-field="vin">VIN</button>
                                 <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover-border-emerald-500" data-field="serial">Serial</button>
-                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="ctaTagliando">CTA Tagliando</button>
+
                             </div>
                             <!-- Firma dealer selector -->
                             <div class="space-y-2 bg-gray-800 border border-gray-700 rounded p-3 mt-2">
@@ -1230,7 +1230,7 @@
         <div id="bulkContactWithoutAIDialog" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
             <div class="bg-gray-900 border border-gray-700 rounded-lg w-full max-w-5xl p-6">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold" data-en="Manual Communication to Selected" data-it="Comunicazione Manuale ai Selezionati">Comunicazione Manuale ai Selezionati</h3>
+                    <h3 class="text-lg font-semibold" data-i18n="manual_contact.title">Comunicazione Manuale ai Selezionati</h3>
                     <button onclick="closeBulkContactWithoutAIDialog()" class="text-gray-400 hover:text-white">✕</button>
                 </div>
 
@@ -1238,38 +1238,32 @@
                     <!-- Left Column: Settings -->
                     <div class="space-y-4">
                         <div>
-                            <p class="text-xs text-gray-400 mb-2" data-en="Channel" data-it="Canale">Canale</p>
+                            <p class="text-xs text-gray-400 mb-2" data-i18n="manual_contact.channel">Canale</p>
                             <div id="channelToggleGroupNoAI" class="flex gap-2">
-                                <button type="button" class="px-3 py-1.5 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-value="email">Email</button>
-                                <button type="button" class="px-3 py-1.5 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-value="whatsapp">WhatsApp</button>
+                                <button type="button" class="px-3 py-1.5 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-value="email" data-i18n="manual_contact.email">Email</button>
+                                <button type="button" class="px-3 py-1.5 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-value="whatsapp" data-i18n="manual_contact.whatsapp">WhatsApp</button>
                             </div>
-                        </div>
-
-                        <!-- Email Subject Field (shown only for email) -->
-                        <div id="emailSubjectFieldNoAI" class="hidden">
-                            <p class="text-xs text-gray-400 mb-2" data-en="Email Subject (Required)" data-it="Oggetto Email (Obbligatorio)">Oggetto Email (Obbligatorio)</p>
-                            <input id="emailSubjectInputNoAI" type="text" class="w-full rounded bg-gray-800 border border-gray-700 p-2 text-sm" placeholder="Inserisci l'oggetto dell'email...">
                         </div>
 
                         <!-- Dealer Signature -->
                         <div class="space-y-2 bg-gray-800 border border-gray-700 rounded p-3">
-                            <label class="text-xs text-gray-400" data-en="Dealer Signature" data-it="Firma Dealer">Firma Dealer</label>
+                            <label class="text-xs text-gray-400" data-i18n="manual_contact.dealer_signature">Firma Dealer</label>
                             <select id="dealerSignatureSelectNoAI" class="w-full rounded bg-gray-900 border border-gray-700 p-2">
-                                <option value="none" data-en="No signature" data-it="Nessuna firma">Nessuna firma</option>
+                                <option value="none" data-i18n="manual_contact.no_signature">Nessuna firma</option>
                             </select>
                         </div>
 
                         <!-- Send to Test Clients -->
                         <label class="inline-flex items-center gap-2 text-sm">
                             <input id="sendToTestClientsNoAI" type="checkbox" class="form-checkbox h-4 w-4 text-green-500" checked>
-                            <span data-en="Send to test clients" data-it="Invia ai clienti test">Invia ai clienti test</span>
+                            <span data-i18n="manual_contact.send_to_test_clients">Invia ai clienti test</span>
                         </label>
 
                         <!-- Test Client Selection for Preview -->
                         <div id="testClientSelectorNoAI" class="space-y-2 bg-gray-800 border border-gray-700 rounded p-3">
-                            <label class="text-xs text-gray-400" data-en="Preview with Test Client" data-it="Anteprima con Cliente Test">Anteprima con Cliente Test</label>
+                            <label class="text-xs text-gray-400" data-i18n="manual_contact.preview_with_test_client">Anteprima con Cliente Test</label>
                             <select id="testClientSelectNoAI" class="w-full rounded bg-gray-900 border border-gray-700 p-2 text-sm">
-                                <option value="sample" data-en="Sample Data" data-it="Dati di Esempio">Dati di Esempio</option>
+                                <option value="sample" data-i18n="manual_contact.sample_data">Dati di Esempio</option>
                             </select>
                         </div>
                     </div>
@@ -1277,8 +1271,8 @@
                     <!-- Middle Column: Draggable Tags -->
                     <div class="space-y-4">
                         <div>
-                            <p class="text-xs text-gray-400 mb-3" data-en="Available Data Tags" data-it="Tags Dati Disponibili">Tags Dati Disponibili</p>
-                            <div class="text-xs text-gray-500 mb-3" data-en="Drag tags into your message" data-it="Trascina i tags nel messaggio">Trascina i tags nel messaggio</div>
+                            <p class="text-xs text-gray-400 mb-3" data-i18n="manual_contact.available_data_tags">Tags Dati Disponibili</p>
+                            <div class="text-xs text-gray-500 mb-3" data-i18n="manual_contact.drag_tags_into_message">Trascina i tags nel messaggio</div>
                             <div id="draggableTagsContainer" class="space-y-2">
                                 <!-- Tags will be populated by JavaScript -->
                             </div>
@@ -1287,29 +1281,40 @@
 
                     <!-- Right Column: Message Composition -->
                     <div class="lg:col-span-2 space-y-4">
+                        <!-- Email Subject Field (shown only for email) -->
+                        <div id="emailSubjectFieldNoAI" class="hidden">
+                            <p class="text-xs text-gray-400 mb-2" data-i18n="manual_contact.email_subject_required">Oggetto Email (Obbligatorio)</p>
+                            <input id="emailSubjectInputNoAI" type="text" class="w-full rounded bg-gray-800 border border-gray-700 p-2 text-sm" data-i18n-placeholder="manual_contact.email_subject_placeholder" placeholder="Inserisci l'oggetto dell'email...">
+                        </div>
+
                         <div>
-                            <p class="text-xs text-gray-400 mb-2" data-en="Your Message" data-it="Il Tuo Messaggio">Il Tuo Messaggio</p>
+                            <p class="text-xs text-gray-400 mb-2" data-i18n="manual_contact.your_message">Il Tuo Messaggio</p>
                             <textarea id="manualMessageInput" rows="12" class="w-full rounded bg-gray-800 border border-gray-700 p-3 font-mono text-sm" 
-                                placeholder="Scrivi qui il tuo messaggio personalizzato...&#10;&#10;Puoi trascinare i tags dai dati disponibili per inserire informazioni dinamiche.&#10;&#10;Esempio:&#10;Gentile {NOME},&#10;il suo veicolo {VEICOLO} con targa {TARGA}..."></textarea>
+                                data-i18n-placeholder="manual_contact.message_placeholder" placeholder="Scrivi qui il tuo messaggio personalizzato...&#10;&#10;Puoi trascinare i tags dai dati disponibili per inserire informazioni dinamiche.&#10;&#10;Esempio:&#10;Gentile {NOME},&#10;il suo veicolo {VEICOLO} con targa {TARGA}..."></textarea>
                         </div>
                         
                         <!-- Message Preview -->
                         <div>
-                            <p class="text-xs text-gray-400 mb-2" data-en="Preview" data-it="Anteprima">Anteprima</p>
+                            <p class="text-xs text-gray-400 mb-2" data-i18n="manual_contact.preview">Anteprima</p>
                             <div id="manualMessagePreview" class="h-32 overflow-auto bg-gray-800 border border-gray-700 rounded p-3 text-sm"></div>
                         </div>
 
                         <!-- Dealer Balance -->
                         <div class="flex items-center justify-between">
-                            <p class="text-xs text-gray-400" data-en="Available Credit" data-it="Credito Disponibile">Credito Disponibile</p>
+                            <p class="text-xs text-gray-400" data-i18n="manual_contact.available_credit">Credito Disponibile</p>
                             <p id="dealerBalanceTextNoAI" class="text-sm font-semibold">-</p>
+                        </div>
+                        <!-- Cost Information -->
+                        <div class="text-xs text-gray-500 mt-2">
+                            <p data-i18n="manual_contact.cost_email">📧 Email: €0,05 per invio</p>
+                            <p data-i18n="manual_contact.cost_whatsapp">📱 WhatsApp: €0,10 per invio</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="flex justify-end gap-2 mt-6">
-                    <button onclick="previewManualMessage()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm" data-en="Preview" data-it="Anteprima">Anteprima</button>
-                    <button onclick="sendManualMessage()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm" data-en="Send" data-it="Invia">Invia</button>
+                    <button onclick="previewManualMessage()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm" data-i18n="manual_contact.preview_button">Anteprima</button>
+                    <button onclick="sendManualMessage()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm" data-i18n="manual_contact.send_button">Invia</button>
                 </div>
             </div>
         </div>
@@ -2041,12 +2046,17 @@
                     <span id="selectedCount">0</span> ${t('selected.items') || 'selected'}
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="openBulkContactDialog(); initChipGroups();" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm" data-en="Contact with AI" data-it="Contatta con AI">Contatta con AI</button>
-                    <button onclick="openBulkContactWithoutAIDialog(); initDragDropTags();" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm ml-2" data-en="Contact Without AI" data-it="Contatta senza AI">Contatta senza AI</button>
+                    <button onclick="openBulkContactDialog(); initChipGroups();" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm" data-i18n="contact.with_ai">${t('contact.with_ai')}</button>
+                                            <button onclick="openBulkContactWithoutAIDialog(); initDragDropTags();" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm ml-2" data-i18n="manual_contact.contact_without_ai">${t('manual_contact.contact_without_ai')}</button>
                     <button onclick="toggleSelectAll(false)" class="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm">${t('clear.selection') || 'Pulisci selezione'}</button>
                 </div>
             `;
             container.parentNode.insertBefore(bar, container);
+            
+            // Update translations for the newly created elements
+            if (window.i18n && typeof window.i18n.updateAllTranslations === 'function') {
+                window.i18n.updateAllTranslations();
+            }
         }
 
         // Update table header based on visible columns
@@ -2461,7 +2471,7 @@
                 });
             });
             // Preselect useful fields
-            ['name','brandModel','plate','ctaTagliando'].forEach(f => {
+                            ['name','brandModel','plate'].forEach(f => {
                 const chip = document.querySelector(`#fieldsChipGroup button[data-field="${f}"]`);
                 if (chip && !chip.classList.contains('active-chip')) chip.click();
             });
@@ -5542,8 +5552,8 @@
                 const list = r?.data || [];
                 const sel = document.getElementById('dealerSignatureSelectNoAI');
                 if (sel) {
-                    sel.innerHTML = '<option value="none">Nessuna firma</option>' +
-                        list.map(s=>`<option value="${encodeURIComponent(JSON.stringify(s))}">${(s.company_name||'Firma')}${s.phone? ' • '+s.phone:''}${s.email? ' • '+s.email:''}</option>`).join('');
+                    sel.innerHTML = '<option value="none" data-i18n="manual_contact.no_signature">Nessuna firma</option>' +
+                        list.map(s=>`<option value="${encodeURIComponent(JSON.stringify(s))}">${(s.company_name||(window.i18n ? window.i18n.t('manual_contact.signature') : 'Firma'))}${s.phone? ' • '+s.phone:''}${s.email? ' • '+s.email:''}</option>`).join('');
                 }
             } catch {}
 
@@ -5563,9 +5573,9 @@
                 const testClients = r?.data || [];
                 const sel = document.getElementById('testClientSelectNoAI');
                 if (sel) {
-                    sel.innerHTML = '<option value="sample" data-en="Sample Data" data-it="Dati di Esempio">Dati di Esempio</option>' +
+                    sel.innerHTML = '<option value="sample" data-i18n="manual_contact.sample_data">Dati di Esempio</option>' +
                         testClients.map(c => {
-                            const name = [c.first_name, c.last_name].filter(Boolean).join(' ').trim() || 'Cliente Test';
+                            const name = [c.first_name, c.last_name].filter(Boolean).join(' ').trim() || (window.i18n ? window.i18n.t('manual_contact.test_client') : 'Cliente Test');
                             const vehicle = [c.vehicle_brand, c.vehicle_model].filter(Boolean).join(' ') || '';
                             const display = vehicle ? `${name} (${vehicle})` : name;
                             return `<option value="${c.id}">${display}</option>`;
@@ -5583,6 +5593,11 @@
             
             // Initialize channel toggle functionality
             initChannelToggleNoAI();
+            
+            // Update translations for dynamically created elements
+            if (window.i18n && typeof window.i18n.updateAllTranslations === 'function') {
+                window.i18n.updateAllTranslations();
+            }
         }
 
         // Close the Contact Without AI Dialog
@@ -5597,29 +5612,28 @@
             if (!container) return;
 
             const tags = [
-                { key: 'NOME', label: 'Nome', type: 'client', icon: '👤' },
-                { key: 'COGNOME', label: 'Cognome', type: 'client', icon: '👤' },
-                { key: 'COMPANY_NAME', label: 'Nome Azienda', type: 'client', icon: '🏢' },
-                { key: 'EMAIL', label: 'Email', type: 'contact', icon: '📧' },
-                { key: 'TELEFONO', label: 'Telefono', type: 'contact', icon: '📱' },
-                { key: 'VEICOLO', label: 'Marca Modello', type: 'vehicle', icon: '🚗' },
-                { key: 'TARGA', label: 'Targa', type: 'vehicle', icon: '🏷️' },
-                { key: 'ANNO', label: 'Anno', type: 'technical', icon: '📅' },
-                { key: 'CARBURANTE', label: 'Carburante', type: 'technical', icon: '⛽' },
-                { key: 'KM', label: 'Chilometri', type: 'technical', icon: '📏' },
-                { key: 'VIN', label: 'VIN', type: 'technical', icon: '🔢' },
-                { key: 'SERIAL', label: 'Seriale', type: 'technical', icon: '🏷️' },
-                { key: 'CTA_TAGLIANDO', label: 'CTA Tagliando', type: 'cta', icon: '🔧' }
+                { key: 'NOME', translationKey: 'tags.name', type: 'client', icon: '👤' },
+                { key: 'COGNOME', translationKey: 'tags.surname', type: 'client', icon: '👤' },
+                { key: 'COMPANY_NAME', translationKey: 'tags.company_name', type: 'client', icon: '🏢' },
+                { key: 'EMAIL', translationKey: 'tags.email', type: 'contact', icon: '📧' },
+                { key: 'TELEFONO', translationKey: 'tags.phone', type: 'contact', icon: '📱' },
+                { key: 'VEICOLO', translationKey: 'tags.vehicle', type: 'vehicle', icon: '🚗' },
+                { key: 'TARGA', translationKey: 'tags.plate', type: 'vehicle', icon: '🏷️' },
+                { key: 'ANNO', translationKey: 'tags.year', type: 'technical', icon: '📅' },
+                { key: 'CARBURANTE', translationKey: 'tags.fuel', type: 'technical', icon: '⛽' },
+                { key: 'KM', translationKey: 'tags.km', type: 'technical', icon: '📏' },
+                { key: 'VIN', translationKey: 'tags.vin', type: 'technical', icon: '🔢' },
+                { key: 'SERIAL', translationKey: 'tags.serial', type: 'technical', icon: '🏷️' }
             ];
 
             container.innerHTML = tags.map(tag => `
                 <div class="draggable-tag" 
                      data-type="${tag.type}" 
                      data-key="${tag.key}"
+                     data-i18n="${tag.translationKey}"
                      draggable="true">
                     <span class="tag-icon">${tag.icon}</span>
-                    <span>{${tag.key}}</span>
-                    <span class="text-xs opacity-75">- ${tag.label}</span>
+                    <span>${window.i18n ? window.i18n.t(tag.translationKey) : tag.translationKey}</span>
                 </div>
             `).join('');
 
@@ -5628,6 +5642,9 @@
                 tag.addEventListener('dragstart', handleDragStart);
                 tag.addEventListener('dragend', handleDragEnd);
             });
+
+            // Store tags data for language updates
+            window.draggableTagsData = tags;
 
             // Make textarea a drop zone
             const textarea = document.getElementById('manualMessageInput');
@@ -5697,6 +5714,25 @@
             textarea.focus();
         }
 
+        // Update draggable tags when language changes
+        function updateDraggableTags() {
+            const container = document.getElementById('draggableTagsContainer');
+            if (!container || !window.draggableTagsData) return;
+
+            window.draggableTagsData.forEach(tag => {
+                const tagElement = container.querySelector(`[data-key="${tag.key}"]`);
+                if (tagElement) {
+                    const labelSpan = tagElement.querySelector('span:not(.tag-icon)');
+                    if (labelSpan && window.i18n) {
+                        labelSpan.textContent = window.i18n.t(tag.translationKey);
+                    }
+                }
+            });
+        }
+
+        // Expose function globally for i18n system
+        window.updateDraggableTags = updateDraggableTags;
+
         // Initialize channel toggle for No AI dialog
         function initChannelToggleNoAI() {
             const toggleGroup = document.getElementById('channelToggleGroupNoAI');
@@ -5738,23 +5774,23 @@
             const preview = document.getElementById('manualMessagePreview');
             
             if (!message.trim()) {
-                preview.innerHTML = '<div class="text-gray-500 text-sm">L\'anteprima apparirà qui...</div>';
+                preview.innerHTML = `<div class="text-gray-500 text-sm">${window.i18n ? window.i18n.t('manual_contact.preview_placeholder') : 'L\'anteprima apparirà qui...'}</div>`;
                 return;
             }
 
             let sampleData = {
-                'NOME': 'Mario',
-                'COGNOME': 'Rossi',
-                'COMPANY_NAME': 'Azienda Esempio S.r.l.',
-                'EMAIL': 'mario.rossi@email.com',
-                'TELEFONO': '+39 123 456 7890',
-                'VEICOLO': 'Fiat Panda',
-                'TARGA': 'AB123CD',
-                'ANNO': '2020',
-                'CARBURANTE': 'Benzina',
-                'KM': '45.000',
-                'VIN': 'WVWZZZ1JZ3W123456',
-                'SERIAL': 'SN123456789',
+                'NOME': window.i18n ? window.i18n.t('manual_contact.sample.name') : 'Mario',
+                'COGNOME': window.i18n ? window.i18n.t('manual_contact.sample.surname') : 'Rossi',
+                'COMPANY_NAME': window.i18n ? window.i18n.t('manual_contact.sample.company') : 'Azienda Esempio S.r.l.',
+                'EMAIL': window.i18n ? window.i18n.t('manual_contact.sample.email') : 'mario.rossi@email.com',
+                'TELEFONO': window.i18n ? window.i18n.t('manual_contact.sample.phone') : '+39 123 456 7890',
+                'VEICOLO': window.i18n ? window.i18n.t('manual_contact.sample.vehicle') : 'Fiat Panda',
+                'TARGA': window.i18n ? window.i18n.t('manual_contact.sample.plate') : 'AB123CD',
+                'ANNO': window.i18n ? window.i18n.t('manual_contact.sample.year') : '2020',
+                'CARBURANTE': window.i18n ? window.i18n.t('manual_contact.sample.fuel') : 'Benzina',
+                'KM': window.i18n ? window.i18n.t('manual_contact.sample.km') : '45.000',
+                'VIN': window.i18n ? window.i18n.t('manual_contact.sample.vin') : 'WVWZZZ1JZ3W123456',
+                'SERIAL': window.i18n ? window.i18n.t('manual_contact.sample.serial') : 'SN123456789',
                 'CTA_TAGLIANDO': 'Prenota il tuo tagliando su: https://mobisat.com/tagliando'
             };
 
@@ -5769,15 +5805,15 @@
                     
                     if (selectedClient) {
                         sampleData = {
-                            'NOME': selectedClient.first_name || 'Nome',
-                            'COGNOME': selectedClient.last_name || 'Cognome',
-                            'COMPANY_NAME': selectedClient.company || 'Azienda Cliente',
-                            'EMAIL': selectedClient.email || 'email@esempio.com',
-                            'TELEFONO': selectedClient.phone || '+39 000 000 0000',
-                            'VEICOLO': [selectedClient.vehicle_brand, selectedClient.vehicle_model].filter(Boolean).join(' ') || 'Veicolo',
-                            'TARGA': selectedClient.plate || 'XX000XX',
+                            'NOME': selectedClient.first_name || (window.i18n ? window.i18n.t('manual_contact.sample.client_name') : 'Nome'),
+                            'COGNOME': selectedClient.last_name || (window.i18n ? window.i18n.t('manual_contact.sample.client_surname') : 'Cognome'),
+                            'COMPANY_NAME': selectedClient.company || (window.i18n ? window.i18n.t('manual_contact.sample.client_company') : 'Azienda Cliente'),
+                            'EMAIL': selectedClient.email || (window.i18n ? window.i18n.t('manual_contact.sample.client_email') : 'email@esempio.com'),
+                            'TELEFONO': selectedClient.phone || (window.i18n ? window.i18n.t('manual_contact.sample.client_phone') : '+39 000 000 0000'),
+                            'VEICOLO': [selectedClient.vehicle_brand, selectedClient.vehicle_model].filter(Boolean).join(' ') || (window.i18n ? window.i18n.t('manual_contact.sample.client_vehicle') : 'Veicolo'),
+                            'TARGA': selectedClient.plate || (window.i18n ? window.i18n.t('manual_contact.sample.client_plate') : 'XX000XX'),
                             'ANNO': selectedClient.year || '2020',
-                            'CARBURANTE': selectedClient.fuel_type || 'Benzina',
+                            'CARBURANTE': selectedClient.fuel_type || (window.i18n ? window.i18n.t('manual_contact.sample.client_fuel') : 'Benzina'),
                             'KM': selectedClient.odometer ? selectedClient.odometer.toLocaleString() : '0',
                             'VIN': selectedClient.vin || 'WVWZZZ1JZ3W123456',
                             'SERIAL': selectedClient.serial || 'SN123456789',
@@ -5818,17 +5854,17 @@
             
             // Validation
             if (!message) {
-                alert('Inserisci un messaggio');
+                alert(window.i18n ? window.i18n.t('manual_contact.error.enter_message') : 'Inserisci un messaggio');
                 return;
             }
             
             if (channel === 'email' && !subject) {
-                alert('L\'oggetto email è obbligatorio');
+                alert(window.i18n ? window.i18n.t('manual_contact.error.email_subject_required') : 'L\'oggetto email è obbligatorio');
                 document.getElementById('emailSubjectInputNoAI').focus();
                 return;
             }
 
-            const confirmed = confirm(`Sei sicuro di voler inviare questo messaggio via ${channel.toUpperCase()}?`);
+            const confirmed = confirm(window.i18n ? window.i18n.t('manual_contact.confirm_send', { channel: channel.toUpperCase() }) : `Sei sicuro di voler inviare questo messaggio via ${channel.toUpperCase()}?`);
             if (!confirmed) return;
 
             try {
@@ -5901,12 +5937,12 @@
                 }
 
                 const result = await response.json();
-                alert(`Messaggio inviato con successo a ${result.sent} destinatari!`);
+                alert(window.i18n ? window.i18n.t('manual_contact.success_sent', { count: result.sent }) : `Messaggio inviato con successo a ${result.sent} destinatari!`);
                 closeBulkContactWithoutAIDialog();
 
             } catch (error) {
                 console.error('Error sending manual message:', error);
-                alert(`Errore nell'invio: ${error.message}`);
+                alert(window.i18n ? window.i18n.t('manual_contact.error_sending', { error: error.message }) : `Errore nell'invio: ${error.message}`);
             }
         }
 

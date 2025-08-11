@@ -212,6 +212,7 @@ class I18nManager {
                 'contact.preview': 'Anteprima messaggi',
                 'contact.generate': 'Genera bozza',
                 'contact.send': 'Invia',
+                'contact.with_ai': 'Contatta con AI',
                 
                 // Card Details
                 'card.client': 'Cliente',
@@ -453,6 +454,74 @@ class I18nManager {
                 'vehicle.tab_client': 'Cliente',
                 'vehicle.tab_analytics': 'Analytics',
                 'vehicle.back_to_certificates': 'Torna ai Certificati',
+                
+                // Manual Contact Dialog (Contatta senza AI)
+                'manual_contact.title': 'Comunicazione Manuale ai Selezionati',
+                'manual_contact.channel': 'Canale',
+                'manual_contact.email': 'Email',
+                'manual_contact.whatsapp': 'WhatsApp',
+                'manual_contact.dealer_signature': 'Firma Dealer',
+                'manual_contact.no_signature': 'Nessuna firma',
+                'manual_contact.send_to_test_clients': 'Invia ai clienti test',
+                'manual_contact.preview_with_test_client': 'Anteprima con Cliente Test',
+                'manual_contact.sample_data': 'Dati di Esempio',
+                'manual_contact.available_data_tags': 'Tags Dati Disponibili',
+                'manual_contact.drag_tags_into_message': 'Trascina i tags nel messaggio',
+                'manual_contact.email_subject_required': 'Oggetto Email (Obbligatorio)',
+                'manual_contact.email_subject_placeholder': 'Inserisci l\'oggetto dell\'email...',
+                'manual_contact.your_message': 'Il Tuo Messaggio',
+                'manual_contact.message_placeholder': 'Scrivi qui il tuo messaggio personalizzato...\n\nPuoi trascinare i tags dai dati disponibili per inserire informazioni dinamiche.\n\nEsempio:\nGentile {NOME},\nil suo veicolo {VEICOLO} con targa {TARGA}...',
+                'manual_contact.preview': 'Anteprima',
+                'manual_contact.available_credit': 'Credito Disponibile',
+                'manual_contact.cost_email': '📧 Email: €0,05 per invio',
+                'manual_contact.cost_whatsapp': '📱 WhatsApp: €0,10 per invio',
+                'manual_contact.preview_button': 'Anteprima',
+                'manual_contact.send_button': 'Invia',
+                
+                // Manual Contact Error Messages
+                'manual_contact.error.enter_message': 'Inserisci un messaggio',
+                'manual_contact.error.email_subject_required': 'L\'oggetto email è obbligatorio',
+                'manual_contact.confirm_send': 'Sei sicuro di voler inviare questo messaggio via {channel}?',
+                'manual_contact.success_sent': 'Messaggio inviato con successo a {count} destinatari!',
+                'manual_contact.error_sending': 'Errore nell\'invio: {error}',
+                'manual_contact.contact_without_ai': 'Contatta senza AI',
+                'manual_contact.test_client': 'Cliente Test',
+                'manual_contact.signature': 'Firma',
+                'manual_contact.preview_placeholder': 'L\'anteprima apparirà qui...',
+                'manual_contact.sample.name': 'Mario',
+                'manual_contact.sample.surname': 'Rossi',
+                'manual_contact.sample.company': 'Azienda Esempio S.r.l.',
+                'manual_contact.sample.email': 'mario.rossi@email.com',
+                'manual_contact.sample.phone': '+39 123 456 7890',
+                'manual_contact.sample.vehicle': 'Fiat Panda',
+                'manual_contact.sample.plate': 'AB123CD',
+                'manual_contact.sample.year': '2020',
+                'manual_contact.sample.fuel': 'Benzina',
+                'manual_contact.sample.km': '45.000',
+                'manual_contact.sample.vin': 'WVWZZZ1JZ3W123456',
+                'manual_contact.sample.serial': 'SN123456789',
+                'manual_contact.sample.client_name': 'Nome',
+                'manual_contact.sample.client_surname': 'Cognome',
+                'manual_contact.sample.client_company': 'Azienda Cliente',
+                'manual_contact.sample.client_email': 'email@esempio.com',
+                'manual_contact.sample.client_phone': '+39 000 000 0000',
+                'manual_contact.sample.client_vehicle': 'Veicolo',
+                'manual_contact.sample.client_plate': 'XX000XX',
+                'manual_contact.sample.client_fuel': 'Benzina',
+                
+                // Draggable Tags
+                'tags.name': 'Nome',
+                'tags.surname': 'Cognome',
+                'tags.company_name': 'Nome Azienda',
+                'tags.email': 'Email',
+                'tags.phone': 'Telefono',
+                'tags.vehicle': 'Marca Modello',
+                'tags.plate': 'Targa',
+                'tags.year': 'Anno',
+                'tags.fuel': 'Carburante',
+                'tags.km': 'Chilometri',
+                'tags.vin': 'VIN',
+                'tags.serial': 'Seriale',
             },
             
             en: {
@@ -619,6 +688,7 @@ class I18nManager {
                 'contact.preview': 'Message preview',
                 'contact.generate': 'Generate draft',
                 'contact.send': 'Send',
+                'contact.with_ai': 'Contact with AI',
                 
                 // Card Details
                 'card.client': 'Client',
@@ -860,6 +930,74 @@ class I18nManager {
                 'vehicle.tab_client': 'Client',
                 'vehicle.tab_analytics': 'Analytics',
                 'vehicle.back_to_certificates': 'Back to Certificates',
+                
+                // Manual Contact Dialog (Contatta senza AI)
+                'manual_contact.title': 'Manual Communication to Selected',
+                'manual_contact.channel': 'Channel',
+                'manual_contact.email': 'Email',
+                'manual_contact.whatsapp': 'WhatsApp',
+                'manual_contact.dealer_signature': 'Dealer Signature',
+                'manual_contact.no_signature': 'No signature',
+                'manual_contact.send_to_test_clients': 'Send to test clients',
+                'manual_contact.preview_with_test_client': 'Preview with Test Client',
+                'manual_contact.sample_data': 'Sample Data',
+                'manual_contact.available_data_tags': 'Available Data Tags',
+                'manual_contact.drag_tags_into_message': 'Drag tags into your message',
+                'manual_contact.email_subject_required': 'Email Subject (Required)',
+                'manual_contact.email_subject_placeholder': 'Enter email subject...',
+                'manual_contact.your_message': 'Your Message',
+                'manual_contact.message_placeholder': 'Write your personalized message here...\n\nYou can drag tags from available data to insert dynamic information.\n\nExample:\nDear {NAME},\nyour vehicle {VEHICLE} with plate {PLATE}...',
+                'manual_contact.preview': 'Preview',
+                'manual_contact.available_credit': 'Available Credit',
+                'manual_contact.cost_email': '📧 Email: €0.05 per send',
+                'manual_contact.cost_whatsapp': '📱 WhatsApp: €0.10 per send',
+                'manual_contact.preview_button': 'Preview',
+                'manual_contact.send_button': 'Send',
+                
+                // Manual Contact Error Messages
+                'manual_contact.error.enter_message': 'Please enter a message',
+                'manual_contact.error.email_subject_required': 'Email subject is required',
+                'manual_contact.confirm_send': 'Are you sure you want to send this message via {channel}?',
+                'manual_contact.success_sent': 'Message sent successfully to {count} recipients!',
+                'manual_contact.error_sending': 'Error sending: {error}',
+                'manual_contact.contact_without_ai': 'Contact Without AI',
+                'manual_contact.test_client': 'Test Client',
+                'manual_contact.signature': 'Signature',
+                'manual_contact.preview_placeholder': 'Preview will appear here...',
+                'manual_contact.sample.name': 'John',
+                'manual_contact.sample.surname': 'Smith',
+                'manual_contact.sample.company': 'Example Company Ltd.',
+                'manual_contact.sample.email': 'john.smith@email.com',
+                'manual_contact.sample.phone': '+1 234 567 8900',
+                'manual_contact.sample.vehicle': 'Ford Focus',
+                'manual_contact.sample.plate': 'AB123CD',
+                'manual_contact.sample.year': '2020',
+                'manual_contact.sample.fuel': 'Gasoline',
+                'manual_contact.sample.km': '45,000',
+                'manual_contact.sample.vin': 'WVWZZZ1JZ3W123456',
+                'manual_contact.sample.serial': 'SN123456789',
+                'manual_contact.sample.client_name': 'Name',
+                'manual_contact.sample.client_surname': 'Surname',
+                'manual_contact.sample.client_company': 'Client Company',
+                'manual_contact.sample.client_email': 'email@example.com',
+                'manual_contact.sample.client_phone': '+1 000 000 0000',
+                'manual_contact.sample.client_vehicle': 'Vehicle',
+                'manual_contact.sample.client_plate': 'XX000XX',
+                'manual_contact.sample.client_fuel': 'Gasoline',
+                
+                // Draggable Tags
+                'tags.name': 'Name',
+                'tags.surname': 'Surname',
+                'tags.company_name': 'Company Name',
+                'tags.email': 'Email',
+                'tags.phone': 'Phone',
+                'tags.vehicle': 'Brand Model',
+                'tags.plate': 'License Plate',
+                'tags.year': 'Year',
+                'tags.fuel': 'Fuel',
+                'tags.km': 'Kilometers',
+                'tags.vin': 'VIN',
+                'tags.serial': 'Serial',
             }
         };
     }
@@ -915,6 +1053,11 @@ class I18nManager {
         
         // Update summary stats if they exist (for vehicle page)
         this.updateSummaryStats();
+        
+        // Update draggable tags if they exist (for certificates page)
+        if (typeof window.updateDraggableTags === 'function') {
+            window.updateDraggableTags();
+        }
     }
 
     /**
