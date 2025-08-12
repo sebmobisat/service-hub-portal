@@ -1432,7 +1432,6 @@ ${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci ESATTAME
                     console.log('🎯 OpenAI response received from model:', completion.model);
                     
                     // Parse response for email (JSON format) or regular message
-                    let emailSubject = '';
                     if (channel === 'email') {
                         console.log('🤖 AI raw response for email:', rawResponse);
                         try {
