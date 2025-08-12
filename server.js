@@ -1423,8 +1423,10 @@ ${language === 'it' ? 'Contesto (JSON):' : 'Context (JSON):'}\n${JSON.stringify(
 
 ${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci SEMPRE in formato JSON valido: {"subject": "oggetto email qui", "message": "messaggio qui"}. NON aggiungere altro testo.' : 'MANDATORY: ALWAYS return in valid JSON format: {"subject": "email subject here", "message": "message here"}. DO NOT add any other text.') : (language === 'it' ? 'Restituisci SOLO il testo del messaggio, senza spiegazioni.' : 'Return ONLY the message text, with no explanations.')}` }
                     ];
-                    const completion = await openai.chat.completions.create({ model: 'gpt-3.5-turbo', messages });
+                    console.log('🤖 Calling OpenAI with model: gpt-4o');
+                    const completion = await openai.chat.completions.create({ model: 'gpt-4o', messages });
                     const rawResponse = completion.choices?.[0]?.message?.content?.trim() || '';
+                    console.log('🎯 OpenAI response received from model:', completion.model);
                     
                     // Parse response for email (JSON format) or regular message
                     let emailSubject = '';
@@ -1447,7 +1449,7 @@ ${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci SEMPRE i
                     }
                     
                     try {
-                        oaModel = completion.model || 'gpt-3.5-turbo';
+                        oaModel = completion.model || 'gpt-4o';
                         oaPromptTokens = completion.usage?.prompt_tokens || 0;
                         oaCompletionTokens = completion.usage?.completion_tokens || 0;
                         if (completion.id) oaIds.push(completion.id);
@@ -1652,7 +1654,7 @@ ${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci SEMPRE i
         const email_cents = emailCount * 5;
         const whatsapp_cents = waCount * 10;
         const sms_cents = smsCount * 8;
-        const openai_cents = !send ? 20 : 0; // one AI call per batch (flat for now)
+        const openai_cents = !send ? 20 : 0; // one AI call per batch (flat for now) - TODO: adjust for GPT-4o pricing
         const total_cents = email_cents + whatsapp_cents + sms_cents + openai_cents;
 
         if (!send) {
