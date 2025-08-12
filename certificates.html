@@ -5807,11 +5807,24 @@
             
             // Carica clienti test
             const testClients = await fetch(`/api/communications/test-clients/${dealerId}`).then(r=>r.json()).then(j=> j.data||[]);
+            console.log('🔍 DEBUG TEST CLIENT SAMPLE:', testClients[0]);
             const testRecipients = testClients.map(c => ({
                 id: c.id,
                 clientName: [c.first_name, c.last_name].filter(Boolean).join(' ').trim() || 'Cliente Test',
                 clientEmail: (c.email||'').toLowerCase(),
-                clientPhone: c.phone||''
+                clientPhone: c.phone||'',
+                // Aggiungi i dati del veicolo per i clienti test
+                vehicle: `${c.vehicle_brand || ''} ${c.vehicle_model || ''}`.trim(),
+                plate: c.vehicle_plate || '',
+                year: c.vehicle_year || '',
+                fuel: c.vehicle_fuel || '',
+                km: c.vehicle_km || '',
+                vin: c.vehicle_vin || '',
+                serial: c.vehicle_serial || '',
+                // Dati client
+                firstName: c.first_name || '',
+                lastName: c.last_name || '',
+                companyName: c.company || ''
             }));
 
             const sendToTest = document.getElementById('sendToTestClients')?.checked;
