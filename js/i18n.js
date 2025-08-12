@@ -211,6 +211,10 @@ class I18nManager {
                 'contact.preview': 'Anteprima messaggi',
                 'contact.generate': 'Genera bozza',
                 'contact.send': 'Invia',
+                'contact.send_communications': 'Invia comunicazioni',
+                'contact.send_to_test_clients': 'Invia comunicazione ai clienti test',
+                'contact.send_to_test_clients_button': 'Invia comunicazione clienti test',
+                'contact.available_tags': 'Tags disponibili (trascina nell\'anteprima)',
                 'contact.with_ai': 'Contatta con AI',
                 
                 // Card Details
@@ -695,6 +699,10 @@ class I18nManager {
                 'contact.preview': 'Message preview',
                 'contact.generate': 'Generate draft',
                 'contact.send': 'Send',
+                'contact.send_communications': 'Send communications',
+                'contact.send_to_test_clients': 'Send communication to test clients',
+                'contact.send_to_test_clients_button': 'Send test client communication',
+                'contact.available_tags': 'Available tags (drag to preview)',
                 'contact.with_ai': 'Contact with AI',
                 
                 // Card Details

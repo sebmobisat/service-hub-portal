@@ -330,6 +330,28 @@
         .tag-inserted {
             animation: tagInsert 0.5s ease-out;
         }
+
+        /* AI Tags Drag and Drop Styles */
+        .tag-item {
+            transition: all 0.2s ease;
+        }
+
+        .tag-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .tag-item.dragging {
+            opacity: 0.5;
+            transform: rotate(5deg) scale(1.1);
+            z-index: 1000;
+        }
+
+        #aiResults.drag-over {
+            background-color: rgba(16, 185, 129, 0.1) !important;
+            border-color: rgba(16, 185, 129, 0.5) !important;
+            box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3) !important;
+        }
           
           .certificate-card .cursor-pointer:active {
               transform: scale(0.95) !important;
@@ -1159,7 +1181,7 @@
                         <!-- Email Subject Field (shown only for email) -->
                         <div id="emailSubjectField" class="hidden">
                             <p class="text-xs text-gray-400 mb-2" data-en="Email Subject" data-it="Oggetto Email">Oggetto Email</p>
-                            <input id="emailSubjectInput" type="text" class="w-full rounded bg-gray-800 border border-gray-700 p-2 text-sm" placeholder="L'AI personalizzerà l'oggetto automaticamente..." readonly>
+                            <input id="emailSubjectInput" type="text" class="w-full rounded bg-gray-800 border border-gray-700 p-2 text-sm" placeholder="L'AI genererà l'oggetto automaticamente...">
                         </div>
 
                         <div>
@@ -1195,8 +1217,8 @@
                             </div>
                             <!-- Invio ai clienti test -->
                             <label class="inline-flex items-center gap-2 mt-2 text-sm">
-                                <input id="sendToTestClients" type="checkbox" class="form-checkbox h-4 w-4 text-green-500" checked>
-                                <span>Invia comunicazione ai clienti test</span>
+                                <input id="sendToTestClients" type="checkbox" class="form-checkbox h-4 w-4 text-green-500" onchange="toggleTestClientsButtonAI()">
+                                <span data-i18n="contact.send_to_test_clients">Invia comunicazione ai clienti test</span>
                             </label>
                         </div>
                     </div>
@@ -1212,16 +1234,35 @@
                             <p id="dealerBalanceText" class="text-sm font-semibold">-</p>
                         </div>
                         <div>
-                            <p class="text-xs text-gray-400 mb-2" data-i18n="contact.preview">Anteprima messaggi</p>
-                            <div id="aiResults" class="h-48 overflow-auto bg-gray-800 border border-gray-700 rounded p-3"></div>
+                            <p class="text-xs text-gray-400 mb-2" data-i18n="contact.preview">Anteprima messaggi (editabile)</p>
+                            <textarea id="aiResults" class="h-48 w-full bg-gray-800 border border-gray-700 rounded p-3 text-sm resize-none" placeholder="L'anteprima del messaggio generato dall'AI apparirà qui..."></textarea>
                             <div id="costSummary" class="mt-2 text-xs text-gray-300"></div>
+                        </div>
+
+                        <!-- Tags trascinabili per AI -->
+                        <div>
+                            <p class="text-xs text-gray-400 mb-2" data-i18n="contact.available_tags">Tags disponibili (trascina nell'anteprima)</p>
+                            <div id="availableTagsAI" class="flex flex-wrap gap-2 p-3 bg-gray-800 border border-gray-700 rounded min-h-[60px]">
+                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="NOME">{NOME}</div>
+                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="COGNOME">{COGNOME}</div>
+                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="EMAIL">{EMAIL}</div>
+                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="TELEFONO">{TELEFONO}</div>
+                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="VEICOLO">{VEICOLO}</div>
+                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="TARGA">{TARGA}</div>
+                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="ANNO">{ANNO}</div>
+                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="CARBURANTE">{CARBURANTE}</div>
+                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="KM">{KM}</div>
+                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="VIN">{VIN}</div>
+                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="SERIAL">{SERIAL}</div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="flex justify-end gap-2 mt-6">
-                    <button onclick="generateAndOptionallySend(false)" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm" data-i18n="contact.generate">Genera bozza</button>
-                    <button onclick="confirmAndSend()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm" data-i18n="contact.send">Invia</button>
+                    <button onclick="generateAIContent()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded text-white text-sm" data-i18n="contact.generate">Genera bozza</button>
+                    <button id="sendToTestClientsAIBtn" onclick="sendAIToTestClients()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm hidden" data-i18n="contact.send_to_test_clients_button">Invia comunicazione clienti test</button>
+                    <button id="sendAICommunicationsBtn" onclick="sendAICommunications()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm" data-i18n="contact.send_communications">Invia comunicazioni</button>
                 </div>
             </div>
         </div>
@@ -2070,7 +2111,7 @@
                     <span id="selectedCount">0</span> ${t('selected.items') || 'selected'}
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="openBulkContactDialog(); initChipGroups();" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm" data-i18n="contact.with_ai">${t('contact.with_ai')}</button>
+                    <button onclick="openBulkContactDialog(); initChipGroups(); initDragDropTagsAI();" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm" data-i18n="contact.with_ai">${t('contact.with_ai')}</button>
                                             <button onclick="openBulkContactWithoutAIDialog(); initDragDropTags();" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm ml-2" data-i18n="manual_contact.contact_without_ai">${t('manual_contact.contact_without_ai')}</button>
                     <button onclick="toggleSelectAll(false)" class="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm">${t('clear.selection') || 'Pulisci selezione'}</button>
                 </div>
@@ -2256,6 +2297,8 @@
             
             // Update button counter in manual communication dialog
             updateSelectedCountInButton();
+            // Update AI button counters
+            updateAIButtonCounters();
             // Update tri-state for header checkbox
             const master = document.getElementById('selectAllCheckbox');
             if (master) {
@@ -2296,6 +2339,9 @@
                 const el = document.getElementById('dealerBalanceText');
                 if (el) el.textContent = text;
             } catch {}
+            
+            // Update AI button counters
+            updateAIButtonCounters();
         }
 
         function closeBulkContactDialog() {
@@ -5674,6 +5720,438 @@
         function closeBulkContactWithoutAIDialog() {
             const dialog = document.getElementById('bulkContactWithoutAIDialog');
             if (dialog) dialog.classList.add('hidden');
+        }
+
+        // ===============================================
+        // NUOVE FUNZIONI AI COMMUNICATION
+        // ===============================================
+
+        // Toggle pulsante clienti test per AI
+        function toggleTestClientsButtonAI() {
+            const checkbox = document.getElementById('sendToTestClients');
+            const button = document.getElementById('sendToTestClientsAIBtn');
+            
+            if (checkbox && button) {
+                if (checkbox.checked) {
+                    button.classList.remove('hidden');
+                } else {
+                    button.classList.add('hidden');
+                }
+            }
+        }
+
+        // Genera contenuto AI con conferma billing
+        async function generateAIContent() {
+            const language = document.documentElement.lang || 'it';
+            
+            // Conferma spesa AI
+            const aiCost = 0.20; // €0.20 per chiamata AI
+            const confirmMessage = language === 'it' 
+                ? `Generare la bozza costerà €${aiCost.toFixed(2)}. Procedere?`
+                : `Generating the draft will cost €${aiCost.toFixed(2)}. Proceed?`;
+            
+            if (!window.customDialog) {
+                const proceed = window.confirm(confirmMessage);
+                if (!proceed) return;
+            } else {
+                const result = await window.customDialog.confirm(
+                    language === 'it' ? 'Conferma Generazione' : 'Confirm Generation',
+                    confirmMessage
+                );
+                if (!result) return;
+            }
+
+            const channel = document.querySelector('#channelToggleGroup .active-chip')?.dataset.value || 'email';
+            const style = document.querySelector('#styleToggleGroup .active-chip')?.dataset.value || 'professional';
+            const prompt = document.getElementById('aiPromptInput').value || '';
+            const useFields = {};
+            document.querySelectorAll('#fieldsChipGroup .active-chip').forEach(chip => {
+                useFields[chip.dataset.field] = true;
+            });
+
+            const selectedCerts = getSelectedCertificates();
+            const dealerId = getCurrentDealerId();
+            
+            // Carica clienti test
+            const testClients = await fetch(`/api/communications/test-clients/${dealerId}`).then(r=>r.json()).then(j=> j.data||[]);
+            const testRecipients = testClients.map(c => ({
+                id: c.id,
+                clientName: [c.first_name, c.last_name].filter(Boolean).join(' ').trim() || 'Cliente Test',
+                clientEmail: (c.email||'').toLowerCase(),
+                clientPhone: c.phone||''
+            }));
+
+            const sendToTest = document.getElementById('sendToTestClients')?.checked;
+            let recipients;
+            if (sendToTest) {
+                recipients = testRecipients;
+                if (!recipients.length) {
+                    const title = language === 'it' ? 'Attenzione' : 'Warning';
+                    const msg = language==='it' ? 'Nessun cliente test salvato.' : 'No test clients saved.';
+                    await window.customDialog.alert(title, msg, 'OK');
+                    return;
+                }
+            } else {
+                recipients = selectedCerts.map(r=>({ id:r.id, clientName:r.clientName, clientEmail:(r.clientEmail||'').toLowerCase(), clientPhone:r.clientPhone||'' }));
+            }
+
+            if (!sendToTest && !selectedCerts.length) {
+                const title = language === 'it' ? 'Attenzione' : 'Warning';
+                const msg = language === 'it' ? 'Seleziona almeno un certificato.' : 'Please select at least one certificate.';
+                await window.customDialog.alert(title, msg, 'OK');
+                return;
+            }
+
+            // Firma dealer
+            let dealerSignatureText = '';
+            const sel = document.getElementById('dealerSignatureSelect');
+            if (sel && sel.value && sel.value !== 'none') {
+                try {
+                    const sig = JSON.parse(decodeURIComponent(sel.value));
+                    dealerSignatureText = `${sig.company_name||''}${sig.address1? `\n${sig.address1}`:''}${sig.postcode||sig.city? `\n${[sig.postcode||'', sig.city||''].filter(Boolean).join(' ')}`:''}${sig.phone? `\nTel: ${sig.phone}`:''}${sig.email? `\nEmail: ${sig.email}`:''}`.trim();
+                } catch {}
+            }
+
+            const aiResults = document.getElementById('aiResults');
+            const emailSubjectInput = document.getElementById('emailSubjectInput');
+            
+            // Mostra loading
+            aiResults.value = language === 'it' ? 'Generazione in corso...' : 'Generating...';
+            if (channel === 'email' && emailSubjectInput) {
+                emailSubjectInput.value = language === 'it' ? 'Generazione oggetto...' : 'Generating subject...';
+            }
+
+            try {
+                const response = await fetch('/api/communications/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        channel,
+                        style,
+                        prompt,
+                        recipients,
+                        useFields,
+                        language,
+                        send: false, // Solo generazione
+                        dealerId,
+                        dealerSignatureText
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Errore nella generazione');
+                }
+
+                // Mostra risultati
+                if (data.base_message) {
+                    aiResults.value = data.base_message;
+                }
+
+                // Mostra oggetto email se generato
+                if (channel === 'email' && data.email_subject && emailSubjectInput) {
+                    emailSubjectInput.value = data.email_subject;
+                }
+
+                // Mostra costi
+                if (data.costs) {
+                    const costSummary = document.getElementById('costSummary');
+                    if (costSummary) {
+                        const euro = (c) => (c/100).toLocaleString('it-IT', {style:'currency', currency:'EUR'});
+                        costSummary.textContent = `Costo generazione: OpenAI ${euro(data.costs.openai_cents)}`;
+                    }
+                }
+
+                // Aggiorna balance
+                await updateDealerBalance();
+
+            } catch (error) {
+                console.error('Errore generazione AI:', error);
+                aiResults.value = language === 'it' 
+                    ? `Errore: ${error.message}` 
+                    : `Error: ${error.message}`;
+                if (channel === 'email' && emailSubjectInput) {
+                    emailSubjectInput.value = '';
+                }
+            }
+        }
+
+        // Invia comunicazioni AI
+        async function sendAICommunications() {
+            const language = document.documentElement.lang || 'it';
+            const selectedCerts = getSelectedCertificates();
+            const channel = document.querySelector('#channelToggleGroup .active-chip')?.dataset.value || 'email';
+            
+            if (!selectedCerts.length) {
+                const title = language === 'it' ? 'Attenzione' : 'Warning';
+                const msg = language === 'it' ? 'Seleziona almeno un certificato.' : 'Please select at least one certificate.';
+                await window.customDialog.alert(title, msg, 'OK');
+                return;
+            }
+
+            // Calcola costi
+            const n = selectedCerts.length;
+            const emailCost = channel === 'email' ? n * 0.05 : 0;
+            const waCost = channel === 'whatsapp' ? n * 0.10 : 0;
+            const total = (emailCost + waCost).toFixed(2);
+
+            // Conferma spesa
+            const costMsg = language === 'it'
+                ? `Inviare ${n} comunicazioni costerà:\n- Email: €${emailCost.toFixed(2)}\n- WhatsApp: €${waCost.toFixed(2)}\nTotale: €${total}\n\nProcedere?`
+                : `Sending ${n} communications will cost:\n- Email: €${emailCost.toFixed(2)}\n- WhatsApp: €${waCost.toFixed(2)}\nTotal: €${total}\n\nProceed?`;
+
+            if (!window.customDialog) {
+                const proceed = window.confirm(costMsg);
+                if (!proceed) return;
+            } else {
+                const result = await window.customDialog.confirm(
+                    language === 'it' ? 'Conferma Invio' : 'Confirm Sending',
+                    costMsg
+                );
+                if (!result) return;
+            }
+
+            await sendAIMessages(false);
+        }
+
+        // Invia ai clienti test AI
+        async function sendAIToTestClients() {
+            const language = document.documentElement.lang || 'it';
+            const dealerId = getCurrentDealerId();
+            
+            // Carica clienti test
+            const testClients = await fetch(`/api/communications/test-clients/${dealerId}`).then(r=>r.json()).then(j=> j.data||[]);
+            
+            if (!testClients.length) {
+                const title = language === 'it' ? 'Attenzione' : 'Warning';
+                const msg = language==='it' ? 'Nessun cliente test salvato.' : 'No test clients saved.';
+                await window.customDialog.alert(title, msg, 'OK');
+                return;
+            }
+
+            const channel = document.querySelector('#channelToggleGroup .active-chip')?.dataset.value || 'email';
+            const n = testClients.length;
+            const emailCost = channel === 'email' ? n * 0.05 : 0;
+            const waCost = channel === 'whatsapp' ? n * 0.10 : 0;
+            const total = (emailCost + waCost).toFixed(2);
+
+            // Conferma spesa
+            const costMsg = language === 'it'
+                ? `Inviare ${n} comunicazioni test costerà:\n- Email: €${emailCost.toFixed(2)}\n- WhatsApp: €${waCost.toFixed(2)}\nTotale: €${total}\n\nProcedere?`
+                : `Sending ${n} test communications will cost:\n- Email: €${emailCost.toFixed(2)}\n- WhatsApp: €${waCost.toFixed(2)}\nTotal: €${total}\n\nProceed?`;
+
+            if (!window.customDialog) {
+                const proceed = window.confirm(costMsg);
+                if (!proceed) return;
+            } else {
+                const result = await window.customDialog.confirm(
+                    language === 'it' ? 'Conferma Invio Test' : 'Confirm Test Sending',
+                    costMsg
+                );
+                if (!result) return;
+            }
+
+            await sendAIMessages(true);
+        }
+
+        // Funzione comune per invio messaggi AI
+        async function sendAIMessages(isTestMode) {
+            const language = document.documentElement.lang || 'it';
+            const channel = document.querySelector('#channelToggleGroup .active-chip')?.dataset.value || 'email';
+            const style = document.querySelector('#styleToggleGroup .active-chip')?.dataset.value || 'professional';
+            const prompt = document.getElementById('aiPromptInput').value || '';
+            const dealerId = getCurrentDealerId();
+            
+            // Prendi il contenuto dall'anteprima editabile
+            const aiResults = document.getElementById('aiResults');
+            const baseMessage = aiResults.value || '';
+            const emailSubject = document.getElementById('emailSubjectInput')?.value || '';
+
+            if (!baseMessage.trim()) {
+                const title = language === 'it' ? 'Attenzione' : 'Warning';
+                const msg = language === 'it' ? 'Genera prima una bozza.' : 'Generate a draft first.';
+                await window.customDialog.alert(title, msg, 'OK');
+                return;
+            }
+
+            const useFields = {};
+            document.querySelectorAll('#fieldsChipGroup .active-chip').forEach(chip => {
+                useFields[chip.dataset.field] = true;
+            });
+
+            let recipients;
+            if (isTestMode) {
+                const testClients = await fetch(`/api/communications/test-clients/${dealerId}`).then(r=>r.json()).then(j=> j.data||[]);
+                recipients = testClients.map(c => ({
+                    id: c.id,
+                    clientName: [c.first_name, c.last_name].filter(Boolean).join(' ').trim() || 'Cliente Test',
+                    clientEmail: (c.email||'').toLowerCase(),
+                    clientPhone: c.phone||''
+                }));
+            } else {
+                const selectedCerts = getSelectedCertificates();
+                recipients = selectedCerts.map(r=>({ id:r.id, clientName:r.clientName, clientEmail:(r.clientEmail||'').toLowerCase(), clientPhone:r.clientPhone||'' }));
+            }
+
+            // Firma dealer
+            let dealerSignatureText = '';
+            const sel = document.getElementById('dealerSignatureSelect');
+            if (sel && sel.value && sel.value !== 'none') {
+                try {
+                    const sig = JSON.parse(decodeURIComponent(sel.value));
+                    dealerSignatureText = `${sig.company_name||''}${sig.address1? `\n${sig.address1}`:''}${sig.postcode||sig.city? `\n${[sig.postcode||'', sig.city||''].filter(Boolean).join(' ')}`:''}${sig.phone? `\nTel: ${sig.phone}`:''}${sig.email? `\nEmail: ${sig.email}`:''}`.trim();
+                } catch {}
+            }
+
+            // Aggiorna UI
+            const button = isTestMode ? document.getElementById('sendToTestClientsAIBtn') : document.getElementById('sendAICommunicationsBtn');
+            const originalText = button?.textContent || '';
+            if (button) {
+                button.textContent = language === 'it' ? 'Invio...' : 'Sending...';
+                button.disabled = true;
+            }
+
+            try {
+                const response = await fetch('/api/communications/send', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        channel,
+                        recipients,
+                        baseMessage,
+                        emailSubject: channel === 'email' ? emailSubject : undefined,
+                        dealerId,
+                        sendToTestClients: isTestMode
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Errore nell\'invio');
+                }
+
+                // Mostra risultato
+                const title = language === 'it' ? 'Successo' : 'Success';
+                const successMsg = language === 'it' 
+                    ? `Inviati ${data.sent || 0} messaggi con successo!`
+                    : `Successfully sent ${data.sent || 0} messages!`;
+                
+                await window.customDialog.alert(title, successMsg, 'OK');
+
+                // Aggiorna balance
+                await updateDealerBalance();
+
+                // Chiudi dialog
+                closeBulkContactDialog();
+
+            } catch (error) {
+                console.error('Errore invio:', error);
+                const title = language === 'it' ? 'Errore' : 'Error';
+                const errorMsg = language === 'it' 
+                    ? `Errore: ${error.message}`
+                    : `Error: ${error.message}`;
+                await window.customDialog.alert(title, errorMsg, 'OK');
+            } finally {
+                if (button) {
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }
+            }
+        }
+
+        // Aggiorna balance dealer
+        async function updateDealerBalance() {
+            try {
+                const dealerId = getCurrentDealerId();
+                const response = await fetch(`/api/billing/balance/${dealerId}`);
+                const data = await response.json();
+                
+                if (data.success && data.balance_cents !== undefined) {
+                    const balanceText = document.getElementById('dealerBalanceText');
+                    if (balanceText) {
+                        const euro = (data.balance_cents / 100).toLocaleString('it-IT', {style:'currency', currency:'EUR'});
+                        balanceText.textContent = euro;
+                    }
+                }
+            } catch (error) {
+                console.error('Errore aggiornamento balance:', error);
+            }
+        }
+
+        // Aggiorna counter sui pulsanti AI
+        function updateAIButtonCounters() {
+            const selectedCerts = getSelectedCertificates();
+            const count = selectedCerts.length;
+            
+            // Aggiorna pulsante comunicazioni AI
+            const sendBtn = document.getElementById('sendAICommunicationsBtn');
+            if (sendBtn) {
+                const baseText = window.i18n ? window.i18n.t('contact.send_communications') : 'Invia comunicazioni';
+                if (count > 0) {
+                    sendBtn.textContent = `${baseText} (${count})`;
+                    sendBtn.setAttribute('data-has-counter', 'true');
+                } else {
+                    sendBtn.textContent = baseText;
+                    sendBtn.removeAttribute('data-has-counter');
+                }
+            }
+        }
+
+        // Initialize draggable tags for AI
+        function initDragDropTagsAI() {
+            const container = document.getElementById('availableTagsAI');
+            const textarea = document.getElementById('aiResults');
+            
+            if (!container || !textarea) return;
+
+            // Add drag and drop functionality to AI tags
+            container.querySelectorAll('.tag-item').forEach(tag => {
+                tag.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', tag.dataset.tag);
+                    tag.classList.add('dragging');
+                });
+
+                tag.addEventListener('dragend', () => {
+                    tag.classList.remove('dragging');
+                });
+            });
+
+            // Make textarea a drop zone
+            textarea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                textarea.classList.add('drag-over');
+            });
+
+            textarea.addEventListener('dragleave', () => {
+                textarea.classList.remove('drag-over');
+            });
+
+            textarea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                textarea.classList.remove('drag-over');
+                
+                const tagData = e.dataTransfer.getData('text/plain');
+                if (tagData) {
+                    const cursorPos = textarea.selectionStart;
+                    const textBefore = textarea.value.substring(0, cursorPos);
+                    const textAfter = textarea.value.substring(cursorPos);
+                    
+                    textarea.value = textBefore + `{${tagData}}` + textAfter;
+                    
+                    // Position cursor after inserted tag
+                    const newPos = cursorPos + tagData.length + 2;
+                    textarea.setSelectionRange(newPos, newPos);
+                    textarea.focus();
+                    
+                    // Visual feedback
+                    textarea.classList.add('tag-inserted');
+                    setTimeout(() => {
+                        textarea.classList.remove('tag-inserted');
+                    }, 500);
+                }
+            });
         }
 
         // Initialize draggable tags
