@@ -1421,7 +1421,7 @@ ${channel === 'email' ? (language === 'it' ? 'GENERA ANCHE UN OGGETTO EMAIL appr
 ${language === 'it' ? 'Istruzioni del dealer:' : 'Dealer instructions:'} ${prompt}
 ${language === 'it' ? 'Contesto (JSON):' : 'Context (JSON):'}\n${JSON.stringify(dataForPrompt)}
 
-${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci SEMPRE in formato JSON valido: {"subject": "oggetto email qui", "message": "messaggio qui"}. NON aggiungere altro testo.' : 'MANDATORY: ALWAYS return in valid JSON format: {"subject": "email subject here", "message": "message here"}. DO NOT add any other text.') : (language === 'it' ? 'Restituisci SOLO il testo del messaggio, senza spiegazioni.' : 'Return ONLY the message text, with no explanations.')}` }
+${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci SEMPRE in formato JSON valido: {"subject": "oggetto email qui", "message": "messaggio qui"}. NON aggiungere altro testo.' : 'MANDATORY: ALWAYS return in valid JSON format: {"subject": "email subject here", "message": "message here"}. DO NOT add any other text.') : (language === 'it' ? 'IMPORTANTE: NON restituire JSON. Restituisci SOLO il testo del messaggio WhatsApp/SMS, senza oggetto, senza spiegazioni, senza formato JSON.' : 'IMPORTANT: DO NOT return JSON. Return ONLY the WhatsApp/SMS message text, no subject, no explanations, no JSON format.')}` }
                     ];
                     console.log('🤖 Calling OpenAI with model: gpt-4o');
                     const completion = await openai.chat.completions.create({ model: 'gpt-4o', messages });
@@ -1445,7 +1445,21 @@ ${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci SEMPRE i
                             console.log('🔄 Using fallback subject:', emailSubject);
                         }
                     } else {
-                        baseMessage = rawResponse;
+                        // Per WhatsApp/SMS, anche se l'AI restituisce JSON, prendiamo solo il messaggio
+                        console.log('🤖 AI raw response for WhatsApp/SMS:', rawResponse);
+                        try {
+                            const parsed = JSON.parse(rawResponse);
+                            if (parsed.message) {
+                                baseMessage = parsed.message;
+                                console.log('⚠️ AI returned JSON for WhatsApp, extracted message only');
+                            } else {
+                                baseMessage = rawResponse;
+                            }
+                        } catch (parseError) {
+                            // Non è JSON, usa direttamente la risposta
+                            baseMessage = rawResponse;
+                            console.log('✅ Using raw response for WhatsApp/SMS');
+                        }
                     }
                     
                     try {

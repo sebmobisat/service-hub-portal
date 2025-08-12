@@ -2489,8 +2489,11 @@
                 if (channel === 'email' && data.email_subject) {
                     const subjectInput = document.getElementById('emailSubjectInput');
                     if (subjectInput) {
-                        subjectInput.value = data.email_subject;
+                        // Pulisci l'oggetto da eventuali caratteri di escape
+                        const cleanSubject = data.email_subject.replace(/\\n/g, ' ').replace(/\\"/g, '"').trim();
+                        subjectInput.value = cleanSubject;
                         subjectInput.placeholder = 'Oggetto generato dall\'AI';
+                        console.log('✅ Email subject populated:', cleanSubject);
                     }
                 }
 
@@ -5859,7 +5862,9 @@
 
                 // Mostra risultati
                 if (data.base_message) {
-                    aiResults.value = data.base_message;
+                    // Converti \n in interruzioni di riga per textarea
+                    const cleanMessage = data.base_message.replace(/\\n/g, '\n');
+                    aiResults.value = cleanMessage;
                 }
 
                 // Mostra oggetto email se generato
