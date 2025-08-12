@@ -1568,14 +1568,6 @@ ${channel === 'email' ? (language === 'it' ? 'Restituisci in formato JSON con su
                             to: `whatsapp:${r.clientPhone}`
                         });
                         sendResult = { success: true, sid: whatsappMessage.sid };
-                        // Billing whatsapp
-                        try {
-                            const unit = 10; // cents
-                            await supabaseAdmin.from('billing_usage_events').insert([{ dealer_id: dealerId, event_type: 'whatsapp', quantity: 1, unit_cost_cents: unit, total_cost_cents: unit }]);
-                            const { data: bal } = await supabaseAdmin.from('dealer_billing_accounts').select('balance_cents').eq('dealer_id', dealerId).order('updated_at', { ascending: false }).limit(1);
-                            const current = bal?.[0]?.balance_cents ?? 0;
-                            await supabaseAdmin.from('dealer_billing_accounts').update({ balance_cents: current - unit, updated_at: new Date().toISOString() }).eq('dealer_id', dealerId);
-                        } catch (e) { console.warn('billing whatsapp event failed', e.message); }
                     } else if (channel === 'whatsapp' && !twilioClient) {
                         console.error('❌ WhatsApp requested but Twilio client not available');
                         sendResult = { success: false, error: 'Twilio client not initialized' };
@@ -1593,8 +1585,8 @@ ${channel === 'email' ? (language === 'it' ? 'Restituisci in formato JSON con su
         }
 
         // Costs
-        const emailCount = send && channel === 'email' ? results.length : 0;
-        const waCount = send && channel === 'whatsapp' ? results.length : 0;
+        const emailCount = send && channel === 'email' ? results.filter(r => r.sendResult?.success).length : 0;
+        const waCount = send && channel === 'whatsapp' ? results.filter(r => r.sendResult?.success).length : 0;
         const email_cents = emailCount * 5;
         const whatsapp_cents = waCount * 10;
         const openai_cents = !send ? 20 : 0; // one AI call per batch (flat for now)
