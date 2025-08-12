@@ -1411,17 +1411,19 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
                     const messages = [
                         { role: 'system', content: language === 'it' ? 'Sei un assistente che scrive messaggi di contatto per clienti di un concessionario.' : 'You are an assistant writing outreach messages to dealership customers.' },
                         { role: 'user', content:
-`${language === 'it' ? 'Scrivi un unico messaggio in' : 'Write a single message in'} ${styleMap[style] || styleMap.professional}.
-${language === 'it' ? 'Includi OBBLIGATORIAMENTE i seguenti placeholder esattamente come scritti (non sostituirli):' : 'MANDATORILY include the following placeholders exactly as written (do not replace them):'} ${[...alwaysTokens, ...selectedTokens].join(' ')}.
+`${language === 'it' ? 'Scrivi un messaggio professionale per clienti di concessionario in stile' : 'Write a professional message for dealership customers in'} ${styleMap[style] || styleMap.professional}.
 
-${language === 'it' ? '🚨 ISTRUZIONI OBBLIGATORIE - SEGUI ESATTAMENTE:\n\n✅ COSA FARE:\n- Usa SOLO {SALUTATION} per il saluto (contiene già il nome personalizzato)\n- Usa SOLO i placeholder dall\'elenco: ' + [...alwaysTokens, ...selectedTokens].join(' ') + '\n- Termina il messaggio SENZA firma (viene aggiunta automaticamente)\n- Per email: rispondi in JSON {"subject": "...", "message": "..."}\n\n❌ COSA NON FARE MAI:\n- NON scrivere [Nome del Concessionario] o [Concessionario] o simili\n- NON aggiungere {NAME} dopo {SALUTATION}\n- NON inventare placeholder non nell\'elenco\n- NON aggiungere firme, cordiali saluti, nomi azienda\n\n📝 TEMPLATE CORRETTO:\n{SALUTATION}\n\n[Il tuo messaggio qui]\n\n[STOP - Non aggiungere altro]' : '🚨 MANDATORY INSTRUCTIONS - FOLLOW EXACTLY:\n\n✅ WHAT TO DO:\n- Use ONLY {SALUTATION} for greeting (already contains personalized name)\n- Use ONLY placeholders from list: ' + [...alwaysTokens, ...selectedTokens].join(' ') + '\n- End message WITHOUT signature (added automatically)\n- For email: respond in JSON {"subject": "...", "message": "..."}\n\n❌ WHAT NEVER TO DO:\n- NEVER write [Dealer Name] or [Dealership] or similar\n- NEVER add {NAME} after {SALUTATION}\n- NEVER invent placeholders not in the list\n- NEVER add signatures, regards, company names\n\n📝 CORRECT TEMPLATE:\n{SALUTATION}\n\n[Your message here]\n\n[STOP - Add nothing more]'}
+${language === 'it' ? 'ISTRUZIONI IMPORTANTI:' : 'IMPORTANT INSTRUCTIONS:'}
+${language === 'it' ? '- Usa SOLO {SALUTATION} per il saluto (contiene già il nome del cliente)' : '- Use ONLY {SALUTATION} for greeting (already contains client name)'}
+${language === 'it' ? '- Includi questi placeholder esattamente come scritti:' : '- Include these placeholders exactly as written:'} ${[...alwaysTokens, ...selectedTokens].join(' ')}
+${language === 'it' ? '- NON aggiungere firme o saluti finali (vengono aggiunti automaticamente)' : '- DO NOT add signatures or final greetings (added automatically)'}
+${language === 'it' ? '- NON inventare placeholder non nell\'elenco' : '- DO NOT invent placeholders not in the list'}
 
-${channel === 'email' ? (language === 'it' ? 'GENERA ANCHE UN OGGETTO EMAIL appropriato. Rispondi in formato JSON: {"subject": "oggetto email", "message": "testo messaggio"}' : 'ALSO GENERATE an appropriate EMAIL SUBJECT. Respond in JSON format: {"subject": "email subject", "message": "message text"}') : ''}
+${language === 'it' ? 'Istruzioni specifiche del dealer:' : 'Dealer specific instructions:'} ${prompt}
 
-${language === 'it' ? 'Istruzioni del dealer:' : 'Dealer instructions:'} ${prompt}
-${language === 'it' ? 'Contesto (JSON):' : 'Context (JSON):'}\n${JSON.stringify(dataForPrompt)}
+${language === 'it' ? 'Dati disponibili:' : 'Available data:'} ${JSON.stringify(dataForPrompt)}
 
-${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci SEMPRE in formato JSON valido: {"subject": "oggetto email qui", "message": "messaggio qui"}. NON aggiungere altro testo.' : 'MANDATORY: ALWAYS return in valid JSON format: {"subject": "email subject here", "message": "message here"}. DO NOT add any other text.') : (language === 'it' ? 'IMPORTANTE: NON restituire JSON. Restituisci SOLO il testo del messaggio WhatsApp/SMS, senza oggetto, senza spiegazioni, senza formato JSON.' : 'IMPORTANT: DO NOT return JSON. Return ONLY the WhatsApp/SMS message text, no subject, no explanations, no JSON format.')}` }
+${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci in formato JSON: {"subject": "oggetto email accattivante", "message": "testo del messaggio"}' : 'MANDATORY: Return in JSON format: {"subject": "engaging email subject", "message": "message text"}') : (language === 'it' ? 'Restituisci SOLO il testo del messaggio, senza JSON.' : 'Return ONLY the message text, no JSON.')}` }
                     ];
                     console.log('🤖 Calling OpenAI with model: gpt-4o');
                     const completion = await openai.chat.completions.create({ model: 'gpt-4o', messages });
@@ -1436,11 +1438,15 @@ ${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci SEMPRE i
                             const parsed = JSON.parse(rawResponse);
                             baseMessage = parsed.message || rawResponse;
                             emailSubject = parsed.subject || '';
+                            
+                            // Pulisci il messaggio da testi di stop
+                            baseMessage = baseMessage.replace(/\[STOP[^\]]*\]/gi, '').trim();
+                            
                             console.log('✅ JSON parsed successfully - subject:', emailSubject, 'message length:', baseMessage.length);
                         } catch (parseError) {
                             console.warn('❌ JSON parsing failed:', parseError.message, 'Raw response:', rawResponse);
                             // Fallback if JSON parsing fails
-                            baseMessage = rawResponse;
+                            baseMessage = rawResponse.replace(/\[STOP[^\]]*\]/gi, '').trim();
                             emailSubject = language === 'it' ? 'Comunicazione Service Hub' : 'Service Hub Communication';
                             console.log('🔄 Using fallback subject:', emailSubject);
                         }
@@ -1460,6 +1466,9 @@ ${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci SEMPRE i
                             baseMessage = rawResponse;
                             console.log('✅ Using raw response for WhatsApp/SMS');
                         }
+                        
+                        // Pulisci il messaggio da testi di stop anche per WhatsApp/SMS
+                        baseMessage = baseMessage.replace(/\[STOP[^\]]*\]/gi, '').trim();
                     }
                     
                     try {
