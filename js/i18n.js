@@ -216,6 +216,8 @@ class I18nManager {
                 'contact.send_to_test_clients_button': 'Invia comunicazione clienti test',
                 'contact.available_tags': 'Tags disponibili (trascina nell\'anteprima)',
                 'contact.with_ai': 'Contatta con AI',
+                'contact.use_template': '📋 Usa Template',
+                'contact.save_template': '💾 Salva Template',
                 
                 // Card Details
                 'card.client': 'Cliente',
@@ -496,6 +498,8 @@ class I18nManager {
                 'manual_contact.success_sent': 'Messaggio inviato con successo a {count} destinatari!',
                 'manual_contact.error_sending': 'Errore nell\'invio: {error}',
                 'manual_contact.contact_without_ai': 'Contatta senza AI',
+                'manual_contact.use_template': '📋 Usa Template',
+                'manual_contact.save_template': '💾 Salva Template',
                 'manual_contact.test_client': 'Cliente Test',
                 'manual_contact.signature': 'Firma',
                 'manual_contact.preview_placeholder': 'L\'anteprima apparirà qui...',
@@ -704,6 +708,8 @@ class I18nManager {
                 'contact.send_to_test_clients_button': 'Send test client communication',
                 'contact.available_tags': 'Available tags (drag to preview)',
                 'contact.with_ai': 'Contact with AI',
+                'contact.use_template': '📋 Use Template',
+                'contact.save_template': '💾 Save Template',
                 
                 // Card Details
                 'card.client': 'Client',
@@ -984,6 +990,8 @@ class I18nManager {
                 'manual_contact.success_sent': 'Message sent successfully to {count} recipients!',
                 'manual_contact.error_sending': 'Error sending: {error}',
                 'manual_contact.contact_without_ai': 'Contact Without AI',
+                'manual_contact.use_template': '📋 Use Template',
+                'manual_contact.save_template': '💾 Save Template',
                 'manual_contact.test_client': 'Test Client',
                 'manual_contact.signature': 'Signature',
                 'manual_contact.preview_placeholder': 'Preview will appear here...',

@@ -7563,6 +7563,229 @@ function generateAIGroupSuggestions(analysis, dealerId) {
     return topSuggestions;
 }
 
+// ============================================================================
+// COMMUNICATION TEMPLATES API
+// ============================================================================
+
+// Get all templates for a dealer
+app.get('/api/templates/:dealerId', async (req, res) => {
+    try {
+        const { dealerId } = req.params;
+        const { channel, type, search } = req.query;
+        
+        console.log(`📄 Getting templates for dealer ${dealerId}`, { channel, type, search });
+        
+        const { supabaseAdmin } = require('./config/supabase.js');
+        
+        let query = supabaseAdmin
+            .from('communication_templates')
+            .select('*')
+            .eq('dealer_id', dealerId)
+            .order('is_favorite', { ascending: false })
+            .order('usage_count', { ascending: false })
+            .order('updated_at', { ascending: false });
+        
+        // Filtri opzionali
+        if (channel && channel !== '') {
+            query = query.eq('channel', channel);
+        }
+        
+        if (type && type !== '') {
+            // Support multiple types separated by comma
+            const types = type.split(',').map(t => t.trim());
+            if (types.length === 1) {
+                query = query.eq('template_type', types[0]);
+            } else {
+                query = query.in('template_type', types);
+            }
+        }
+        
+        if (search && search.trim() !== '') {
+            query = query.or(`name.ilike.%${search}%,description.ilike.%${search}%,message_content.ilike.%${search}%`);
+        }
+        
+        const { data: templates, error } = await query;
+        
+        if (error) {
+            console.error('❌ Error fetching templates:', error);
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        
+        console.log(`✅ Found ${templates.length} templates for dealer ${dealerId}`);
+        res.json({ success: true, data: templates });
+        
+    } catch (error) {
+        console.error('❌ Error in get templates:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Create new template
+app.post('/api/templates', express.json(), async (req, res) => {
+    try {
+        const { 
+            dealer_id, 
+            name, 
+            description, 
+            channel, 
+            style, 
+            template_type, 
+            prompt, 
+            message_content, 
+            email_subject, 
+            is_favorite 
+        } = req.body;
+        
+        console.log(`📄 Creating template "${name}" for dealer ${dealer_id}`);
+        
+        // Validazioni
+        if (!dealer_id || !name || !channel || !style || !template_type || !message_content) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Missing required fields: dealer_id, name, channel, style, template_type, message_content' 
+            });
+        }
+        
+        const { supabaseAdmin } = require('./config/supabase.js');
+        
+        const templateData = {
+            dealer_id,
+            name: name.trim(),
+            description: description?.trim() || null,
+            channel,
+            style,
+            template_type,
+            prompt: prompt?.trim() || null,
+            message_content: message_content.trim(),
+            email_subject: email_subject?.trim() || null,
+            is_favorite: !!is_favorite
+        };
+        
+        const { data: template, error } = await supabaseAdmin
+            .from('communication_templates')
+            .insert(templateData)
+            .select()
+            .single();
+        
+        if (error) {
+            console.error('❌ Error creating template:', error);
+            if (error.code === '23505') { // Unique constraint violation
+                return res.status(409).json({ 
+                    success: false, 
+                    error: 'Un template con questo nome e canale esiste già' 
+                });
+            }
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        
+        console.log(`✅ Created template: ${template.name} (${template.id})`);
+        res.status(201).json({ success: true, data: template });
+        
+    } catch (error) {
+        console.error('❌ Error in create template:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Update template
+app.put('/api/templates/:templateId', express.json(), async (req, res) => {
+    try {
+        const { templateId } = req.params;
+        const updateData = req.body;
+        
+        console.log(`📄 Updating template ${templateId}`);
+        
+        const { supabaseAdmin } = require('./config/supabase.js');
+        
+        const { data: template, error } = await supabaseAdmin
+            .from('communication_templates')
+            .update(updateData)
+            .eq('id', templateId)
+            .select()
+            .single();
+        
+        if (error) {
+            console.error('❌ Error updating template:', error);
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        
+        console.log(`✅ Updated template: ${template.name}`);
+        res.json({ success: true, data: template });
+        
+    } catch (error) {
+        console.error('❌ Error in update template:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Delete template
+app.delete('/api/templates/:templateId', async (req, res) => {
+    try {
+        const { templateId } = req.params;
+        
+        console.log(`📄 Deleting template ${templateId}`);
+        
+        const { supabaseAdmin } = require('./config/supabase.js');
+        
+        const { data: template, error } = await supabaseAdmin
+            .from('communication_templates')
+            .delete()
+            .eq('id', templateId)
+            .select()
+            .single();
+        
+        if (error) {
+            console.error('❌ Error deleting template:', error);
+            return res.status(404).json({ success: false, error: 'Template not found' });
+        }
+        
+        console.log(`✅ Deleted template: ${template.name}`);
+        res.json({ success: true, message: 'Template deleted successfully' });
+        
+    } catch (error) {
+        console.error('❌ Error in delete template:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Increment template usage count
+app.post('/api/templates/:templateId/use', async (req, res) => {
+    try {
+        const { templateId } = req.params;
+        
+        const { supabaseAdmin } = require('./config/supabase.js');
+        
+        // Prima ottieni il template corrente
+        const { data: currentTemplate, error: fetchError } = await supabaseAdmin
+            .from('communication_templates')
+            .select('usage_count')
+            .eq('id', templateId)
+            .single();
+        
+        if (fetchError) throw fetchError;
+        
+        // Poi incrementa il contatore
+        const newUsageCount = (currentTemplate.usage_count || 0) + 1;
+        const { data: template, error } = await supabaseAdmin
+            .from('communication_templates')
+            .update({ usage_count: newUsageCount })
+            .eq('id', templateId)
+            .select('name, usage_count')
+            .single();
+        
+        if (error) {
+            console.error('❌ Error incrementing template usage:', error);
+            return res.status(404).json({ success: false, error: 'Template not found' });
+        }
+        
+        res.json({ success: true, data: template });
+        
+    } catch (error) {
+        console.error('❌ Error in increment template usage:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
 // Start the server
 app.listen(PORT, () => {
     console.log(` Server running on port ${PORT}`);
@@ -7573,4 +7796,5 @@ app.listen(PORT, () => {
     console.log(` Root endpoint available at: http://localhost:${PORT}/`);
     console.log(` Open http://localhost:${PORT} in your browser`);
     console.log(` Railway healthcheck will use: /status`);
+    console.log(` 📄 Templates API available at: /api/templates`);
 });

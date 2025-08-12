@@ -1,0 +1,1315 @@
+<!DOCTYPE html>
+<html lang="it" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impostazioni - Service Hub Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico">
+    <link rel="icon" type="image/svg+xml" href="/favicon/favicon.svg">
+    <link rel="icon" type="image/png" href="/favicon/favicon-16x16.png" sizes="16x16">
+    <link rel="icon" type="image/png" href="/favicon/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="/favicon/favicon-48x48.png" sizes="48x48">
+    <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" sizes="180x180">
+    <link rel="manifest" href="/favicon/manifest.json">
+    <style>
+      #dealerSignatureForm .form-group { margin-bottom: 0.5rem !important; }
+      /* Compact form styles (only for Comunicazioni section) */
+      .compact-form .form-input { padding: 0.5rem !important; min-height: 36px !important; }
+      .compact-form .form-label { margin-bottom: 0.25rem !important; font-size: 0.8125rem !important; text-align: left !important; }
+      .compact-form .form-group { margin-bottom: 0.5rem !important; }
+      /* Address wraps to max 2 lines */
+      .address-two-lines {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        white-space: normal;
+        word-break: break-word;
+      }
+    </style>
+    
+    <!-- Authentication Configuration -->
+    <script src="/js/auth-config.js"></script>
+    <!-- Custom Dialog -->
+    <script src="/js/custom-dialog.js"></script>
+</head>
+<body class="min-h-screen theme-transition">
+    <!-- Sidebar -->
+    <div class="sidebar fixed left-0 top-0 h-full w-16 flex flex-col py-4 z-50">
+        <!-- Logo -->
+        <div class="flex items-center justify-center mb-8">
+            <img src="/images/greenbox-logo.png" alt="Service Hub" class="w-10 h-10 object-contain" onerror="this.style.display='none'; document.getElementById('logoFallback').style.display='flex'" id="sidebarLogo">
+            <!-- Fallback logo if image fails -->
+            <div class="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center text-white font-bold text-xs" style="display: none;" id="logoFallback">
+                SH
+            </div>
+        </div>
+        
+        <!-- Menu Items -->
+        <nav class="flex-1 py-4">
+            <!-- Dashboard -->
+            <div class="relative group">
+                <button onclick="window.location.href='/'" class="sidebar-nav-item w-full p-3 flex justify-center rounded-lg transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                </button>
+                 <div class="sidebar-tooltip absolute left-full ml-2 px-2 py-1 text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-60" data-i18n="nav.dashboard"></div>
+            </div>
+            
+            <!-- Certificates -->
+            <div class="relative group mt-2">
+                <button onclick="window.location.href='/certificates.html'" class="sidebar-nav-item w-full p-3 flex justify-center rounded-lg transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </button>
+                 <div class="sidebar-tooltip absolute left-full ml-2 px-2 py-1 text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-60" data-i18n="nav.certificates"></div>
+                 </div>
+
+            <!-- Billing / Credit -->
+            <div class="relative group mt-2">
+                <button onclick="window.location.href='/billing.html'" class="sidebar-nav-item w-full p-3 flex justify-center rounded-lg transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M5 6h14a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2zm4 10h.01M8 14h8" />
+                    </svg>
+                </button>
+                <div class="sidebar-tooltip absolute left-full ml-2 px-2 py-1 text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-60" data-i18n="nav.billing"></div>
+            </div>
+            
+            <!-- Settings (Active) -->
+            <div class="relative group mt-2">
+                <button class="sidebar-nav-item active w-full p-3 flex justify-center rounded-lg">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                </button>
+                 <div class="sidebar-tooltip absolute left-full ml-2 px-2 py-1 text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-60" data-i18n="nav.settings"></div>
+            </div>
+        </nav>
+        
+        <!-- Logout -->
+        <div class="relative group mt-auto">
+            <button onclick="logout()" class="sidebar-nav-item w-full p-3 flex justify-center rounded-lg hover:bg-red-600 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+            </button>
+             <div class="sidebar-tooltip absolute left-full ml-2 px-2 py-1 text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-60" data-i18n="nav.logout"></div>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <div style="margin-left: 64px;">
+        <!-- Header -->
+        <header class="page-header px-4 py-3">
+            <div class="flex items-center justify-between">
+                                 <div>
+                     <h1 class="page-title text-xl font-semibold" data-i18n="page.settings.title"></h1>
+                     <p class="page-subtitle text-sm" data-i18n="page.settings.subtitle"></p>
+                 </div>
+                                 <div class="flex items-center space-x-4 pr-4">
+                     <img id="headerLogo" src="/images/header_logo_light_theme.png?v10" alt="Mobisat" class="h-8 w-auto object-contain">
+                 </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8" style="max-width: 65%">
+            <div class="grid gap-4">
+                 <!-- Preferenze: Language + Theme in one row (two columns) -->
+                 <div class="settings-card rounded-lg p-6 border">
+                     <h2 class="settings-title text-lg font-semibold mb-4">Preferenze</h2>
+                     <div class="relative grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+                         <!-- Central divider -->
+                         <div class="hidden md:block absolute top-0 bottom-0 left-1/2" style="width:1px; background-color: var(--border-color); transform: translateX(-50%);"></div>
+                         <!-- Language Column -->
+                         <div class="max-w-sm px-2">
+                             <h3 class="text-base font-semibold mb-2" data-i18n="settings.language.title"></h3>
+                             <p class="settings-description text-sm mb-4" data-i18n="settings.language.description"></p>
+                              <div class="flex justify-start space-x-4">
+                                  <button id="lang-it" onclick="changeLanguage('it')" class="btn-theme btn-theme-inactive px-4 py-2 rounded-lg transition-colors" data-i18n="settings.language.italian"></button>
+                                  <button id="lang-en" onclick="changeLanguage('en')" class="btn-theme btn-theme-inactive px-4 py-2 rounded-lg transition-colors" data-i18n="settings.language.english"></button>
+                              </div>
+                         </div>
+                         <!-- Theme Column -->
+                         <div class="max-w-sm px-2">
+                             <h3 class="text-base font-semibold mb-2" data-i18n="settings.theme.title"></h3>
+                             <p class="settings-description text-sm mb-4" data-i18n="settings.theme.description"></p>
+                              <div class="flex justify-start space-x-4">
+                                 <button id="themeDark" class="btn-theme btn-theme-active px-4 py-2 rounded-lg transition-colors" data-i18n="settings.theme.dark"></button>
+                                 <button id="themeLight" class="btn-theme btn-theme-inactive px-4 py-2 rounded-lg transition-colors" data-i18n="settings.theme.light"></button>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+
+                                 <!-- Comunicazioni: Firma Dealer e Clienti Test (sezione autonoma) -->
+                <div class="settings-card rounded-lg p-6 border">
+                    <h2 class="settings-title text-lg font-semibold mb-2" data-en="Communications" data-it="Comunicazioni">Comunicazioni</h2>
+                    <p class="settings-description text-sm mb-6" data-en="On this page, you can create the signatures to include in the messages you send to your customers. You can also set up test customers to preview and verify your communications before sending them out in bulk." data-it="In questa pagina puoi creare le firme da includere nei messaggi che invii ai tuoi clienti. Puoi anche configurare clienti test per visualizzare in anteprima e verificare le tue comunicazioni prima di inviarle in massa.">In questa pagina puoi creare le firme da includere nei messaggi che invii ai tuoi clienti. Puoi anche configurare clienti test per visualizzare in anteprima e verificare le tue comunicazioni prima di inviarle in massa.</p>
+                     <div class="relative grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+                         <!-- Central divider -->
+                         <div class="hidden md:block absolute top-0 bottom-0 left-1/2" style="width:1px; background-color: var(--border-color); transform: translateX(-50%);"></div>
+                          <!-- Firma Dealer -->
+                          <div class="w-full max-w-none min-w-0 compact-form">
+                              <h3 class="text-base font-semibold mb-3" data-en="Dealer Signature" data-it="Firma Dealer">Firma Dealer</h3>
+                              <form id="dealerSignatureForm" class="space-y-2 w-full max-w-none min-w-0">
+                                 <div class="grid grid-cols-1 gap-1.5">
+                                      <div class="form-group">
+                                          <label class="form-label" for="sig_company_name" data-en="Dealer name" data-it="Nome concessionaria">Nome concessionaria</label>
+                                           <input class="form-input" id="sig_company_name" required />
+                                      </div>
+                                      <div class="form-group">
+                                          <label class="form-label" for="sig_address1" data-en="Address 1" data-it="Indirizzo 1">Indirizzo 1</label>
+                                          <input class="form-input" id="sig_address1" />
+                                      </div>
+                                      <div class="form-group">
+                                          <label class="form-label" for="sig_address2" data-en="Address 2" data-it="Indirizzo 2">Indirizzo 2</label>
+                                          <input class="form-input" id="sig_address2" />
+                                      </div>
+                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                                          <div class="form-group">
+                                              <label class="form-label" for="sig_city" data-en="City" data-it="Città">Città</label>
+                                              <input class="form-input" id="sig_city" />
+                                          </div>
+                                          <div class="form-group">
+                                              <label class="form-label" for="sig_provincia" data-en="Province" data-it="Provincia">Provincia</label>
+                                              <input class="form-input" id="sig_provincia" />
+                                          </div>
+                                      </div>
+                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-1.5">
+                                          <div class="form-group">
+                                              <label class="form-label" for="sig_postcode" data-en="Postcode" data-it="CAP">CAP</label>
+                                              <input class="form-input" id="sig_postcode" />
+                                          </div>
+                                          <div class="form-group">
+                                              <label class="form-label" for="sig_phone" data-en="Phone" data-it="Telefono">Telefono</label>
+                                              <input class="form-input" id="sig_phone" />
+                                          </div>
+                                      </div>
+                                      <div class="form-group">
+                                          <label class="form-label" for="sig_email" data-en="Email" data-it="Email">Email</label>
+                                          <input class="form-input" id="sig_email" />
+                                      </div>
+                                  </div>
+                                  <div class="flex gap-2 mt-2">
+                                      <button type="button" id="saveSignatureBtn" class="btn btn-primary" data-en="Save" data-it="Salva">Salva</button>
+                                      <button type="button" id="resetSignatureBtn" class="btn btn-secondary" data-en="Reset" data-it="Reset">Reset</button>
+                                  </div>
+                              </form>
+                             <div class="mt-4">
+                                  <h4 class="text-sm font-semibold mb-2" data-en="Saved signatures" data-it="Firme salvate">Firme salvate</h4>
+                                 <div id="signaturesList" class="space-y-2"></div>
+                             </div>
+                         </div>
+
+                          <!-- Clienti Test -->
+                          <div class="w-full max-w-none min-w-0 compact-form">
+                              <h3 class="text-base font-semibold mb-3" data-en="Test Clients" data-it="Clienti Test">Clienti Test</h3>
+                            <form id="testClientForm" class="space-y-2 w-full max-w-none min-w-0 compact-form">
+                                <!-- Sezione: Dati cliente -->
+                                <h4 class="text-sm font-semibold mt-1" data-en="Client Data" data-it="Dati cliente">Dati cliente</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                <div class="form-group" style="margin-bottom:0.5rem">
+                                         <label class="form-label" for="tc_first_name" data-en="First name" data-it="Nome">Nome</label>
+                                          <input class="form-input" id="tc_first_name" required />
+                                     </div>
+                                <div class="form-group" style="margin-bottom:0.5rem">
+                                         <label class="form-label" for="tc_last_name" data-en="Last name" data-it="Cognome">Cognome</label>
+                                          <input class="form-input" id="tc_last_name" required />
+                                     </div>
+                                 </div>
+                                <div class="form-group" style="margin-bottom:0.5rem">
+                                       <label class="form-label" for="tc_company" data-en="Company" data-it="Società">Società</label>
+                                     <input class="form-input" id="tc_company" />
+                                 </div>
+                                 <div class="form-group">
+                                       <label class="form-label" for="tc_address1" data-en="Address 1" data-it="Indirizzo 1">Indirizzo 1</label>
+                                     <input class="form-input" id="tc_address1" />
+                                 </div>
+                                 <div class="form-group">
+                                       <label class="form-label" for="tc_address2" data-en="Address 2" data-it="Indirizzo 2">Indirizzo 2</label>
+                                     <input class="form-input" id="tc_address2" />
+                                 </div>
+                                  <!-- Row: Città + Provincia -->
+                                  <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                      <div class="form-group">
+                                           <label class="form-label" for="tc_city" data-en="City" data-it="Città">Città</label>
+                                          <input class="form-input" id="tc_city" />
+                                      </div>
+                                      <div class="form-group">
+                                           <label class="form-label" for="tc_provincia" data-en="Province" data-it="Provincia">Provincia</label>
+                                          <input class="form-input" id="tc_provincia" />
+                                      </div>
+                                  </div>
+                                  <!-- Row: CAP + Country -->
+                                  <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                      <div class="form-group">
+                                           <label class="form-label" for="tc_postcode" data-en="Postcode" data-it="CAP">CAP</label>
+                                          <input class="form-input" id="tc_postcode" />
+                                      </div>
+                                      <div class="form-group">
+                                           <label class="form-label" for="tc_country" data-en="Country" data-it="Paese">Paese</label>
+                                          <select class="form-input" id="tc_country">
+                                              <option value="">-</option>
+                                          </select>
+                                      </div>
+                                  </div>
+                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                     <div class="form-group">
+                                           <label class="form-label" for="tc_phone" data-en="Phone" data-it="Telefono">Telefono</label>
+                                         <input class="form-input" id="tc_phone" />
+                                     </div>
+                                     <div class="form-group">
+                                           <label class="form-label" for="tc_email" data-en="Email" data-it="Email">Email</label>
+                                         <input class="form-input" id="tc_email" />
+                                     </div>
+                                 </div>
+                                <!-- Sezione: Dati veicolo -->
+                                <h4 class="text-sm font-semibold mt-3" data-en="Vehicle Data" data-it="Dati veicolo">Dati veicolo</h4>
+                                <!-- Row 1: Marca + Modello -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                     <div class="form-group">
+                                          <label class="form-label" for="tc_vehicle_brand" data-en="Brand" data-it="Marca">Marca</label>
+                                         <input class="form-input" id="tc_vehicle_brand" />
+                                     </div>
+                                     <div class="form-group">
+                                          <label class="form-label" for="tc_vehicle_model" data-en="Model" data-it="Modello">Modello</label>
+                                         <input class="form-input" id="tc_vehicle_model" />
+                                     </div>
+                                </div>
+                                <!-- Row 2: Targa + Anno -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                     <div class="form-group">
+                                          <label class="form-label" for="tc_plate" data-en="Plate" data-it="Targa">Targa</label>
+                                         <input class="form-input" id="tc_plate" />
+                                     </div>
+                                     <div class="form-group">
+                                          <label class="form-label" for="tc_year" data-en="Year" data-it="Anno">Anno</label>
+                                         <input class="form-input" id="tc_year" type="number" min="1900" max="2030" />
+                                     </div>
+                                </div>
+                                <!-- Row 3: Alimentazione + Odometro -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                     <div class="form-group">
+                                          <label class="form-label" for="tc_fuel_type" data-en="Fuel type" data-it="Alimentazione">Alimentazione</label>
+                                         <input class="form-input" id="tc_fuel_type" />
+                                     </div>
+                                     <div class="form-group">
+                                          <label class="form-label" for="tc_odometer" data-en="Odometer (Km)" data-it="Odometro (Km)">Odometro (Km)</label>
+                                         <input class="form-input" id="tc_odometer" type="number" min="0" />
+                                     </div>
+                                </div>
+                                <!-- Row 4: VIN + Serial -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                     <div class="form-group">
+                                          <label class="form-label" for="tc_vin" data-en="VIN" data-it="VIN">VIN</label>
+                                         <input class="form-input" id="tc_vin" maxlength="17" />
+                                     </div>
+                                     <div class="form-group">
+                                          <label class="form-label" for="tc_serial" data-en="Serial" data-it="Seriale">Serial</label>
+                                         <input class="form-input" id="tc_serial" />
+                                     </div>
+                                </div>
+                                 <div class="flex gap-2 mt-2">
+                                     <button type="button" id="saveTestClientBtn" class="btn btn-primary" data-en="Save" data-it="Salva">Salva</button>
+                                     <button type="button" id="resetTestClientBtn" class="btn btn-secondary" data-en="Reset" data-it="Reset">Reset</button>
+                                 </div>
+                             </form>
+                             <div class="mt-4">
+                                  <h4 class="text-sm font-semibold mb-2" data-en="Saved test clients" data-it="Clienti test salvati">Clienti test salvati</h4>
+                                 <div id="testClientsList" class="space-y-2"></div>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+
+                <!-- Gestione Template -->
+                <div class="settings-card rounded-lg p-6 border">
+                    <h2 class="settings-title text-lg font-semibold mb-2" data-en="Template Management" data-it="Gestione Template">Gestione Template</h2>
+                    <p class="settings-description text-sm mb-6" data-en="Create, edit, and manage your communication templates for AI-generated and manual messages. Templates can be used across email, WhatsApp, and SMS channels." data-it="Crea, modifica e gestisci i tuoi template di comunicazione per messaggi generati dall'AI e manuali. I template possono essere utilizzati per email, WhatsApp e SMS.">Crea, modifica e gestisci i tuoi template di comunicazione per messaggi generati dall'AI e manuali. I template possono essere utilizzati per email, WhatsApp e SMS.</p>
+                    
+                    <div class="space-y-6">
+                        <!-- Template Creation Form -->
+                        <div class="border rounded-lg p-4">
+                            <h3 class="text-base font-semibold mb-4" data-en="Create New Template" data-it="Crea Nuovo Template">Crea Nuovo Template</h3>
+                            <form id="templateForm" class="space-y-4">
+                                <!-- Row 1: Nome + Descrizione -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="form-group">
+                                        <label class="form-label" for="tmpl_name" data-en="Template Name" data-it="Nome Template">Nome Template</label>
+                                        <input class="form-input" id="tmpl_name" required maxlength="100" placeholder="Es. Promemoria Tagliando" />
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="tmpl_description" data-en="Description" data-it="Descrizione">Descrizione</label>
+                                        <input class="form-input" id="tmpl_description" maxlength="255" placeholder="Breve descrizione del template" />
+                                    </div>
+                                </div>
+
+                                <!-- Row 2: Canale + Stile + Tipo -->
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="form-group">
+                                        <label class="form-label" for="tmpl_channel" data-en="Channel" data-it="Canale">Canale</label>
+                                        <select class="form-input" id="tmpl_channel" required>
+                                            <option value="">-- Seleziona Canale --</option>
+                                            <option value="email">📧 Email</option>
+                                            <option value="whatsapp">💬 WhatsApp</option>
+                                            <option value="sms">📱 SMS</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="tmpl_style" data-en="Style" data-it="Stile">Stile</label>
+                                        <select class="form-input" id="tmpl_style" required>
+                                            <option value="">-- Seleziona Stile --</option>
+                                            <option value="professional">Professionale</option>
+                                            <option value="formal">Formale</option>
+                                            <option value="informal">Informale</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label" for="tmpl_type" data-en="Template Type" data-it="Tipo Template">Tipo Template</label>
+                                        <select class="form-input" id="tmpl_type" required onchange="toggleTemplateFields()">
+                                            <option value="">-- Seleziona Tipo --</option>
+                                            <option value="ai">AI (solo prompt)</option>
+                                            <option value="manual">Manuale (solo contenuto)</option>
+                                            <option value="hybrid">Ibrido (prompt + contenuto)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <!-- Oggetto Email (solo per email) -->
+                                <div class="form-group" id="emailSubjectGroup" style="display: none;">
+                                    <label class="form-label" for="tmpl_email_subject" data-en="Email Subject" data-it="Oggetto Email">Oggetto Email</label>
+                                    <input class="form-input" id="tmpl_email_subject" placeholder="Es. Promemoria Tagliando - {VEICOLO} {TARGA}" />
+                                    <div class="text-xs text-gray-500 mt-1" data-en="Use placeholders like {NOME}, {VEICOLO}, {TARGA}, etc." data-it="Usa placeholder come {NOME}, {VEICOLO}, {TARGA}, ecc.">Usa placeholder come {NOME}, {VEICOLO}, {TARGA}, ecc.</div>
+                                </div>
+
+                                <!-- Prompt AI -->
+                                <div class="form-group" id="promptGroup" style="display: none;">
+                                    <label class="form-label" for="tmpl_prompt" data-en="AI Prompt" data-it="Prompt AI">Prompt AI</label>
+                                    <textarea class="form-input" id="tmpl_prompt" rows="3" placeholder="Es. Scrivi un promemoria professionale per il tagliando del veicolo..."></textarea>
+                                    <div class="text-xs text-gray-500 mt-1" data-en="Instructions for the AI to generate the message content" data-it="Istruzioni per l'AI per generare il contenuto del messaggio">Istruzioni per l'AI per generare il contenuto del messaggio</div>
+                                </div>
+
+                                <!-- Contenuto Messaggio -->
+                                <div class="form-group" id="contentGroup" style="display: none;">
+                                    <label class="form-label" for="tmpl_content" data-en="Message Content" data-it="Contenuto Messaggio">Contenuto Messaggio</label>
+                                    <textarea class="form-input" id="tmpl_content" rows="6" placeholder="Es. {SALUTATION},&#10;&#10;La contattiamo per ricordarle che il suo {VEICOLO} con targa {TARGA} ha raggiunto {KM} chilometri..."></textarea>
+                                    <div class="text-xs text-gray-500 mt-1" data-en="Message content with placeholders like {SALUTATION}, {NOME}, {VEICOLO}, etc." data-it="Contenuto del messaggio con placeholder come {SALUTATION}, {NOME}, {VEICOLO}, ecc.">Contenuto del messaggio con placeholder come {SALUTATION}, {NOME}, {VEICOLO}, ecc.</div>
+                                </div>
+
+                                <!-- Preferito -->
+                                <div class="form-group">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="tmpl_favorite" class="mr-2" />
+                                        <span class="text-sm" data-en="Mark as favorite" data-it="Segna come preferito">Segna come preferito</span>
+                                    </label>
+                                </div>
+
+                                <!-- Buttons -->
+                                <div class="flex gap-2">
+                                    <button type="button" id="saveTemplateBtn" class="btn btn-primary" data-en="Save Template" data-it="Salva Template">Salva Template</button>
+                                    <button type="button" id="resetTemplateBtn" class="btn btn-secondary" data-en="Reset" data-it="Reset">Reset</button>
+                                    <button type="button" id="cancelEditBtn" class="btn btn-secondary" style="display: none;" data-en="Cancel Edit" data-it="Annulla Modifica" onclick="cancelTemplateEdit()">Annulla Modifica</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Templates List -->
+                        <div class="border rounded-lg p-4">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-base font-semibold" data-en="Saved Templates" data-it="Template Salvati">Template Salvati</h3>
+                                <div class="flex items-center gap-2">
+                                    <label class="text-sm" data-en="Filter by:" data-it="Filtra per:">Filtra per:</label>
+                                    <select id="filterChannel" class="form-input text-sm py-1" onchange="refreshTemplates()">
+                                        <option value="">Tutti i canali</option>
+                                        <option value="email">📧 Email</option>
+                                        <option value="whatsapp">💬 WhatsApp</option>
+                                        <option value="sms">📱 SMS</option>
+                                    </select>
+                                    <select id="filterType" class="form-input text-sm py-1" onchange="refreshTemplates()">
+                                        <option value="">Tutti i tipi</option>
+                                        <option value="ai">AI</option>
+                                        <option value="manual">Manuale</option>
+                                        <option value="hybrid">Ibrido</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="templatesList" class="space-y-3">
+                                <div class="text-sm text-gray-400">Caricamento template...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                                 <!-- Dealer Information -->
+                 <div class="settings-card rounded-lg p-6 border">
+                     <h2 class="settings-title text-lg font-semibold mb-4" data-i18n="settings.dealer.title">Informazioni Dealer</h2>
+                     <div class="relative grid grid-cols-1 md:grid-cols-2 gap-6">
+                         <!-- Central divider -->
+                         <div class="hidden md:block absolute top-0 bottom-0 left-1/2" style="width:1px; background-color: var(--border-color); transform: translateX(-50%);"></div>
+                         <!-- Colonna 1 -->
+                         <section class="space-y-3 w-full max-w-none min-w-0 px-2">
+                             <div class="flex items-start gap-2 md:whitespace-nowrap flex-wrap">
+                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 21h18M5 21V7a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v14M9 7h2m-2 4h2m-2 4h2m4-8h2m-2 4h2m-2 4h2"/></svg>
+                                <span class="settings-description text-sm" data-en="Dealer Name:" data-it="Nome Concessionaria:">Nome Concessionaria:</span>
+                                 <span class="settings-title text-base" id="dealerNameDisplay">-</span>
+                             </div>
+                             <div class="flex items-center gap-2 md:whitespace-nowrap flex-wrap">
+                                 <span class="settings-description text-sm" data-en="Dealer ID:" data-it="ID Dealer:">ID Dealer:</span>
+                                 <span id="dealerIdDisplay" class="font-mono text-sm px-2 py-0.5 rounded bg-[var(--bg-tertiary)]">-</span>
+                             </div>
+                             <div class="flex items-center gap-2 md:whitespace-nowrap flex-wrap">
+                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M22 8l-8.586 5.724a2 2 0 0 1-2.828 0L2 8"/></svg>
+                                <span class="settings-description text-sm" data-en="Dealer login email:" data-it="Email login dealer:">Email login dealer:</span>
+                                 <span class="settings-title text-base" id="companyLoginEmail">-</span>
+                             </div>
+                             <div class="flex items-center gap-2 md:whitespace-nowrap flex-wrap">
+                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" ry="2" stroke-width="1.5"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 9h6M7 12h4"/></svg>
+                                 <span class="settings-description text-sm" data-en="Tax data:" data-it="Dati fiscali:">Dati fiscali:</span>
+                                 <span class="settings-title text-base" id="companyTaxCode">-</span>
+                             </div>
+                         </section>
+
+                        <!-- Colonna 2 -->
+                         <section class="space-y-3 w-full max-w-none min-w-0 px-2">
+                             <div class="flex items-center gap-2 md:whitespace-nowrap flex-wrap">
+                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2 5a2 2 0 0 1 2-2h2l2 5-2 1a12 12 0 0 0 7 7l1-2 5 2v2a2 2 0 0 1-2 2h-1C8.82 20 4 15.18 4 9V8a2 2 0 0 1 2-2"/></svg>
+                                <span class="settings-description text-sm" data-en="Phone:" data-it="Telefono:">Telefono:</span>
+                                 <span class="settings-title text-base" id="companyPhoneNumber">-</span>
+                             </div>
+                             <div class="flex items-center gap-2 md:whitespace-nowrap flex-wrap">
+                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a4 4 0 1 1-6 0 4 4 0 0 1 6 0Z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 21a7 7 0 1 1 14 0"/></svg>
+                                <span class="settings-description text-sm" data-en="Mobisat Tech Ref.:" data-it="Ref. Tecnico Mobisat:">Ref. Tecnico Mobisat:</span>
+                                 <span class="settings-title text-base" id="companyMobisatTechRefName">-</span>
+                             </div>
+                             <div class="flex items-center gap-2 md:whitespace-nowrap flex-wrap">
+                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2 5a2 2 0 0 1 2-2h2l2 5-2 1a12 12 0 0 0 7 7l1-2 5 2v2a2 2 0 0 1-2 2h-1C8.82 20 4 15.18 4 9V8a2 2 0 0 1 2-2"/></svg>
+                                <span class="settings-description text-sm" data-en="Tech Ref. Phone:" data-it="Telefono Ref. Tecnico:">Telefono Ref. Tecnico:</span>
+                                 <span class="settings-title text-base" id="companyMobisatTechRefPhone">-</span>
+                         </div>
+                              <div class="flex items-center gap-2 md:whitespace-nowrap flex-wrap">
+                                <span class="settings-description text-sm inline-flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M12 21s7-4.35 7-10a7 7 0 1 0-14 0c0 5.65 7 10 7 10z"></path>
+                                        <circle cx="12" cy="11" r="3" fill="#ffffff"></circle>
+                                    </svg>
+                                    <span data-en="Address:" data-it="Indirizzo:">Indirizzo:</span>
+                                </span>
+                                <span id="companyAddressFull" class="settings-title text-base address-two-lines min-w-0 w-full md:w-auto">-</span>
+                         </div>
+                         </section>
+                     </div>
+                 </div>
+
+                                 <!-- System Information -->
+                 <div class="settings-card rounded-lg p-6 border">
+                     <h2 class="settings-title text-lg font-semibold mb-4" data-i18n="settings.system.title"></h2>
+                      <div class="relative grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+                         <!-- Central divider -->
+                         <div class="hidden md:block absolute top-0 bottom-0 left-1/2" style="width:1px; background-color: var(--border-color); transform: translateX(-50%);"></div>
+                         <!-- Version -->
+                         <div class="max-w-sm px-2 text-left">
+                             <p class="settings-description text-sm" data-i18n="settings.system.version"></p>
+                             <p class="settings-title">Service Hub Portal v1.0</p>
+                         </div>
+                         <!-- Databases -->
+                         <div class="max-w-sm px-2 space-y-1.5 text-left">
+                             <div class="flex items-center gap-2">
+                                 <p class="settings-description text-sm" data-en="Database 1:" data-it="Database 1:">Database 1:</p>
+                                 <span id="db1Status" class="settings-title text-base text-green-400 inline-flex items-center gap-2">-</span>
+                             </div>
+                             <div class="flex items-center gap-2">
+                                 <p class="settings-description text-sm" data-en="Database 2:" data-it="Database 2:">Database 2:</p>
+                                 <span id="db2Status" class="settings-title text-base text-green-400 inline-flex items-center gap-2">-</span>
+                             </div>
+                         </div>
+                     </div>
+                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- Authentication Guard -->
+    <script src="/js/auth-guard.js"></script>
+    <script src="/js/theme.js"></script>
+    <script src="/js/i18n.js"></script>
+    
+    <script>
+        // Logo switcher function
+        function updateHeaderLogo() {
+            const logo = document.getElementById('headerLogo');
+            if (!logo) return;
+            
+            const isDark = document.documentElement.classList.contains('dark');
+            
+            if (isDark) {
+                // Dark mode -> use header_logo_dark_theme.png
+                logo.src = '/images/header_logo_dark_theme.png?v10';
+            } else {
+                // Light mode -> use header_logo_light_theme.png  
+                logo.src = '/images/header_logo_light_theme.png?v10';
+            }
+        }
+        
+        // Run on page load
+        document.addEventListener('DOMContentLoaded', updateHeaderLogo);
+        
+        // Watch for theme changes
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    updateHeaderLogo();
+                }
+            });
+        });
+        
+        // Start observing
+        observer.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+    </script>
+
+    
+    <script>
+        // Load dealer information from database
+        async function loadDealerInfo() {
+            try {
+                // Get current dealer ID from localStorage - support both auth systems
+                let dealerId = null;
+                
+                // Try servicehub-user first (new system)
+                const servicehubUser = localStorage.getItem('servicehub-user');
+                if (servicehubUser) {
+                    try {
+                        const parsed = JSON.parse(servicehubUser);
+                        dealerId = parsed.id;
+                        console.log('✅ Found dealer ID in servicehub-user:', dealerId);
+                    } catch (e) {
+                        console.warn('⚠️ Invalid servicehub-user format');
+                    }
+                }
+                
+                // Fallback to legacy authData
+                if (!dealerId) {
+                    const authData = localStorage.getItem('authData');
+                    if (authData) {
+                        try {
+                            const parsed = JSON.parse(authData);
+                            dealerId = parsed.dealerId;
+                            console.log('✅ Found dealer ID in authData:', dealerId);
+                        } catch (e) {
+                            console.warn('⚠️ Invalid authData format');
+                        }
+                    }
+                }
+                
+                if (!dealerId) {
+                    throw new Error('❌ CRITICAL: No dealerId found in any auth data');
+                }
+                
+
+                
+                // Make API call to get dealer information
+                const response = await fetch(`/api/dealer/${dealerId}`);
+                const data = await response.json();
+                
+                const dealerIdEl = document.getElementById('dealerIdDisplay');
+                const dealerNameEl = document.getElementById('dealerNameDisplay');
+                
+                if (data.success && data.dealer) {
+                    const d = data.dealer;
+                    if (dealerIdEl) dealerIdEl.textContent = d.id ?? dealerId;
+                    if (dealerNameEl) dealerNameEl.textContent = d.companyName || '-';
+
+                    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val ?? '-'; };
+                    // Compose full address for display and tooltip
+                    const addressFull = document.getElementById('companyAddressFull');
+                    if (addressFull) {
+                        const parts = [d.companyAddress1, d.companyAddress2, d.companyPostcode, d.companyCity, d.companyProvincia, d.companyCountry]
+                            .filter(Boolean);
+                        const fullAddress = parts.join(' ');
+                        addressFull.textContent = fullAddress || '-';
+                        addressFull.title = fullAddress; // tooltip nativo
+                    }
+                    set('companyPhoneNumber', d.companyPhoneNumber);
+                    set('companyTaxCode', d.companyTaxCode);
+                    set('companyMobisatTechRefName', d.companyMobisatTechRefName);
+                    set('companyMobisatTechRefPhone', d.companyMobisatTechRefPhone);
+                    set('companyLoginEmail', d.companyLoginEmail);
+
+                } else {
+                    // Fallback to stored dealer name
+                    if (dealerIdEl) dealerIdEl.textContent = dealerId;
+                    if (dealerNameEl) {
+                        const fallbackName = parsed.dealerName || 'Unknown Dealer';
+                        dealerNameEl.textContent = fallbackName;
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error loading dealer info:', error);
+                
+                // Show error message
+                const dealerIdEl = document.getElementById('dealerIdDisplay');
+                const dealerNameEl = document.getElementById('dealerNameDisplay');
+                
+                if (dealerIdEl) dealerIdEl.textContent = 'Error';
+                if (dealerNameEl) dealerNameEl.textContent = 'Error loading dealer info';
+            }
+        }
+
+        // Logout function
+        async function logout() {
+            const confirmed = await window.customDialog.confirm(
+                t('dialog.logout_title'),
+                t('message.logout_confirm'),
+                t('button.logout'),
+                t('button.cancel')
+            );
+            
+            if (confirmed) {
+                // Use auth manager if available, otherwise clear localStorage
+                if (window.authManager) {
+                    window.authManager.clearAuthData();
+                    window.authManager.redirectToLogout();
+                } else {
+                    localStorage.clear();
+                    window.location.href = '/pages/login.html';
+                }
+            }
+        }
+
+        async function updateDbStatus() {
+            try {
+                const res = await fetch('/status');
+                const data = await res.json();
+                const db1 = document.getElementById('db1Status');
+                const db2 = document.getElementById('db2Status');
+                const ok = `<span class="inline-flex items-center gap-2"><span style="display:inline-block;width:18px;height:18px;border-radius:4px;background:#34d399;position:relative;box-shadow:inset 0 0 0 2px rgba(0,0,0,0.08)"></span><span style="color:#34d399">${t('status.connected')}</span></span>`;
+                if (db1) db1.innerHTML = ok;
+                if (db2) db2.innerHTML = ok;
+            } catch (_) {
+                const db1 = document.getElementById('db1Status');
+                const db2 = document.getElementById('db2Status');
+                if (db1) db1.textContent = t('status.error');
+                if (db2) db2.textContent = t('status.error');
+            }
+        }
+
+        // Initialize page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication first
+            if (window.authManager && !window.authManager.isAuthenticated()) {
+                window.authManager.redirectToLogin();
+                return;
+            }
+            
+            // Load dealer info
+            loadDealerInfo();
+            // Update DB status (Mobisat + Supabase)
+            updateDbStatus();
+
+            // Comunicazioni: wire handlers - support both auth systems
+            let dealerId = null;
+            
+            // Try servicehub-user first (new system)
+            const servicehubUser = localStorage.getItem('servicehub-user');
+            if (servicehubUser) {
+                try {
+                    const parsed = JSON.parse(servicehubUser);
+                    dealerId = parsed.id;
+                } catch (e) {
+                    console.warn('⚠️ Invalid servicehub-user format');
+                }
+            }
+            
+            // Fallback to legacy authData
+            if (!dealerId) {
+                const authData = localStorage.getItem('authData');
+                if (authData) {
+                    try {
+                        const parsed = JSON.parse(authData);
+                        dealerId = parsed.dealerId;
+                    } catch (e) {
+                        console.warn('⚠️ Invalid authData format');
+                    }
+                }
+            }
+            
+            if (!dealerId) {
+                console.error('No dealer ID found. User should be redirected to login.');
+                window.location.href = '/pages/login.html';
+                return;
+            }
+
+            async function refreshSignatures() {
+                const list = document.getElementById('signaturesList');
+                if (!list) return;
+                list.innerHTML = '<div class="text-sm text-gray-400">Caricamento...</div>';
+                try {
+                    const url = `/api/communications/signatures/${dealerId}`;
+                    console.log('Fetching signatures from:', url);
+                    const r = (window.authManager
+                        ? await window.authManager.secureApiCall(url, { headers: { 'Accept': 'application/json' } })
+                        : await fetch(url, { credentials: 'include', headers: { 'Accept': 'application/json' } }));
+                    console.log('Signatures response status:', r.status);
+                    const j = await r.json();
+                    console.log('Signatures data:', j);
+                    list.innerHTML = (j.data||[]).map(s => `
+                        <div class="relative p-3 border rounded">
+                            <button data-id="${s.id}" class="absolute top-2 right-2 px-2 py-1 text-xs rounded bg-red-600 text-white del-sig" data-en="DELETE" data-it="ELIMINA">ELIMINA</button>
+                            <div class="text-sm pr-16 break-words">
+                                <div class="font-medium">${s.company_name||'-'}</div>
+                                <div class="text-gray-400">${[s.address1,s.postcode,s.city,s.provincia].filter(Boolean).join(' ')}</div>
+                                <div class="text-gray-400">${s.phone||''} ${s.email? ' • '+s.email:''}</div>
+                            </div>
+                        </div>
+                    `).join('') || `<div class="text-sm text-gray-400" data-en="No saved signatures" data-it="Nessuna firma salvata">Nessuna firma salvata</div>`;
+                    // Update bilingual elements for dynamically added content
+                    if (window.forceUpdateBilingualElements) {
+                        window.forceUpdateBilingualElements(list);
+                    }
+                    list.querySelectorAll('.del-sig').forEach(btn=>{
+                        btn.addEventListener('click', async()=>{
+                            await fetch(`/api/communications/signatures/${btn.dataset.id}/${dealerId}`, { method:'DELETE' });
+                            refreshSignatures();
+                        });
+                    });
+                } catch (e) { 
+                    console.error('Error loading signatures:', e);
+                    list.innerHTML = '<div class="text-sm text-gray-400">Errore caricamento firme</div>';
+                }
+            }
+
+            async function refreshTestClients() {
+                const list = document.getElementById('testClientsList');
+                if (!list) return;
+                list.innerHTML = '<div class="text-sm text-gray-400">Caricamento...</div>';
+                try {
+                    const url = `/api/communications/test-clients/${dealerId}`;
+                    console.log('Fetching test clients from:', url);
+                    const r = (window.authManager
+                        ? await window.authManager.secureApiCall(url, { headers: { 'Accept': 'application/json' } })
+                        : await fetch(url, { credentials: 'include', headers: { 'Accept': 'application/json' } }));
+                    console.log('Test clients response status:', r.status);
+                    const j = await r.json();
+                    console.log('Test clients data:', j);
+                    list.innerHTML = (j.data||[]).map(c => `
+                        <div class="relative p-3 border rounded">
+                            <button data-id="${c.id}" class="absolute top-2 right-2 px-2 py-1 text-xs rounded bg-red-600 text-white del-tc" data-en="DELETE" data-it="ELIMINA">ELIMINA</button>
+                            <div class="text-sm pr-16 break-words">
+                                <div class="font-medium">${[c.first_name,c.last_name].filter(Boolean).join(' ')||'-'} ${c.company? '• '+c.company:''}</div>
+                                <div class="text-gray-400">${[c.address1,c.postcode,c.city,c.provincia].filter(Boolean).join(' ')}</div>
+                                <div class="text-gray-400">${c.phone||''} ${c.email? ' • '+c.email:''}</div>
+                                <div class="text-gray-400">${[c.vehicle_brand,c.vehicle_model,c.plate,c.year,c.fuel_type,c.odometer?c.odometer+'km':''].filter(Boolean).join(' • ')}</div>
+                                <div class="text-gray-400">${c.country? ('Country: '+c.country) : ''}</div>
+                                <div class="text-gray-400">${[c.vin,c.serial].filter(Boolean).join(' • ')}</div>
+                            </div>
+                        </div>
+                    `).join('') || `<div class="text-sm text-gray-400" data-en="No saved test clients" data-it="Nessun cliente test salvato">Nessun cliente test salvato</div>`;
+                    // Update bilingual elements for dynamically added content
+                    if (window.forceUpdateBilingualElements) {
+                        window.forceUpdateBilingualElements(list);
+                    }
+                    list.querySelectorAll('.del-tc').forEach(btn=>{
+                        btn.addEventListener('click', async()=>{
+                            await fetch(`/api/communications/test-clients/${btn.dataset.id}/${dealerId}`, { method:'DELETE' });
+                            refreshTestClients();
+                        });
+                    });
+                } catch (e) { 
+                    console.error('Error loading test clients:', e);
+                    list.innerHTML = '<div class="text-sm text-gray-400">Errore caricamento clienti test</div>';
+                }
+            }
+
+            const saveSignatureBtn = document.getElementById('saveSignatureBtn');
+            if (saveSignatureBtn) {
+                saveSignatureBtn.addEventListener('click', async()=>{
+                    const companyInput = document.getElementById('sig_company_name');
+                    const companyName = companyInput?.value.trim() || '';
+                    if (!companyName) {
+                        // Tooltip nativo + scroll
+                        if (companyInput) {
+                            companyInput.setAttribute('title', t('message.required_field'));
+                            companyInput.scrollIntoView({behavior:'smooth', block:'center'});
+                            companyInput.focus({preventScroll:true});
+                            // Mostra tooltip nativo aggiornando l'attributo title
+                            companyInput.setAttribute('data-tip-ts', Date.now().toString());
+                        }
+                        return;
+                    }
+                    const body = {
+                        dealer_id: dealerId,
+                        company_name: companyName,
+                        address1: document.getElementById('sig_address1')?.value || '',
+                        address2: document.getElementById('sig_address2')?.value || '',
+                        city: document.getElementById('sig_city')?.value || '',
+                        provincia: document.getElementById('sig_provincia')?.value || '',
+                        postcode: document.getElementById('sig_postcode')?.value || '',
+                        phone: document.getElementById('sig_phone')?.value || '',
+                        email: document.getElementById('sig_email')?.value || ''
+                    };
+                    await fetch('/api/communications/signatures', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+                    refreshSignatures();
+                });
+            }
+            const resetSignatureBtn = document.getElementById('resetSignatureBtn');
+            if (resetSignatureBtn) resetSignatureBtn.addEventListener('click', ()=> document.getElementById('dealerSignatureForm').reset());
+
+            const saveTestClientBtn = document.getElementById('saveTestClientBtn');
+            if (saveTestClientBtn) {
+                saveTestClientBtn.addEventListener('click', async()=>{
+                    const firstInput = document.getElementById('tc_first_name');
+                    const lastInput = document.getElementById('tc_last_name');
+                    const firstName = firstInput?.value.trim() || '';
+                    const lastName = lastInput?.value.trim() || '';
+                    if (!firstName || !lastName) {
+                        const target = !firstName ? firstInput : lastInput;
+                        if (target) {
+                            target.setAttribute('title', t('message.required_field'));
+                            target.scrollIntoView({behavior:'smooth', block:'center'});
+                            target.focus({preventScroll:true});
+                            target.setAttribute('data-tip-ts', Date.now().toString());
+                        }
+                        return;
+                    }
+                    // Normalizza numerici
+                    const rawYear = document.getElementById('tc_year')?.value || '';
+                    const parsedYear = parseInt(rawYear, 10);
+                    const rawOdometer = document.getElementById('tc_odometer')?.value || '';
+                    const parsedOdometer = rawOdometer === '' ? null : parseInt(rawOdometer, 10);
+
+                    const body = {
+                        dealer_id: dealerId,
+                        first_name: firstName,
+                        last_name: lastName,
+                        company: document.getElementById('tc_company')?.value || '',
+                        address1: document.getElementById('tc_address1')?.value || '',
+                        address2: document.getElementById('tc_address2')?.value || '',
+                        city: document.getElementById('tc_city')?.value || '',
+                        provincia: document.getElementById('tc_provincia')?.value || '',
+                        postcode: document.getElementById('tc_postcode')?.value || '',
+                        country: document.getElementById('tc_country')?.value || '',
+                        phone: document.getElementById('tc_phone')?.value || '',
+                        email: document.getElementById('tc_email')?.value || '',
+                        vehicle_brand: document.getElementById('tc_vehicle_brand')?.value || '',
+                        vehicle_model: document.getElementById('tc_vehicle_model')?.value || '',
+                        plate: document.getElementById('tc_plate')?.value || '',
+                        year: Number.isFinite(parsedYear) ? parsedYear : null,
+                        fuel_type: document.getElementById('tc_fuel_type')?.value || '',
+                        odometer: parsedOdometer,
+                        vin: document.getElementById('tc_vin')?.value || '',
+                        serial: document.getElementById('tc_serial')?.value || ''
+                    };
+                    try {
+                        const url = '/api/communications/test-clients';
+                        const r = (window.authManager
+                            ? await window.authManager.secureApiCall(url, { method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify(body) })
+                            : await fetch(url, { method:'POST', credentials: 'include', headers:{'Content-Type':'application/json','Accept':'application/json'}, body: JSON.stringify(body) }));
+                        if (!r.ok) {
+                            const msg = (await r.text()) || t('message.test_client_save_error');
+                            console.error('Save test client failed:', msg);
+                        }
+                    } catch (e) { console.error('Save test client error:', e); }
+                    refreshTestClients();
+                });
+            }
+            const resetTestClientBtn = document.getElementById('resetTestClientBtn');
+            if (resetTestClientBtn) resetTestClientBtn.addEventListener('click', ()=> document.getElementById('testClientForm').reset());
+
+            refreshSignatures();
+            refreshTestClients();
+
+            // ===== TEMPLATE MANAGEMENT =====
+            
+            let editingTemplateId = null;
+
+            // Toggle template form fields based on type selection
+            window.toggleTemplateFields = function() {
+                const type = document.getElementById('tmpl_type').value;
+                const channel = document.getElementById('tmpl_channel').value;
+                
+                const promptGroup = document.getElementById('promptGroup');
+                const contentGroup = document.getElementById('contentGroup');
+                const emailSubjectGroup = document.getElementById('emailSubjectGroup');
+                
+                // Show/hide based on template type
+                if (type === 'ai') {
+                    promptGroup.style.display = 'block';
+                    contentGroup.style.display = 'none';
+                } else if (type === 'manual') {
+                    promptGroup.style.display = 'none';
+                    contentGroup.style.display = 'block';
+                } else if (type === 'hybrid') {
+                    promptGroup.style.display = 'block';
+                    contentGroup.style.display = 'block';
+                } else {
+                    promptGroup.style.display = 'none';
+                    contentGroup.style.display = 'none';
+                }
+                
+                // Show email subject only for email channel
+                emailSubjectGroup.style.display = (channel === 'email') ? 'block' : 'none';
+            };
+
+            // Handle channel change
+            document.getElementById('tmpl_channel').addEventListener('change', toggleTemplateFields);
+
+            // Load and display templates
+            async function refreshTemplates() {
+                const list = document.getElementById('templatesList');
+                if (!list) return;
+                
+                list.innerHTML = '<div class="text-sm text-gray-400">Caricamento template...</div>';
+                
+                try {
+                    let url = `/api/templates/${dealerId}`;
+                    const params = new URLSearchParams();
+                    
+                    const filterChannel = document.getElementById('filterChannel').value;
+                    const filterType = document.getElementById('filterType').value;
+                    
+                    if (filterChannel) params.append('channel', filterChannel);
+                    if (filterType) params.append('type', filterType);
+                    
+                    if (params.toString()) url += '?' + params.toString();
+                    
+                    const response = await fetch(url);
+                    const result = await response.json();
+                    
+                    if (!result.success) throw new Error('Errore caricamento template');
+                    
+                    const templates = result.data || [];
+                    
+                    if (templates.length === 0) {
+                        list.innerHTML = '<div class="text-sm text-gray-400" data-en="No templates found" data-it="Nessun template trovato">Nessun template trovato</div>';
+                        return;
+                    }
+                    
+                    list.innerHTML = templates.map(template => {
+                        const channelIcon = template.channel === 'email' ? '📧' : template.channel === 'whatsapp' ? '💬' : '📱';
+                        const styleText = template.style === 'formal' ? 'Formale' : template.style === 'informal' ? 'Informale' : 'Professionale';
+                        const typeText = template.template_type === 'ai' ? 'AI' : template.template_type === 'manual' ? 'Manuale' : 'Ibrido';
+                        const favoriteIcon = template.is_favorite ? '⭐' : '';
+                        
+                        return `
+                            <div class="relative border rounded-lg p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2 mb-2">
+                                            <h4 class="font-semibold text-base">${favoriteIcon}${template.name}</h4>
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                                                ${channelIcon} ${template.channel}
+                                            </span>
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                                ${typeText}
+                                            </span>
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
+                                                ${styleText}
+                                            </span>
+                                        </div>
+                                        ${template.description ? `<p class="text-sm text-gray-600 dark:text-gray-400 mb-2">${template.description}</p>` : ''}
+                                        <div class="text-xs text-gray-500 space-y-1">
+                                            ${template.email_subject ? `<div><strong>Oggetto:</strong> ${template.email_subject}</div>` : ''}
+                                            ${template.prompt ? `<div><strong>Prompt:</strong> ${template.prompt.substring(0, 100)}${template.prompt.length > 100 ? '...' : ''}</div>` : ''}
+                                            ${template.message_content ? `<div><strong>Contenuto:</strong> ${template.message_content.substring(0, 150)}${template.message_content.length > 150 ? '...' : ''}</div>` : ''}
+                                            <div class="flex items-center gap-4 mt-2">
+                                                <span>📊 Utilizzi: ${template.usage_count || 0}</span>
+                                                <span>📅 Creato: ${new Date(template.created_at).toLocaleDateString('it-IT')}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 ml-4">
+                                        <button onclick="editTemplate('${template.id}')" class="px-3 py-1 text-xs rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors" data-en="Edit" data-it="Modifica">Modifica</button>
+                                        <button onclick="duplicateTemplate('${template.id}')" class="px-3 py-1 text-xs rounded bg-green-600 text-white hover:bg-green-700 transition-colors" data-en="Duplicate" data-it="Duplica">Duplica</button>
+                                        <button onclick="deleteTemplate('${template.id}', '${template.name.replace(/'/g, "\\'")}')" class="px-3 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition-colors" data-en="Delete" data-it="Elimina">Elimina</button>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    // Update bilingual elements for dynamically added content
+                    if (window.forceUpdateBilingualElements) {
+                        window.forceUpdateBilingualElements(list);
+                    }
+                    
+                } catch (error) {
+                    console.error('Error loading templates:', error);
+                    list.innerHTML = '<div class="text-sm text-red-400">Errore nel caricamento dei template</div>';
+                }
+            }
+
+            // Save template (create or update)
+            async function saveTemplate() {
+                const name = document.getElementById('tmpl_name').value.trim();
+                const description = document.getElementById('tmpl_description').value.trim();
+                const channel = document.getElementById('tmpl_channel').value;
+                const style = document.getElementById('tmpl_style').value;
+                const type = document.getElementById('tmpl_type').value;
+                const emailSubject = document.getElementById('tmpl_email_subject').value.trim();
+                const prompt = document.getElementById('tmpl_prompt').value.trim();
+                const content = document.getElementById('tmpl_content').value.trim();
+                const isFavorite = document.getElementById('tmpl_favorite').checked;
+
+                // Validation
+                if (!name) {
+                    alert('Il nome del template è obbligatorio');
+                    document.getElementById('tmpl_name').focus();
+                    return;
+                }
+                
+                if (!channel || !style || !type) {
+                    alert('Canale, stile e tipo template sono obbligatori');
+                    return;
+                }
+                
+                if ((type === 'ai' || type === 'hybrid') && !prompt) {
+                    alert('Il prompt AI è obbligatorio per template AI e ibridi');
+                    document.getElementById('tmpl_prompt').focus();
+                    return;
+                }
+                
+                if ((type === 'manual' || type === 'hybrid') && !content) {
+                    alert('Il contenuto del messaggio è obbligatorio per template manuali e ibridi');
+                    document.getElementById('tmpl_content').focus();
+                    return;
+                }
+
+                const templateData = {
+                    dealer_id: dealerId,
+                    name: name,
+                    description: description,
+                    channel: channel,
+                    style: style,
+                    template_type: type,
+                    email_subject: channel === 'email' ? emailSubject : null,
+                    prompt: (type === 'ai' || type === 'hybrid') ? prompt : null,
+                    message_content: (type === 'manual' || type === 'hybrid') ? content : null,
+                    is_favorite: isFavorite
+                };
+
+                try {
+                    const url = editingTemplateId ? `/api/templates/${editingTemplateId}` : '/api/templates';
+                    const method = editingTemplateId ? 'PUT' : 'POST';
+                    
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(templateData)
+                    });
+
+                    const result = await response.json();
+                    
+                    if (!result.success) {
+                        throw new Error(result.error || 'Errore nel salvataggio');
+                    }
+
+                    alert(editingTemplateId ? 'Template aggiornato con successo!' : 'Template creato con successo!');
+                    resetTemplateForm();
+                    refreshTemplates();
+                    
+                } catch (error) {
+                    console.error('Error saving template:', error);
+                    alert('Errore nel salvataggio del template: ' + error.message);
+                }
+            }
+
+            // Reset template form
+            function resetTemplateForm() {
+                document.getElementById('templateForm').reset();
+                editingTemplateId = null;
+                document.getElementById('cancelEditBtn').style.display = 'none';
+                document.getElementById('saveTemplateBtn').textContent = 'Salva Template';
+                toggleTemplateFields();
+            }
+
+            // Cancel edit mode
+            window.cancelTemplateEdit = function() {
+                resetTemplateForm();
+            };
+
+            // Edit template
+            window.editTemplate = async function(templateId) {
+                try {
+                    const response = await fetch(`/api/templates/${dealerId}`);
+                    const result = await response.json();
+                    
+                    if (!result.success) throw new Error('Errore caricamento template');
+                    
+                    const template = result.data.find(t => t.id === templateId);
+                    if (!template) throw new Error('Template non trovato');
+                    
+                    // Populate form
+                    document.getElementById('tmpl_name').value = template.name || '';
+                    document.getElementById('tmpl_description').value = template.description || '';
+                    document.getElementById('tmpl_channel').value = template.channel || '';
+                    document.getElementById('tmpl_style').value = template.style || '';
+                    document.getElementById('tmpl_type').value = template.template_type || '';
+                    document.getElementById('tmpl_email_subject').value = template.email_subject || '';
+                    document.getElementById('tmpl_prompt').value = template.prompt || '';
+                    document.getElementById('tmpl_content').value = template.message_content || '';
+                    document.getElementById('tmpl_favorite').checked = template.is_favorite || false;
+                    
+                    // Update form state
+                    editingTemplateId = templateId;
+                    document.getElementById('cancelEditBtn').style.display = 'inline-block';
+                    document.getElementById('saveTemplateBtn').textContent = 'Aggiorna Template';
+                    toggleTemplateFields();
+                    
+                    // Scroll to form
+                    document.getElementById('templateForm').scrollIntoView({ behavior: 'smooth' });
+                    
+                } catch (error) {
+                    console.error('Error loading template for edit:', error);
+                    alert('Errore nel caricamento del template: ' + error.message);
+                }
+            };
+
+            // Duplicate template
+            window.duplicateTemplate = async function(templateId) {
+                try {
+                    const response = await fetch(`/api/templates/${dealerId}`);
+                    const result = await response.json();
+                    
+                    if (!result.success) throw new Error('Errore caricamento template');
+                    
+                    const template = result.data.find(t => t.id === templateId);
+                    if (!template) throw new Error('Template non trovato');
+                    
+                    // Reset form and populate with template data
+                    resetTemplateForm();
+                    document.getElementById('tmpl_name').value = template.name + ' (Copia)';
+                    document.getElementById('tmpl_description').value = template.description || '';
+                    document.getElementById('tmpl_channel').value = template.channel || '';
+                    document.getElementById('tmpl_style').value = template.style || '';
+                    document.getElementById('tmpl_type').value = template.template_type || '';
+                    document.getElementById('tmpl_email_subject').value = template.email_subject || '';
+                    document.getElementById('tmpl_prompt').value = template.prompt || '';
+                    document.getElementById('tmpl_content').value = template.message_content || '';
+                    document.getElementById('tmpl_favorite').checked = false; // Don't duplicate favorite status
+                    
+                    toggleTemplateFields();
+                    
+                    // Scroll to form
+                    document.getElementById('templateForm').scrollIntoView({ behavior: 'smooth' });
+                    
+                } catch (error) {
+                    console.error('Error duplicating template:', error);
+                    alert('Errore nella duplicazione del template: ' + error.message);
+                }
+            };
+
+            // Delete template
+            window.deleteTemplate = async function(templateId, templateName) {
+                const confirmed = confirm(`Sei sicuro di voler eliminare il template "${templateName}"?\n\nQuesta azione non può essere annullata.`);
+                
+                if (!confirmed) return;
+                
+                try {
+                    const response = await fetch(`/api/templates/${templateId}`, {
+                        method: 'DELETE'
+                    });
+
+                    const result = await response.json();
+                    
+                    if (!result.success) {
+                        throw new Error(result.error || 'Errore nell\'eliminazione');
+                    }
+
+                    alert('Template eliminato con successo!');
+                    refreshTemplates();
+                    
+                    // If we were editing this template, reset the form
+                    if (editingTemplateId === templateId) {
+                        resetTemplateForm();
+                    }
+                    
+                } catch (error) {
+                    console.error('Error deleting template:', error);
+                    alert('Errore nell\'eliminazione del template: ' + error.message);
+                }
+            };
+
+            // Wire up event handlers
+            const saveTemplateBtn = document.getElementById('saveTemplateBtn');
+            if (saveTemplateBtn) {
+                saveTemplateBtn.addEventListener('click', saveTemplate);
+            }
+
+            const resetTemplateBtn = document.getElementById('resetTemplateBtn');
+            if (resetTemplateBtn) {
+                resetTemplateBtn.addEventListener('click', resetTemplateForm);
+            }
+
+            // Load templates on page load
+            refreshTemplates();
+
+            // Tooltip helper: rimuove il title quando l'utente digita
+            function attachRequiredTooltipClear(inputId) {
+                const el = document.getElementById(inputId);
+                if (!el) return;
+                el.addEventListener('input', ()=>{
+                    if ((el.value||'').trim()) el.removeAttribute('title');
+                });
+            }
+            attachRequiredTooltipClear('sig_company_name');
+            attachRequiredTooltipClear('tc_first_name');
+            attachRequiredTooltipClear('tc_last_name');
+
+            // Populate country dropdown (tolerant to different API shapes)
+            (async function loadCountries(){
+                const sel = document.getElementById('tc_country');
+                if (!sel) return;
+                try {
+                    const url = '/api/countries';
+                    let r = null;
+                    try {
+                        r = (window.authManager
+                            ? await window.authManager.secureApiCall(url, { headers: { 'Accept': 'application/json' } })
+                            : await fetch(url, { credentials: 'include', headers: { 'Accept': 'application/json' } }));
+                    } catch (_) {
+                        r = await fetch(url, { credentials: 'include', headers: { 'Accept': 'application/json' } });
+                    }
+
+                    const ct = r && r.headers ? (r.headers.get('content-type')||'') : '';
+                    const j = ct.includes('application/json') ? await r.json() : {};
+                    let raw = Array.isArray(j) ? j : (j.data || j.rows || j.countries || []);
+                    if (!Array.isArray(raw) || !raw.length) {
+                        // Client-side fallback to avoid blocking the UI
+                        raw = [
+                            { code: 'IT', name_it: 'Italia', name_en: 'Italy' },
+                            { code: 'US', name_it: 'Stati Uniti', name_en: 'United States' },
+                            { code: 'GB', name_it: 'Regno Unito', name_en: 'United Kingdom' },
+                            { code: 'FR', name_it: 'Francia', name_en: 'France' },
+                            { code: 'DE', name_it: 'Germania', name_en: 'Germany' }
+                        ];
+                    }
+
+                    const lang = (localStorage.getItem('servicehub-language')||'it');
+                    const items = raw.map((c)=>{
+                        const code = c.code || c.iso2 || c.id || c.code2 || c.alpha2 || '';
+                        const nameIt = c.name_it || c.it || c.nome_it || c.nome || c.name || '';
+                        const nameEn = c.name_en || c.en || c.nome_en || c.name || '';
+                        const label = (lang==='en' ? (nameEn || nameIt) : (nameIt || nameEn)) || code;
+                        return { code, label };
+                    }).filter(x=> x.code);
+
+                    sel.innerHTML = '<option value="">-</option>' + items.map(x=> `<option value="${x.code}">${x.label}</option>`).join('');
+                } catch(e) {
+                    console.warn('Countries dropdown load failed:', e);
+                }
+            })();
+        });
+    </script>
+</body>
+</html> 

@@ -1179,6 +1179,14 @@
                             </div>
                         </div>
 
+                        <!-- Template Selector -->
+                        <div class="space-y-2 bg-gray-800 border border-gray-700 rounded p-3">
+                            <label class="text-xs text-gray-400" data-i18n="contact.use_template">📋 Usa Template</label>
+                            <select id="templateSelectorAI" class="w-full rounded bg-gray-900 border border-gray-700 p-2 text-sm" onchange="onTemplateSelectedAI()">
+                                <option value="">-- Seleziona Template --</option>
+                            </select>
+                        </div>
+
 
 
                         <div>
@@ -1264,6 +1272,7 @@
 
                 <div class="flex justify-end gap-2 mt-6 flex-wrap">
                     <button onclick="generateAIContent()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded text-white text-sm min-w-fit whitespace-nowrap" data-i18n="contact.generate">Genera bozza</button>
+                    <button onclick="saveTemplateFromAI()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-white text-sm min-w-fit whitespace-nowrap" data-i18n="contact.save_template">💾 Salva Template</button>
                     <button id="sendToTestClientsAIBtn" onclick="sendAIToTestClients()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm hidden min-w-fit whitespace-nowrap" data-i18n="contact.send_to_test_clients_button">Invia comunicazione clienti test</button>
                     <button id="sendAICommunicationsBtn" onclick="sendAICommunications()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm min-w-fit whitespace-nowrap" data-i18n="contact.send_communications">Invia comunicazioni</button>
                 </div>
@@ -1287,6 +1296,14 @@
                                 <button type="button" class="px-3 py-1.5 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-value="email" data-i18n="manual_contact.email">Email</button>
                                 <button type="button" class="px-3 py-1.5 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-value="whatsapp" data-i18n="manual_contact.whatsapp">WhatsApp</button>
                             </div>
+                        </div>
+
+                        <!-- Template Selector -->
+                        <div class="space-y-2 bg-gray-800 border border-gray-700 rounded p-3">
+                            <label class="text-xs text-gray-400" data-i18n="manual_contact.use_template">📋 Usa Template</label>
+                            <select id="templateSelectorNoAI" class="w-full rounded bg-gray-900 border border-gray-700 p-2 text-sm" onchange="onTemplateSelectedManual()">
+                                <option value="">-- Seleziona Template --</option>
+                            </select>
                         </div>
 
                         <!-- Dealer Signature -->
@@ -1357,6 +1374,7 @@
                 </div>
 
                 <div class="flex justify-end gap-2 mt-6">
+                    <button onclick="saveTemplateFromManual()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded text-white text-sm" data-i18n="manual_contact.save_template">💾 Salva Template</button>
                     <button id="sendToTestClientsBtn" onclick="sendToTestClients()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm hidden" data-i18n="manual_contact.send_to_test_clients_button">Invia ai Clienti Test</button>
                     <button id="sendToSelectedBtn" onclick="sendToSelected()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm" data-i18n="manual_contact.send_to_selected">Invia ai Selezionati</button>
                 </div>
@@ -2322,6 +2340,7 @@
             if (!dialog) return;
             dialog.classList.remove('hidden');
             document.getElementById('aiPromptInput').value = '';
+            document.getElementById('aiResults').value = '';
 
             // Carica firme dealer per il select
             try {
@@ -2334,6 +2353,14 @@
                         list.map(s=>`<option value="${encodeURIComponent(JSON.stringify(s))}">${(s.company_name||'Firma')}${s.phone? ' • '+s.phone:''}${s.email? ' • '+s.email:''}</option>`).join('');
                 }
             } catch {}
+
+            // Load templates for AI dialog
+            try {
+                const currentChannel = document.querySelector('#channelToggleGroup .active-chip')?.dataset.value || 'email';
+                await populateTemplateDropdown('templateSelectorAI', 'ai', currentChannel);
+            } catch (error) {
+                console.error('Error loading templates:', error);
+            }
             // Carica saldo dealer
             try {
                 const dealerId = getCurrentDealerId();
@@ -2553,6 +2580,9 @@
                     } else {
                         emailSubjectField?.classList.add('hidden');
                     }
+                    
+                    // Refresh templates for new channel
+                    populateTemplateDropdown('templateSelectorAI', 'ai', btn.dataset.value);
                 });
             });
             const firstChannel = document.querySelector('#channelToggleGroup button[data-value="email"]');
@@ -5688,6 +5718,14 @@
                 }
             } catch {}
 
+            // Load templates for manual dialog
+            try {
+                const currentChannel = document.querySelector('#channelToggleGroupNoAI .active-chip')?.dataset.value || 'email';
+                await populateTemplateDropdown('templateSelectorNoAI', 'manual', currentChannel);
+            } catch (error) {
+                console.error('Error loading templates:', error);
+            }
+
             // Load dealer balance
             try {
                 const dealerId = getCurrentDealerId();
@@ -6619,6 +6657,9 @@
                     } else {
                         emailSubjectField?.classList.add('hidden');
                     }
+                    
+                    // Refresh templates for new channel
+                    populateTemplateDropdown('templateSelectorNoAI', 'manual', e.target.dataset.value);
                 }
             });
 
@@ -7051,6 +7092,320 @@
             // ... existing code ...
             initChannelToggleAI();
         });
+
+        // ===== TEMPLATE MANAGEMENT FUNCTIONS =====
+
+        // Load templates for dropdown
+        async function loadTemplatesForDropdown(templateType = 'manual', channel = null) {
+            try {
+                const dealerId = getCurrentDealerId();
+                if (!dealerId) return [];
+
+                let url = `/api/templates/${dealerId}`;
+                const params = new URLSearchParams();
+                
+                if (templateType === 'manual') {
+                    params.append('type', 'manual,hybrid');
+                } else if (templateType === 'ai') {
+                    params.append('type', 'ai,hybrid');
+                }
+                
+                if (channel) {
+                    params.append('channel', channel);
+                }
+
+                if (params.toString()) {
+                    url += '?' + params.toString();
+                }
+
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Failed to load templates');
+                
+                const result = await response.json();
+                return result.data || [];
+            } catch (error) {
+                console.error('Error loading templates:', error);
+                return [];
+            }
+        }
+
+        // Populate template dropdown
+        async function populateTemplateDropdown(dropdownId, templateType, channel) {
+            const dropdown = document.getElementById(dropdownId);
+            if (!dropdown) return;
+
+            try {
+                const templates = await loadTemplatesForDropdown(templateType, channel);
+                
+                dropdown.innerHTML = '<option value="">-- Seleziona Template --</option>';
+                
+                templates.forEach(template => {
+                    const channelIcon = template.channel === 'email' ? '📧' : template.channel === 'whatsapp' ? '💬' : '📱';
+                    const styleText = template.style === 'formal' ? 'Formale' : template.style === 'informal' ? 'Informale' : 'Professionale';
+                    const option = document.createElement('option');
+                    option.value = template.id;
+                    option.textContent = `${channelIcon} ${template.name} (${template.channel} - ${styleText})`;
+                    dropdown.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error populating template dropdown:', error);
+            }
+        }
+
+        // Handle template selection for manual dialog
+        async function onTemplateSelectedManual() {
+            const dropdown = document.getElementById('templateSelectorNoAI');
+            const templateId = dropdown.value;
+            
+            if (!templateId) return;
+
+            try {
+                // Get all templates and find the selected one
+                const response = await fetch(`/api/templates/${getCurrentDealerId()}`);
+                if (!response.ok) throw new Error('Failed to load template');
+                
+                const result = await response.json();
+                const templates = result.data || [];
+                const template = templates.find(t => t.id === templateId);
+                
+                if (!template) {
+                    console.error('Template not found');
+                    return;
+                }
+
+                // Apply template to form
+                if (template.email_subject) {
+                    document.getElementById('emailSubjectInputNoAI').value = template.email_subject;
+                }
+                
+                document.getElementById('manualMessageInput').value = template.message_content;
+                
+                // Set channel if different
+                if (template.channel) {
+                    const channelButtons = document.querySelectorAll('#channelToggleGroupNoAI button');
+                    channelButtons.forEach(btn => {
+                        btn.classList.remove('active-chip', 'border-emerald-500', 'bg-emerald-600', 'text-white');
+                        btn.classList.add('border-gray-600');
+                        
+                        if (btn.dataset.value === template.channel) {
+                            btn.classList.add('active-chip', 'border-emerald-500', 'bg-emerald-600', 'text-white');
+                            btn.classList.remove('border-gray-600');
+                        }
+                    });
+                    
+                    // Show/hide email subject field
+                    const emailSubjectField = document.getElementById('emailSubjectFieldNoAI');
+                    if (template.channel === 'email') {
+                        emailSubjectField.classList.remove('hidden');
+                    } else {
+                        emailSubjectField.classList.add('hidden');
+                    }
+                }
+
+                // Update preview
+                updateManualMessagePreview();
+                
+                // Increment usage count
+                fetch(`/api/templates/${templateId}/use`, { method: 'POST' }).catch(console.error);
+                
+            } catch (error) {
+                console.error('Error applying template:', error);
+                alert('Errore nel caricamento del template');
+            }
+        }
+
+        // Handle template selection for AI dialog
+        async function onTemplateSelectedAI() {
+            const dropdown = document.getElementById('templateSelectorAI');
+            const templateId = dropdown.value;
+            
+            if (!templateId) return;
+
+            try {
+                // Get all templates and find the selected one
+                const response = await fetch(`/api/templates/${getCurrentDealerId()}`);
+                if (!response.ok) throw new Error('Failed to load template');
+                
+                const result = await response.json();
+                const templates = result.data || [];
+                const template = templates.find(t => t.id === templateId);
+                
+                if (!template) {
+                    console.error('Template not found');
+                    return;
+                }
+
+                // Apply template to AI form
+                if (template.prompt) {
+                    document.getElementById('aiPromptInput').value = template.prompt;
+                }
+                
+                // Apply email subject if present
+                if (template.email_subject) {
+                    document.getElementById('emailSubjectInput').value = template.email_subject;
+                }
+                
+                // Set channel if different
+                if (template.channel) {
+                    const channelButtons = document.querySelectorAll('#channelToggleGroup button');
+                    channelButtons.forEach(btn => {
+                        btn.classList.remove('active-chip', 'border-emerald-500', 'bg-emerald-600/10');
+                        btn.classList.add('border-gray-600');
+                        
+                        if (btn.dataset.value === template.channel) {
+                            btn.classList.add('active-chip', 'border-emerald-500', 'bg-emerald-600/10');
+                            btn.classList.remove('border-gray-600');
+                        }
+                    });
+                }
+
+                // Set style if different
+                if (template.style) {
+                    const styleButtons = document.querySelectorAll('#styleToggleGroup button');
+                    styleButtons.forEach(btn => {
+                        btn.classList.remove('active-chip', 'border-emerald-500', 'bg-emerald-600/10');
+                        btn.classList.add('border-gray-600');
+                        
+                        if (btn.dataset.value === template.style) {
+                            btn.classList.add('active-chip', 'border-emerald-500', 'bg-emerald-600/10');
+                            btn.classList.remove('border-gray-600');
+                        }
+                    });
+                }
+
+                // If hybrid template, show content as example in results
+                if (template.template_type === 'hybrid' && template.message_content) {
+                    document.getElementById('aiResults').value = template.message_content;
+                }
+                
+                // Increment usage count
+                fetch(`/api/templates/${templateId}/use`, { method: 'POST' }).catch(console.error);
+                
+            } catch (error) {
+                console.error('Error applying template:', error);
+                alert('Errore nel caricamento del template');
+            }
+        }
+
+        // Save template from manual dialog
+        async function saveTemplateFromManual() {
+            const channel = document.querySelector('#channelToggleGroupNoAI .active-chip')?.dataset.value;
+            const subject = document.getElementById('emailSubjectInputNoAI').value;
+            const message = document.getElementById('manualMessageInput').value;
+            
+            if (!channel) {
+                alert('Seleziona prima un canale');
+                return;
+            }
+            
+            if (!message.trim()) {
+                alert('Inserisci un messaggio prima di salvare');
+                return;
+            }
+
+            const name = prompt('Nome del template:');
+            if (!name) return;
+
+            const description = prompt('Descrizione (opzionale):') || '';
+
+            try {
+                const dealerId = getCurrentDealerId();
+                const templateData = {
+                    dealer_id: dealerId,
+                    name: name.trim(),
+                    description: description.trim(),
+                    channel: channel,
+                    style: 'professional', // Default style for manual templates
+                    template_type: 'manual',
+                    prompt: null,
+                    message_content: message.trim(),
+                    email_subject: channel === 'email' ? subject.trim() : null
+                };
+
+                const response = await fetch('/api/templates', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(templateData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Errore nel salvataggio');
+                }
+
+                alert('Template salvato con successo!');
+                
+                // Refresh template dropdown
+                populateTemplateDropdown('templateSelectorNoAI', 'manual', channel);
+                
+            } catch (error) {
+                console.error('Error saving template:', error);
+                alert('Errore nel salvataggio del template: ' + error.message);
+            }
+        }
+
+        // Save template from AI dialog
+        async function saveTemplateFromAI() {
+            const channel = document.querySelector('#channelToggleGroup .active-chip')?.dataset.value;
+            const style = document.querySelector('#styleToggleGroup .active-chip')?.dataset.value;
+            const promptText = document.getElementById('aiPromptInput').value;
+            const content = document.getElementById('aiResults').value;
+            
+            if (!channel) {
+                alert('Seleziona prima un canale');
+                return;
+            }
+            
+            if (!promptText.trim() && !content.trim()) {
+                alert('Genera prima una comunicazione AI o inserisci un prompt');
+                return;
+            }
+
+            const name = window.prompt('Nome del template:'); // Uso window.prompt esplicitamente
+            if (!name) return;
+
+            const description = window.prompt('Descrizione (opzionale):') || '';
+            
+            const templateType = window.prompt('Tipo template:\n1 = AI (solo prompt)\n2 = Manuale (solo contenuto)\n3 = Ibrido (entrambi)', '3');
+            let type = 'hybrid';
+            if (templateType === '1') type = 'ai';
+            else if (templateType === '2') type = 'manual';
+
+            try {
+                const dealerId = getCurrentDealerId();
+                const templateData = {
+                    dealer_id: dealerId,
+                    name: name.trim(),
+                    description: description.trim(),
+                    channel: channel,
+                    style: style || 'professional',
+                    template_type: type,
+                    prompt: (type === 'ai' || type === 'hybrid') ? promptText.trim() : null,
+                    message_content: (type === 'manual' || type === 'hybrid') ? content.trim() : '',
+                    email_subject: null // Will be generated by AI
+                };
+
+                const response = await fetch('/api/templates', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(templateData)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Errore nel salvataggio');
+                }
+
+                alert('Template salvato con successo!');
+                
+                // Refresh template dropdown
+                populateTemplateDropdown('templateSelectorAI', 'ai', channel);
+                
+            } catch (error) {
+                console.error('Error saving template:', error);
+                alert('Errore nel salvataggio del template: ' + error.message);
+            }
+        }
     </script>
 </body>
 </html> 
