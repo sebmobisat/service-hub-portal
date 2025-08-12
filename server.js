@@ -1370,12 +1370,17 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
             serial: '{SERIAL}',
             ctaTagliando: '{CTA_TAGLIANDO}'
         };
-        const selectedTokens = Object.entries(useFields || {})
+        let selectedTokens = Object.entries(useFields || {})
             .filter(([, v]) => !!v)
             .map(([k]) => chipToToken[k])
             .filter(Boolean);
+        
         // Always include a salutation token for gender-based personalization
         const alwaysTokens = ['{SALUTATION}'];
+        
+        // Remove {NAME} from selected tokens when {SALUTATION} is present to avoid duplication
+        // since {SALUTATION} already contains the personalized name
+        selectedTokens = selectedTokens.filter(token => token !== '{NAME}');
 
         // Build a single base message either from provided draft or via one OpenAI call
         let baseMessage = (providedBaseMessage || '').trim();
@@ -1409,14 +1414,14 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
 `${language === 'it' ? 'Scrivi un unico messaggio in' : 'Write a single message in'} ${styleMap[style] || styleMap.professional}.
 ${language === 'it' ? 'Includi OBBLIGATORIAMENTE i seguenti placeholder esattamente come scritti (non sostituirli):' : 'MANDATORILY include the following placeholders exactly as written (do not replace them):'} ${[...alwaysTokens, ...selectedTokens].join(' ')}.
 
-${language === 'it' ? 'IMPORTANTE: Il placeholder {SALUTATION} verrà sostituito automaticamente con il saluto corretto basato sul gender (es. "Cara Maria" o "Caro Luca"). NON utilizzare {NAME} insieme a {SALUTATION} perché causerebbe duplicazione. NON scrivere "Gentile Sig./Sig.ra". NON inventare tag che non esistono come [Nome del Concessionario]. NON aggiungere firme o saluti finali, la firma del concessionario verrà aggiunta automaticamente.' : 'IMPORTANT: The {SALUTATION} placeholder will be automatically replaced with the correct gender-based greeting (e.g. "Dear Maria" or "Dear John"). DO NOT use {NAME} together with {SALUTATION} as it would cause duplication. Do not write generic greetings. Do NOT invent tags that do not exist. DO NOT add signatures or closing greetings, the dealer signature will be added automatically.'}
+${language === 'it' ? 'REGOLE CRITICHE - RISPETTA OBBLIGATORIAMENTE:\n\n1. {SALUTATION} GIÀ CONTIENE IL NOME! Diventa "Cara Maria" o "Caro Paolo" - NON aggiungere {NAME} dopo {SALUTATION}\n2. SBAGLIATO: "Ciao {SALUTATION} {NAME}" - GIUSTO: "Ciao {SALUTATION}"\n3. SBAGLIATO: "{SALUTATION} {NAME}" - GIUSTO: "{SALUTATION}"\n4. VIETATO ASSOLUTO: [Nome del Concessionario], [Nome Concessionario], [Concessionario]\n5. NON inventare tag - USA SOLO quelli nell\'elenco obbligatorio\n6. NON aggiungere firme o saluti finali\n7. PER EMAIL: Rispondi SEMPRE in formato JSON {"subject": "...", "message": "..."}\n\nESEMPIO CORRETTO:\n{SALUTATION}\n\nTesto del messaggio qui...' : 'CRITICAL RULES - FOLLOW MANDATORY:\n\n1. {SALUTATION} ALREADY CONTAINS THE NAME! Becomes "Dear Maria" or "Dear John" - DO NOT add {NAME} after {SALUTATION}\n2. WRONG: "Hello {SALUTATION} {NAME}" - CORRECT: "Hello {SALUTATION}"\n3. WRONG: "{SALUTATION} {NAME}" - CORRECT: "{SALUTATION}"\n4. ABSOLUTELY FORBIDDEN: [Dealer Name], [Dealership Name], [Company Name]\n5. DO NOT invent tags - USE ONLY those in the mandatory list\n6. DO NOT add signatures or closing greetings\n7. FOR EMAIL: ALWAYS respond in JSON format {"subject": "...", "message": "..."}\n\nCORRECT EXAMPLE:\n{SALUTATION}\n\nMessage text here...'}
 
 ${channel === 'email' ? (language === 'it' ? 'GENERA ANCHE UN OGGETTO EMAIL appropriato. Rispondi in formato JSON: {"subject": "oggetto email", "message": "testo messaggio"}' : 'ALSO GENERATE an appropriate EMAIL SUBJECT. Respond in JSON format: {"subject": "email subject", "message": "message text"}') : ''}
 
 ${language === 'it' ? 'Istruzioni del dealer:' : 'Dealer instructions:'} ${prompt}
 ${language === 'it' ? 'Contesto (JSON):' : 'Context (JSON):'}\n${JSON.stringify(dataForPrompt)}
 
-${channel === 'email' ? (language === 'it' ? 'Restituisci in formato JSON con subject e message.' : 'Return in JSON format with subject and message.') : (language === 'it' ? 'Restituisci SOLO il testo del messaggio, senza spiegazioni.' : 'Return ONLY the message text, with no explanations.')}` }
+${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci SEMPRE in formato JSON valido: {"subject": "oggetto email qui", "message": "messaggio qui"}. NON aggiungere altro testo.' : 'MANDATORY: ALWAYS return in valid JSON format: {"subject": "email subject here", "message": "message here"}. DO NOT add any other text.') : (language === 'it' ? 'Restituisci SOLO il testo del messaggio, senza spiegazioni.' : 'Return ONLY the message text, with no explanations.')}` }
                     ];
                     const completion = await openai.chat.completions.create({ model: 'gpt-3.5-turbo', messages });
                     const rawResponse = completion.choices?.[0]?.message?.content?.trim() || '';
