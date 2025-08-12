@@ -1416,6 +1416,7 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
 ${language === 'it' ? 'ISTRUZIONI IMPORTANTI:' : 'IMPORTANT INSTRUCTIONS:'}
 ${language === 'it' ? '- Usa SOLO {SALUTATION} per il saluto (contiene già il nome del cliente)' : '- Use ONLY {SALUTATION} for greeting (already contains client name)'}
 ${language === 'it' ? '- Includi questi placeholder esattamente come scritti:' : '- Include these placeholders exactly as written:'} ${[...alwaysTokens, ...selectedTokens].join(' ')}
+${language === 'it' ? '- Struttura il messaggio con paragrafi separati (usa \\n\\n per separare i paragrafi)' : '- Structure the message with separate paragraphs (use \\n\\n to separate paragraphs)'}
 ${language === 'it' ? '- NON aggiungere firme o saluti finali (vengono aggiunti automaticamente)' : '- DO NOT add signatures or final greetings (added automatically)'}
 ${language === 'it' ? '- NON inventare placeholder non nell\'elenco' : '- DO NOT invent placeholders not in the list'}
 
@@ -1423,7 +1424,7 @@ ${language === 'it' ? 'Istruzioni specifiche del dealer:' : 'Dealer specific ins
 
 ${language === 'it' ? 'Dati disponibili:' : 'Available data:'} ${JSON.stringify(dataForPrompt)}
 
-${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci in formato JSON: {"subject": "oggetto email accattivante", "message": "testo del messaggio"}' : 'MANDATORY: Return in JSON format: {"subject": "engaging email subject", "message": "message text"}') : (language === 'it' ? 'Restituisci SOLO il testo del messaggio, senza JSON.' : 'Return ONLY the message text, no JSON.')}` }
+${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci ESATTAMENTE in questo formato JSON: {"subject": "oggetto email accattivante e specifico", "message": "testo del messaggio con \\n\\n tra i paragrafi"}. DEVI includere sia subject che message.' : 'MANDATORY: Return EXACTLY in this JSON format: {"subject": "engaging and specific email subject", "message": "message text with \\n\\n between paragraphs"}. You MUST include both subject and message.') : (language === 'it' ? 'Restituisci SOLO il testo del messaggio con \\n\\n tra i paragrafi, senza JSON.' : 'Return ONLY the message text with \\n\\n between paragraphs, no JSON.')}` }
                     ];
                     console.log('🤖 Calling OpenAI with model: gpt-4o');
                     const completion = await openai.chat.completions.create({ model: 'gpt-4o', messages });
@@ -1442,7 +1443,11 @@ ${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci in forma
                             // Pulisci il messaggio da testi di stop
                             baseMessage = baseMessage.replace(/\[STOP[^\]]*\]/gi, '').trim();
                             
-                            console.log('✅ JSON parsed successfully - subject:', emailSubject, 'message length:', baseMessage.length);
+                            console.log('✅ JSON parsed successfully:');
+                            console.log('  - Subject:', emailSubject);
+                            console.log('  - Subject length:', emailSubject?.length || 0);
+                            console.log('  - Message length:', baseMessage.length);
+                            console.log('  - Raw parsed object:', parsed);
                         } catch (parseError) {
                             console.warn('❌ JSON parsing failed:', parseError.message, 'Raw response:', rawResponse);
                             // Fallback if JSON parsing fails

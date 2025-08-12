@@ -5872,17 +5872,21 @@
                     channel,
                     email_subject: data.email_subject,
                     emailSubjectInput: !!emailSubjectInput,
-                    emailSubjectInputId: emailSubjectInput?.id
+                    emailSubjectInputId: emailSubjectInput?.id,
+                    fullDataResponse: data
                 });
                 
                 if (channel === 'email' && data.email_subject && emailSubjectInput) {
                     console.log('✅ Populating email subject:', data.email_subject);
                     emailSubjectInput.value = data.email_subject;
+                    emailSubjectInput.placeholder = 'Oggetto generato dall\'AI';
                 } else {
                     console.warn('❌ Email subject not populated:', {
                         channelIsEmail: channel === 'email',
                         hasEmailSubject: !!data.email_subject,
-                        hasInputElement: !!emailSubjectInput
+                        emailSubjectValue: data.email_subject,
+                        hasInputElement: !!emailSubjectInput,
+                        inputElementId: emailSubjectInput?.id
                     });
                 }
 
