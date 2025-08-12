@@ -1562,12 +1562,34 @@ ${channel === 'email' ? (language === 'it' ? 'Restituisci in formato JSON con su
                             await supabaseAdmin.from('dealer_billing_accounts').update({ balance_cents: current - unit, updated_at: new Date().toISOString() }).eq('dealer_id', dealerId);
                         } catch (e) { console.warn('billing email event failed', e.message); }
                     } else if (channel === 'whatsapp' && twilioClient && r.clientPhone) {
-                        const whatsappMessage = await twilioClient.messages.create({
-                            body: finalMsg,
-                            from: process.env.TWILIO_WHATSAPP_FROM,
-                            to: `whatsapp:${r.clientPhone}`
-                        });
-                        sendResult = { success: true, sid: whatsappMessage.sid };
+                        try {
+                            // Try WhatsApp first
+                            const whatsappMessage = await twilioClient.messages.create({
+                                body: finalMsg,
+                                from: process.env.TWILIO_WHATSAPP_FROM,
+                                to: `whatsapp:${r.clientPhone}`
+                            });
+                            sendResult = { success: true, sid: whatsappMessage.sid, channel: 'whatsapp' };
+                        } catch (whatsappError) {
+                            // SMS fallback for specific WhatsApp errors
+                            if ((whatsappError.code === 21910 || whatsappError.code === 63016) && process.env.TWILIO_SMS_FROM) {
+                                console.log(`WhatsApp failed for ${r.clientPhone} (${whatsappError.code}), trying SMS fallback...`);
+                                try {
+                                    const smsMessage = await twilioClient.messages.create({
+                                        body: finalMsg,
+                                        from: process.env.TWILIO_SMS_FROM,
+                                        to: r.clientPhone
+                                    });
+                                    sendResult = { success: true, sid: smsMessage.sid, channel: 'sms', fallback: true };
+                                } catch (smsError) {
+                                    console.error(`SMS fallback also failed for ${r.clientPhone}:`, smsError.message);
+                                    sendResult = { success: false, error: `WhatsApp failed (${whatsappError.code}), SMS fallback failed: ${smsError.message}` };
+                                }
+                            } else {
+                                console.error(`WhatsApp failed for ${r.clientPhone}:`, whatsappError.message);
+                                sendResult = { success: false, error: whatsappError.message };
+                            }
+                        }
                     } else if (channel === 'whatsapp' && !twilioClient) {
                         console.error('❌ WhatsApp requested but Twilio client not available');
                         sendResult = { success: false, error: 'Twilio client not initialized' };
@@ -1586,11 +1608,13 @@ ${channel === 'email' ? (language === 'it' ? 'Restituisci in formato JSON con su
 
         // Costs
         const emailCount = send && channel === 'email' ? results.filter(r => r.sendResult?.success).length : 0;
-        const waCount = send && channel === 'whatsapp' ? results.filter(r => r.sendResult?.success).length : 0;
+        const waCount = send && channel === 'whatsapp' ? results.filter(r => r.sendResult?.success && r.sendResult?.channel === 'whatsapp').length : 0;
+        const smsCount = send && channel === 'whatsapp' ? results.filter(r => r.sendResult?.success && r.sendResult?.channel === 'sms').length : 0;
         const email_cents = emailCount * 5;
         const whatsapp_cents = waCount * 10;
+        const sms_cents = smsCount * 8;
         const openai_cents = !send ? 20 : 0; // one AI call per batch (flat for now)
-        const total_cents = email_cents + whatsapp_cents + openai_cents;
+        const total_cents = email_cents + whatsapp_cents + sms_cents + openai_cents;
 
         if (!send) {
             // Bill OpenAI once at draft time
@@ -1620,7 +1644,7 @@ ${channel === 'email' ? (language === 'it' ? 'Restituisci in formato JSON con su
                 base_message: baseMessage, 
                 email_subject: channel === 'email' ? emailSubject : undefined,
                 results: returnResults, 
-                costs: { email_cents, whatsapp_cents, openai_cents, total_cents } 
+                costs: { email_cents, whatsapp_cents, sms_cents, openai_cents, total_cents } 
             });
         }
 
@@ -1744,21 +1768,46 @@ app.post('/api/communications/send-manual', express.json(), async (req, res) => 
                         }
                     }
                 } else if (channel === 'whatsapp' && twilioClient && recipient.phone) {
-                    const whatsappMessage = await twilioClient.messages.create({
-                        body: personalizedMessage,
-                        from: process.env.TWILIO_WHATSAPP_FROM,
-                        to: `whatsapp:${recipient.phone}`
-                    });
-                    sendResult = { success: true, sid: whatsappMessage.sid };
+                    try {
+                        // Try WhatsApp first
+                        const whatsappMessage = await twilioClient.messages.create({
+                            body: personalizedMessage,
+                            from: process.env.TWILIO_WHATSAPP_FROM,
+                            to: `whatsapp:${recipient.phone}`
+                        });
+                        sendResult = { success: true, sid: whatsappMessage.sid, channel: 'whatsapp' };
+                    } catch (whatsappError) {
+                        // SMS fallback for specific WhatsApp errors
+                        if ((whatsappError.code === 21910 || whatsappError.code === 63016) && process.env.TWILIO_SMS_FROM) {
+                            console.log(`WhatsApp failed for ${recipient.phone} (${whatsappError.code}), trying SMS fallback...`);
+                            try {
+                                const smsMessage = await twilioClient.messages.create({
+                                    body: personalizedMessage,
+                                    from: process.env.TWILIO_SMS_FROM,
+                                    to: recipient.phone
+                                });
+                                sendResult = { success: true, sid: smsMessage.sid, channel: 'sms', fallback: true };
+                            } catch (smsError) {
+                                console.error(`SMS fallback also failed for ${recipient.phone}:`, smsError.message);
+                                sendResult = { success: false, error: `WhatsApp failed (${whatsappError.code}), SMS fallback failed: ${smsError.message}` };
+                            }
+                        } else {
+                            console.error(`WhatsApp failed for ${recipient.phone}:`, whatsappError.message);
+                            sendResult = { success: false, error: whatsappError.message };
+                        }
+                    }
                     
                     if (sendResult.success) {
                         sentCount++;
-                        // Billing for WhatsApp
+                        // Billing based on actual channel used
+                        const isWhatsApp = sendResult.channel === 'whatsapp';
+                        const unit = isWhatsApp ? 10 : 8; // WhatsApp: €0.10, SMS: €0.08
+                        const eventType = isWhatsApp ? 'whatsapp' : 'sms';
+                        
                         try {
-                            const unit = 10; // cents
                             await supabaseAdmin.from('billing_usage_events').insert([{
                                 dealer_id: dealerId,
-                                event_type: 'whatsapp',
+                                event_type: eventType,
                                 quantity: 1,
                                 unit_cost_cents: unit,
                                 total_cost_cents: unit
@@ -1773,7 +1822,7 @@ app.post('/api/communications/send-manual', express.json(), async (req, res) => 
                                 .update({ balance_cents: current - unit, updated_at: new Date().toISOString() })
                                 .eq('dealer_id', dealerId);
                         } catch (e) {
-                            console.warn('billing whatsapp event failed', e.message);
+                            console.warn(`billing ${eventType} event failed`, e.message);
                         }
                     }
                 } else if (channel === 'whatsapp' && !twilioClient) {
