@@ -1729,6 +1729,12 @@ ${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci ESATTAME
             // Return all results for test mode, or just first for normal preview
             const isTestMode = req.body.sendToTestClients || false;
             const returnResults = isTestMode ? results : (results.length ? [results[0]] : []);
+            console.log('📤 SENDING RESPONSE TO FRONTEND:');
+            console.log('  - Channel:', channel);
+            console.log('  - Email Subject:', channel === 'email' ? emailSubject : 'N/A (not email)');
+            console.log('  - Email Subject Length:', emailSubject?.length || 0);
+            console.log('  - Base Message Length:', baseMessage?.length || 0);
+            
             return res.json({ 
                 success: true, 
                 base_message: baseMessage, 

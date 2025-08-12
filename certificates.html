@@ -5883,7 +5883,15 @@
                     
                     console.log('🔍 Found possible subject fields:', possibleSubjectFields.length);
                     
-                    const subjectToUse = data.email_subject || 'Comunicazione Service Hub';
+                    const subjectToUse = data.email_subject;
+                    
+                    if (!subjectToUse) {
+                        console.error('❌ NESSUN OGGETTO EMAIL RICEVUTO DAL SERVER!');
+                        console.error('Data completa ricevuta:', data);
+                        return;
+                    }
+                    
+                    console.log('📧 Oggetto email ricevuto dal server:', subjectToUse);
                     
                     // FORZA il popolamento su TUTTI i campi possibili
                     possibleSubjectFields.forEach((field, index) => {
@@ -5903,9 +5911,11 @@
                     setTimeout(() => {
                         const backupField = document.getElementById('emailSubjectInput');
                         if (backupField && (!backupField.value || backupField.value.includes('{'))) {
-                            console.log('🔄 BACKUP: Re-setting email subject');
+                            console.log('🔄 BACKUP: Re-setting email subject with:', subjectToUse);
                             backupField.value = subjectToUse;
                             backupField.dispatchEvent(new Event('input', { bubbles: true }));
+                        } else if (backupField) {
+                            console.log('✅ BACKUP: Field already has correct value:', backupField.value);
                         }
                     }, 500);
                 }
