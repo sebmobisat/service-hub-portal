@@ -1562,12 +1562,27 @@ ${channel === 'email' ? (language === 'it' ? 'Restituisci in formato JSON con su
                             await supabaseAdmin.from('dealer_billing_accounts').update({ balance_cents: current - unit, updated_at: new Date().toISOString() }).eq('dealer_id', dealerId);
                         } catch (e) { console.warn('billing email event failed', e.message); }
                     } else if (channel === 'whatsapp' && twilioClient && r.clientPhone) {
-                        const whatsappMessage = await twilioClient.messages.create({
-                            body: finalMsg,
-                            from: process.env.TWILIO_WHATSAPP_FROM,
-                            to: `whatsapp:${r.clientPhone}`
-                        });
-                        sendResult = { success: true, sid: whatsappMessage.sid };
+                        try {
+                            const whatsappMessage = await twilioClient.messages.create({
+                                body: finalMsg,
+                                from: process.env.TWILIO_WHATSAPP_FROM,
+                                to: `whatsapp:${r.clientPhone}`
+                            });
+                            sendResult = { success: true, sid: whatsappMessage.sid };
+                        } catch (whatsappError) {
+                            // If WhatsApp fails (number not authorized), try SMS fallback if available
+                            if (whatsappError.code === 21910 && process.env.TWILIO_SMS_FROM) {
+                                console.log(`WhatsApp failed for ${r.clientPhone}, trying SMS fallback...`);
+                                const smsMessage = await twilioClient.messages.create({
+                                    body: finalMsg,
+                                    from: process.env.TWILIO_SMS_FROM,
+                                    to: r.clientPhone
+                                });
+                                sendResult = { success: true, sid: smsMessage.sid, fallback: 'sms' };
+                            } else {
+                                throw whatsappError; // Re-throw if not a channel error or no SMS fallback
+                            }
+                        }
                     } else if (channel === 'whatsapp' && !twilioClient) {
                         console.error('❌ WhatsApp requested but Twilio client not available');
                         sendResult = { success: false, error: 'Twilio client not initialized' };
@@ -1752,12 +1767,27 @@ app.post('/api/communications/send-manual', express.json(), async (req, res) => 
                         }
                     }
                 } else if (channel === 'whatsapp' && twilioClient && recipient.phone) {
-                    const whatsappMessage = await twilioClient.messages.create({
-                        body: personalizedMessage,
-                        from: process.env.TWILIO_WHATSAPP_FROM,
-                        to: `whatsapp:${recipient.phone}`
-                    });
-                    sendResult = { success: true, sid: whatsappMessage.sid };
+                    try {
+                        const whatsappMessage = await twilioClient.messages.create({
+                            body: personalizedMessage,
+                            from: process.env.TWILIO_WHATSAPP_FROM,
+                            to: `whatsapp:${recipient.phone}`
+                        });
+                        sendResult = { success: true, sid: whatsappMessage.sid };
+                    } catch (whatsappError) {
+                        // If WhatsApp fails (number not authorized), try SMS fallback if available
+                        if (whatsappError.code === 21910 && process.env.TWILIO_SMS_FROM) {
+                            console.log(`WhatsApp failed for ${recipient.phone}, trying SMS fallback...`);
+                            const smsMessage = await twilioClient.messages.create({
+                                body: personalizedMessage,
+                                from: process.env.TWILIO_SMS_FROM,
+                                to: recipient.phone
+                            });
+                            sendResult = { success: true, sid: smsMessage.sid, fallback: 'sms' };
+                        } else {
+                            throw whatsappError; // Re-throw if not a channel error or no SMS fallback
+                        }
+                    }
                 } else if (channel === 'whatsapp' && !twilioClient) {
                     console.error('❌ WhatsApp requested but Twilio client not available');
                     sendResult = { success: false, error: 'Twilio client not initialized' };
