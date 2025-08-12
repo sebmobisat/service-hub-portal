@@ -6159,12 +6159,36 @@
             let recipients;
             if (isTestMode) {
                 const testClients = await fetch(`/api/communications/test-clients/${dealerId}`).then(r=>r.json()).then(j=> j.data||[]);
-                recipients = testClients.map(c => ({
-                    id: c.id,
-                    clientName: [c.first_name, c.last_name].filter(Boolean).join(' ').trim() || 'Cliente Test',
-                    clientEmail: (c.email||'').toLowerCase(),
-                    clientPhone: c.phone||''
-                }));
+                console.log('🔍 DEBUG TEST CLIENTS RAW:', testClients[0]);
+                console.log('🔍 DEBUG TEST CLIENTS AVAILABLE KEYS:', Object.keys(testClients[0] || {}));
+                
+                recipients = testClients.map(c => {
+                    console.log('🔍 DEBUG TEST CLIENT MAPPING:', {
+                        vehicle_brand: c.vehicle_brand,
+                        vehicle_model: c.vehicle_model,
+                        vehicle_plate: c.vehicle_plate,
+                        vehicle_year: c.vehicle_year,
+                        vehicle_fuel: c.vehicle_fuel,
+                        vehicle_fuelType: c.vehicle_fuelType
+                    });
+                    
+                    return {
+                        id: c.id,
+                        clientName: [c.first_name, c.last_name].filter(Boolean).join(' ').trim() || 'Cliente Test',
+                        clientEmail: (c.email||'').toLowerCase(),
+                        clientPhone: c.phone||'',
+                        // AGGIUNGI I DATI DEL VEICOLO PER I CLIENTI TEST
+                        vehicle: `${c.vehicle_brand || ''} ${c.vehicle_model || ''}`.trim(),
+                        plate: c.vehicle_plate || '',
+                        year: c.vehicle_year || '',
+                        fuel: c.vehicle_fuel || c.vehicle_fuelType || '',
+                        km: c.vehicle_km || c.vehicle_odometer || '',
+                        vin: c.vehicle_vin || '',
+                        serial: c.vehicle_serial || ''
+                    };
+                });
+                
+                console.log('🔍 DEBUG TEST RECIPIENTS FINAL:', recipients[0]);
             } else {
                 const selectedCerts = getSelectedCertificates();
                 console.log('🔍 DEBUG MANUAL: selectedCerts sample:', selectedCerts[0]);
