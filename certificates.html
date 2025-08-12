@@ -5867,27 +5867,47 @@
                     aiResults.value = cleanMessage;
                 }
 
-                // Mostra oggetto email se generato
-                console.log('🔍 Email subject debug:', {
-                    channel,
-                    email_subject: data.email_subject,
-                    emailSubjectInput: !!emailSubjectInput,
-                    emailSubjectInputId: emailSubjectInput?.id,
-                    fullDataResponse: data
-                });
-                
-                if (channel === 'email' && data.email_subject && emailSubjectInput) {
-                    console.log('✅ Populating email subject:', data.email_subject);
-                    emailSubjectInput.value = data.email_subject;
-                    emailSubjectInput.placeholder = 'Oggetto generato dall\'AI';
-                } else {
-                    console.warn('❌ Email subject not populated:', {
-                        channelIsEmail: channel === 'email',
-                        hasEmailSubject: !!data.email_subject,
-                        emailSubjectValue: data.email_subject,
-                        hasInputElement: !!emailSubjectInput,
-                        inputElementId: emailSubjectInput?.id
+                // FORZA il popolamento dell'oggetto email - NUOVO APPROCCIO
+                if (channel === 'email') {
+                    // Trova TUTTI i possibili campi oggetto email
+                    const possibleSubjectFields = [
+                        document.getElementById('emailSubjectInput'),
+                        document.querySelector('input[placeholder*="oggetto"]'),
+                        document.querySelector('input[placeholder*="Oggetto"]'),
+                        document.querySelector('input[placeholder*="subject"]'),
+                        document.querySelector('input[placeholder*="Subject"]'),
+                        document.querySelector('#emailSubjectField input'),
+                        document.querySelector('.email-subject input'),
+                        ...document.querySelectorAll('input[type="text"]')
+                    ].filter(Boolean);
+                    
+                    console.log('🔍 Found possible subject fields:', possibleSubjectFields.length);
+                    
+                    const subjectToUse = data.email_subject || 'Comunicazione Service Hub';
+                    
+                    // FORZA il popolamento su TUTTI i campi possibili
+                    possibleSubjectFields.forEach((field, index) => {
+                        if (field) {
+                            console.log(`📧 Setting subject on field ${index}:`, field.id || field.className);
+                            field.value = subjectToUse;
+                            field.setAttribute('value', subjectToUse);
+                            // Trigger eventi per assicurarsi che il valore sia registrato
+                            field.dispatchEvent(new Event('input', { bubbles: true }));
+                            field.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
                     });
+                    
+                    console.log('✅ FORCED email subject population:', subjectToUse);
+                    
+                    // BACKUP: Riprova dopo 500ms nel caso il DOM non fosse pronto
+                    setTimeout(() => {
+                        const backupField = document.getElementById('emailSubjectInput');
+                        if (backupField && (!backupField.value || backupField.value.includes('{'))) {
+                            console.log('🔄 BACKUP: Re-setting email subject');
+                            backupField.value = subjectToUse;
+                            backupField.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                    }, 500);
                 }
 
                 // Mostra costi
