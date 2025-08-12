@@ -5863,8 +5863,22 @@
                 }
 
                 // Mostra oggetto email se generato
+                console.log('🔍 Email subject debug:', {
+                    channel,
+                    email_subject: data.email_subject,
+                    emailSubjectInput: !!emailSubjectInput,
+                    emailSubjectInputId: emailSubjectInput?.id
+                });
+                
                 if (channel === 'email' && data.email_subject && emailSubjectInput) {
+                    console.log('✅ Populating email subject:', data.email_subject);
                     emailSubjectInput.value = data.email_subject;
+                } else {
+                    console.warn('❌ Email subject not populated:', {
+                        channelIsEmail: channel === 'email',
+                        hasEmailSubject: !!data.email_subject,
+                        hasInputElement: !!emailSubjectInput
+                    });
                 }
 
                 // Mostra costi
