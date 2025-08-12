@@ -1636,6 +1636,27 @@ ${channel === 'email' ? (language === 'it' ? 'Restituisci in formato JSON con su
                     await supabaseAdmin.from('dealer_billing_accounts').update({ balance_cents: current - openai_cents, updated_at: new Date().toISOString() }).eq('dealer_id', dealerId);
                 }
             } catch (e) { console.warn('billing openai (draft) failed', e.message); }
+            
+            // Get updated balance after AI generation billing
+            let newBalance = null;
+            try {
+                console.log('💰 Fetching updated balance after AI generation for dealer:', dealerId);
+                const { data: balanceData, error } = await supabaseAdmin
+                    .from('dealer_billing_accounts')
+                    .select('balance_cents')
+                    .eq('dealer_id', dealerId)
+                    .single();
+                
+                if (error) {
+                    console.error('💰 Balance query error:', error);
+                } else {
+                    newBalance = balanceData?.balance_cents ?? 0;
+                    console.log('💰 Updated balance after AI generation for dealer', dealerId, ':', newBalance, 'cents');
+                }
+            } catch (e) {
+                console.error('💰 Failed to get updated balance after AI generation:', e);
+            }
+            
             // Return all results for test mode, or just first for normal preview
             const isTestMode = req.body.sendToTestClients || false;
             const returnResults = isTestMode ? results : (results.length ? [results[0]] : []);
@@ -1644,8 +1665,31 @@ ${channel === 'email' ? (language === 'it' ? 'Restituisci in formato JSON con su
                 base_message: baseMessage, 
                 email_subject: channel === 'email' ? emailSubject : undefined,
                 results: returnResults, 
-                costs: { email_cents, whatsapp_cents, sms_cents, openai_cents, total_cents } 
+                costs: { email_cents, whatsapp_cents, sms_cents, openai_cents, total_cents },
+                newBalance
             });
+        }
+
+        // Get updated balance if messages were sent
+        let newBalance = null;
+        if (send) {
+            try {
+                console.log('💰 Fetching updated balance for dealer:', dealerId);
+                const { data: balanceData, error } = await supabaseAdmin
+                    .from('dealer_billing_accounts')
+                    .select('balance_cents')
+                    .eq('dealer_id', dealerId)
+                    .single();
+                
+                if (error) {
+                    console.error('💰 Balance query error:', error);
+                } else {
+                    newBalance = balanceData?.balance_cents ?? 0;
+                    console.log('💰 Updated balance for dealer', dealerId, ':', newBalance, 'cents');
+                }
+            } catch (e) {
+                console.error('💰 Failed to get updated balance:', e);
+            }
         }
 
         // Aggregate billing already inserted per message above; just return summary
@@ -1654,7 +1698,8 @@ ${channel === 'email' ? (language === 'it' ? 'Restituisci in formato JSON con su
             base_message: baseMessage, 
             email_subject: channel === 'email' ? emailSubject : undefined,
             results, 
-            costs: { email_cents, whatsapp_cents, openai_cents, total_cents } 
+            costs: { email_cents, whatsapp_cents, openai_cents, total_cents },
+            newBalance: send ? newBalance : undefined
         });
     } catch (error) {
         console.error('Bulk communications error:', error);

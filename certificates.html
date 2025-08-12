@@ -5876,8 +5876,25 @@
                     }
                 }
 
-                // Aggiorna balance
-                await updateDealerBalance();
+                // Update credit display dynamically
+                if (data.newBalance !== undefined) {
+                    const balanceElement = document.getElementById('dealerBalanceText');
+                    
+                    if (balanceElement) {
+                        const currentLanguage = window.i18n?.currentLanguage || 'it';
+                        const locale = currentLanguage === 'it' ? 'it-IT' : 'en-US';
+                        const newBalanceEuro = (data.newBalance / 100).toLocaleString(locale, {style: 'currency', currency: 'EUR'});
+                        
+                        balanceElement.textContent = newBalanceEuro;
+                        console.log('💰 Balance updated dynamically after AI generation:', newBalanceEuro);
+                    } else {
+                        console.error('💰 Balance element not found!');
+                    }
+                } else {
+                    console.warn('💰 No newBalance in AI generation response - fetching manually');
+                    // Fallback: fetch balance manually
+                    await updateDealerBalance();
+                }
 
             } catch (error) {
                 console.error('Errore generazione AI:', error);
@@ -6050,20 +6067,49 @@
                     throw new Error(data.error || 'Errore nell\'invio');
                 }
 
-                // Mostra risultato
-                const title = language === 'it' ? 'Successo' : 'Success';
+                // Update credit display dynamically
+                if (data.newBalance !== undefined) {
+                    const balanceElement = document.getElementById('dealerBalanceText');
+                    
+                    if (balanceElement) {
+                        const currentLanguage = window.i18n?.currentLanguage || 'it';
+                        const locale = currentLanguage === 'it' ? 'it-IT' : 'en-US';
+                        const newBalanceEuro = (data.newBalance / 100).toLocaleString(locale, {style: 'currency', currency: 'EUR'});
+                        
+                        balanceElement.textContent = newBalanceEuro;
+                        console.log('💰 Balance updated dynamically:', newBalanceEuro);
+                    } else {
+                        console.error('💰 Balance element not found!');
+                    }
+                } else {
+                    console.warn('💰 No newBalance in server response - fetching manually');
+                    // Fallback: fetch balance manually
+                    await updateDealerBalance();
+                }
+
+                // Show success message with updated credit info
                 const sentCount = data.results ? data.results.filter(r => r.sendResult?.success).length : 0;
-                const successMsg = language === 'it' 
+                const successMessage = language === 'it' 
                     ? `Inviati ${sentCount} messaggi con successo!`
                     : `Successfully sent ${sentCount} messages!`;
+                    
+                let fullMessage = successMessage;
                 
-                await window.customDialog.alert(title, successMsg, 'OK');
+                if (data.newBalance !== undefined) {
+                    const currentLanguage = window.i18n?.currentLanguage || 'it';
+                    const locale = currentLanguage === 'it' ? 'it-IT' : 'en-US';
+                    const newBalanceEuro = (data.newBalance / 100).toLocaleString(locale, {style: 'currency', currency: 'EUR'});
+                    const creditMessage = language === 'it' 
+                        ? `Il tuo credito è stato aggiornato a ${newBalanceEuro}`
+                        : `Your credit has been updated to ${newBalanceEuro}`;
+                    fullMessage += `\n\n${creditMessage}`;
+                }
+                
+                const title = language === 'it' ? 'Successo' : 'Success';
+                await window.customDialog.alert(title, fullMessage, 'OK');
 
-                // Aggiorna balance
-                await updateDealerBalance();
-
-                // Chiudi dialog
-                closeBulkContactDialog();
+                // DON'T close the dialog - keep it open for more communications
+                // closeBulkContactDialog();
 
             } catch (error) {
                 console.error('Errore invio:', error);
