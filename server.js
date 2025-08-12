@@ -20,14 +20,28 @@ const { SupabasePinManager } = require('./js/supabase-pin-manager.js');
 // Initialize Twilio for WhatsApp (if credentials are available)
 let twilioClient = null;
 
+// Debug environment variables in production
+console.log('🔧 Environment check:');
+console.log('  - NODE_ENV:', process.env.NODE_ENV);
+console.log('  - TWILIO_ACCOUNT_SID present:', !!process.env.TWILIO_ACCOUNT_SID);
+console.log('  - TWILIO_AUTH_TOKEN present:', !!process.env.TWILIO_AUTH_TOKEN);
+console.log('  - TWILIO_WHATSAPP_FROM:', process.env.TWILIO_WHATSAPP_FROM || 'NOT SET');
+
 try {
     const twilio = require('twilio');
     
     if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
+        console.log('🔧 Attempting to initialize Twilio client...');
         twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+        console.log('✅ Twilio client initialized successfully');
+    } else {
+        console.warn('⚠️ Twilio credentials missing - WhatsApp features disabled');
+        console.log('  - Missing ACCOUNT_SID:', !process.env.TWILIO_ACCOUNT_SID);
+        console.log('  - Missing AUTH_TOKEN:', !process.env.TWILIO_AUTH_TOKEN);
     }
 } catch (error) {
-    console.error('Failed to load Twilio module:', error.message);
+    console.error('❌ Failed to load Twilio module:', error.message);
+    console.error('❌ Full error:', error);
 }
 
 const app = express();
@@ -1554,6 +1568,12 @@ ${channel === 'email' ? (language === 'it' ? 'Restituisci in formato JSON con su
                             to: `whatsapp:${r.clientPhone}`
                         });
                         sendResult = { success: true, sid: whatsappMessage.sid };
+                    } else if (channel === 'whatsapp' && !twilioClient) {
+                        console.error('❌ WhatsApp requested but Twilio client not available');
+                        sendResult = { success: false, error: 'Twilio client not initialized' };
+                    } else if (channel === 'whatsapp' && !r.clientPhone) {
+                        console.error('❌ WhatsApp requested but no client phone number');
+                        sendResult = { success: false, error: 'No client phone number' };
                         // Billing whatsapp
                         try {
                             const unit = 10; // cents
@@ -1738,6 +1758,12 @@ app.post('/api/communications/send-manual', express.json(), async (req, res) => 
                         to: `whatsapp:${recipient.phone}`
                     });
                     sendResult = { success: true, sid: whatsappMessage.sid };
+                } else if (channel === 'whatsapp' && !twilioClient) {
+                    console.error('❌ WhatsApp requested but Twilio client not available');
+                    sendResult = { success: false, error: 'Twilio client not initialized' };
+                } else if (channel === 'whatsapp' && !recipient.phone) {
+                    console.error('❌ WhatsApp requested but no recipient phone number');
+                    sendResult = { success: false, error: 'No recipient phone number' };
                     
                     if (sendResult.success) {
                         sentCount++;
