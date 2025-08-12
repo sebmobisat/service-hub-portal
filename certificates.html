@@ -2459,7 +2459,10 @@
                     km: c.odometer || '',
                     vin: c.vin || '',
                     serial: c.serial || ''
-                }))); 
+                                })));
+
+                console.log('🔍 DEBUG AI selectedVehicles:', selectedVehicles[0]);
+                console.log('🔍 DEBUG AI selectedVehicles vehicle data:', selectedVehicles[0]?.vehicle, selectedVehicles[0]?.plate, selectedVehicles[0]?.year);
 
                 const response = await fetch('/api/communications/generate', {
                     method: 'POST',
