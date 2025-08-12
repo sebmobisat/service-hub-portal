@@ -1409,7 +1409,7 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
 `${language === 'it' ? 'Scrivi un unico messaggio in' : 'Write a single message in'} ${styleMap[style] || styleMap.professional}.
 ${language === 'it' ? 'Includi OBBLIGATORIAMENTE i seguenti placeholder esattamente come scritti (non sostituirli):' : 'MANDATORILY include the following placeholders exactly as written (do not replace them):'} ${[...alwaysTokens, ...selectedTokens].join(' ')}.
 
-${language === 'it' ? 'IMPORTANTE: Il placeholder {SALUTATION} verrà sostituito automaticamente con il saluto corretto basato sul gender (es. "Cara Maria" o "Caro Luca"). Non scrivere "Gentile Sig./Sig.ra".' : 'IMPORTANT: The {SALUTATION} placeholder will be automatically replaced with the correct gender-based greeting (e.g. "Dear Maria" or "Dear John"). Do not write generic greetings.'}
+${language === 'it' ? 'IMPORTANTE: Il placeholder {SALUTATION} verrà sostituito automaticamente con il saluto corretto basato sul gender (es. "Cara Maria" o "Caro Luca"). NON utilizzare {NAME} insieme a {SALUTATION} perché causerebbe duplicazione. NON scrivere "Gentile Sig./Sig.ra". NON inventare tag che non esistono come [Nome del Concessionario]. NON aggiungere firme o saluti finali, la firma del concessionario verrà aggiunta automaticamente.' : 'IMPORTANT: The {SALUTATION} placeholder will be automatically replaced with the correct gender-based greeting (e.g. "Dear Maria" or "Dear John"). DO NOT use {NAME} together with {SALUTATION} as it would cause duplication. Do not write generic greetings. Do NOT invent tags that do not exist. DO NOT add signatures or closing greetings, the dealer signature will be added automatically.'}
 
 ${channel === 'email' ? (language === 'it' ? 'GENERA ANCHE UN OGGETTO EMAIL appropriato. Rispondi in formato JSON: {"subject": "oggetto email", "message": "testo messaggio"}' : 'ALSO GENERATE an appropriate EMAIL SUBJECT. Respond in JSON format: {"subject": "email subject", "message": "message text"}') : ''}
 
@@ -1424,14 +1424,18 @@ ${channel === 'email' ? (language === 'it' ? 'Restituisci in formato JSON con su
                     // Parse response for email (JSON format) or regular message
                     let emailSubject = '';
                     if (channel === 'email') {
+                        console.log('🤖 AI raw response for email:', rawResponse);
                         try {
                             const parsed = JSON.parse(rawResponse);
                             baseMessage = parsed.message || rawResponse;
                             emailSubject = parsed.subject || '';
-                        } catch {
+                            console.log('✅ JSON parsed successfully - subject:', emailSubject, 'message length:', baseMessage.length);
+                        } catch (parseError) {
+                            console.warn('❌ JSON parsing failed:', parseError.message, 'Raw response:', rawResponse);
                             // Fallback if JSON parsing fails
                             baseMessage = rawResponse;
                             emailSubject = language === 'it' ? 'Comunicazione Service Hub' : 'Service Hub Communication';
+                            console.log('🔄 Using fallback subject:', emailSubject);
                         }
                     } else {
                         baseMessage = rawResponse;
@@ -1570,6 +1574,21 @@ ${channel === 'email' ? (language === 'it' ? 'Restituisci in formato JSON con su
                                 to: `whatsapp:${r.clientPhone}`
                             });
                             sendResult = { success: true, sid: whatsappMessage.sid, channel: 'whatsapp' };
+                            
+                            // Billing for WhatsApp
+                            try {
+                                const unit = 10; // cents
+                                await supabaseAdmin.from('billing_usage_events').insert([{
+                                    dealer_id: dealerId,
+                                    event_type: 'whatsapp',
+                                    quantity: 1,
+                                    unit_cost_cents: unit,
+                                    total_cost_cents: unit
+                                }]);
+                                const { data: bal } = await supabaseAdmin.from('dealer_billing_accounts').select('balance_cents').eq('dealer_id', dealerId).order('updated_at', { ascending: false }).limit(1);
+                                const current = bal?.[0]?.balance_cents ?? 0;
+                                await supabaseAdmin.from('dealer_billing_accounts').update({ balance_cents: current - unit, updated_at: new Date().toISOString() }).eq('dealer_id', dealerId);
+                            } catch (e) { console.warn('billing whatsapp event failed', e.message); }
                         } catch (whatsappError) {
                             // SMS fallback for specific WhatsApp errors
                             if ((whatsappError.code === 21910 || whatsappError.code === 63016) && process.env.TWILIO_SMS_FROM) {
@@ -1581,6 +1600,21 @@ ${channel === 'email' ? (language === 'it' ? 'Restituisci in formato JSON con su
                                         to: r.clientPhone
                                     });
                                     sendResult = { success: true, sid: smsMessage.sid, channel: 'sms', fallback: true };
+                                    
+                                    // Billing for SMS fallback
+                                    try {
+                                        const unit = 8; // cents
+                                        await supabaseAdmin.from('billing_usage_events').insert([{
+                                            dealer_id: dealerId,
+                                            event_type: 'sms',
+                                            quantity: 1,
+                                            unit_cost_cents: unit,
+                                            total_cost_cents: unit
+                                        }]);
+                                        const { data: bal } = await supabaseAdmin.from('dealer_billing_accounts').select('balance_cents').eq('dealer_id', dealerId).order('updated_at', { ascending: false }).limit(1);
+                                        const current = bal?.[0]?.balance_cents ?? 0;
+                                        await supabaseAdmin.from('dealer_billing_accounts').update({ balance_cents: current - unit, updated_at: new Date().toISOString() }).eq('dealer_id', dealerId);
+                                    } catch (e) { console.warn('billing sms event failed', e.message); }
                                 } catch (smsError) {
                                     console.error(`SMS fallback also failed for ${r.clientPhone}:`, smsError.message);
                                     sendResult = { success: false, error: `WhatsApp failed (${whatsappError.code}), SMS fallback failed: ${smsError.message}` };
