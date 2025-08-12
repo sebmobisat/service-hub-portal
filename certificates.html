@@ -1262,10 +1262,10 @@
                     </div>
                 </div>
 
-                <div class="flex justify-end gap-2 mt-6">
-                    <button onclick="generateAIContent()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded text-white text-sm" data-i18n="contact.generate">Genera bozza</button>
-                    <button id="sendToTestClientsAIBtn" onclick="sendAIToTestClients()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm hidden" data-i18n="contact.send_to_test_clients_button">Invia comunicazione clienti test</button>
-                    <button id="sendAICommunicationsBtn" onclick="sendAICommunications()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm" data-i18n="contact.send_communications">Invia comunicazioni</button>
+                <div class="flex justify-end gap-2 mt-6 flex-wrap">
+                    <button onclick="generateAIContent()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded text-white text-sm min-w-fit whitespace-nowrap" data-i18n="contact.generate">Genera bozza</button>
+                    <button id="sendToTestClientsAIBtn" onclick="sendAIToTestClients()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm hidden min-w-fit whitespace-nowrap" data-i18n="contact.send_to_test_clients_button">Invia comunicazione clienti test</button>
+                    <button id="sendAICommunicationsBtn" onclick="sendAICommunications()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm min-w-fit whitespace-nowrap" data-i18n="contact.send_communications">Invia comunicazioni</button>
                 </div>
             </div>
         </div>
@@ -2519,6 +2519,14 @@
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('#channelToggleGroup button').forEach(b => b.classList.remove('active-chip','border-emerald-500','bg-emerald-600/10'));
                     btn.classList.add('active-chip','border-emerald-500','bg-emerald-600/10');
+                    
+                    // Show/hide email subject field for AI dialog
+                    const emailSubjectField = document.getElementById('emailSubjectField');
+                    if (btn.dataset.value === 'email') {
+                        emailSubjectField?.classList.remove('hidden');
+                    } else {
+                        emailSubjectField?.classList.add('hidden');
+                    }
                 });
             });
             const firstChannel = document.querySelector('#channelToggleGroup button[data-value="email"]');
@@ -5825,6 +5833,8 @@
             }
 
             try {
+                console.log('🤖 Calling AI generation with:', { channel, style, prompt, recipients: recipients.length, useFields, language, dealerId });
+                
                 const response = await fetch('/api/communications/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -6016,16 +6026,21 @@
             }
 
             try {
-                const response = await fetch('/api/communications/send', {
+                const response = await fetch('/api/communications/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         channel,
+                        style: style,
+                        prompt: '',
                         recipients,
+                        useFields: useFields,
+                        language,
+                        send: true,
+                        dealerId,
                         baseMessage,
                         emailSubject: channel === 'email' ? emailSubject : undefined,
-                        dealerId,
-                        sendToTestClients: isTestMode
+                        dealerSignatureText
                     })
                 });
 
@@ -6037,9 +6052,10 @@
 
                 // Mostra risultato
                 const title = language === 'it' ? 'Successo' : 'Success';
+                const sentCount = data.results ? data.results.filter(r => r.sendResult?.success).length : 0;
                 const successMsg = language === 'it' 
-                    ? `Inviati ${data.sent || 0} messaggi con successo!`
-                    : `Successfully sent ${data.sent || 0} messages!`;
+                    ? `Inviati ${sentCount} messaggi con successo!`
+                    : `Successfully sent ${sentCount} messages!`;
                 
                 await window.customDialog.alert(title, successMsg, 'OK');
 
