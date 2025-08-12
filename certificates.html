@@ -347,7 +347,8 @@
             z-index: 1000;
         }
 
-        #aiResults.drag-over {
+        #aiResults.drag-over,
+        #emailSubjectInput.drag-over {
             background-color: rgba(16, 185, 129, 0.1) !important;
             border-color: rgba(16, 185, 129, 0.5) !important;
             box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3) !important;
@@ -1178,11 +1179,7 @@
                             </div>
                         </div>
 
-                        <!-- Email Subject Field (shown only for email) -->
-                        <div id="emailSubjectField" class="hidden">
-                            <p class="text-xs text-gray-400 mb-2" data-en="Email Subject" data-it="Oggetto Email">Oggetto Email</p>
-                            <input id="emailSubjectInput" type="text" class="w-full rounded bg-gray-800 border border-gray-700 p-2 text-sm" placeholder="L'AI genererà l'oggetto automaticamente...">
-                        </div>
+
 
                         <div>
                             <p class="text-xs text-gray-400 mb-2" data-i18n="contact.style">Stile</p>
@@ -1233,6 +1230,12 @@
                             <p class="text-xs text-gray-400" data-i18n="billing.balance">Credito disponibile</p>
                             <p id="dealerBalanceText" class="text-sm font-semibold">-</p>
                         </div>
+                        <!-- Email Subject Field (shown only for email) -->
+                        <div id="emailSubjectField" class="hidden">
+                            <p class="text-xs text-gray-400 mb-2" data-en="Email Subject" data-it="Oggetto Email">Oggetto Email</p>
+                            <input id="emailSubjectInput" type="text" class="w-full rounded bg-gray-800 border border-gray-700 p-2 text-sm mb-3" placeholder="L'AI genererà l'oggetto automaticamente...">
+                        </div>
+
                         <div>
                             <p class="text-xs text-gray-400 mb-2" data-i18n="contact.preview">Anteprima messaggi (editabile)</p>
                             <textarea id="aiResults" class="h-48 w-full bg-gray-800 border border-gray-700 rounded p-3 text-sm resize-none" placeholder="L'anteprima del messaggio generato dall'AI apparirà qui..."></textarea>
@@ -6103,6 +6106,7 @@
         function initDragDropTagsAI() {
             const container = document.getElementById('availableTagsAI');
             const textarea = document.getElementById('aiResults');
+            const emailSubjectInput = document.getElementById('emailSubjectInput');
             
             if (!container || !textarea) return;
 
@@ -6152,6 +6156,43 @@
                     }, 500);
                 }
             });
+
+            // Add drag and drop to email subject input if it exists
+            if (emailSubjectInput) {
+                emailSubjectInput.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    emailSubjectInput.classList.add('drag-over');
+                });
+
+                emailSubjectInput.addEventListener('dragleave', () => {
+                    emailSubjectInput.classList.remove('drag-over');
+                });
+
+                emailSubjectInput.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    emailSubjectInput.classList.remove('drag-over');
+                    
+                    const tagData = e.dataTransfer.getData('text/plain');
+                    if (tagData) {
+                        const cursorPos = emailSubjectInput.selectionStart;
+                        const textBefore = emailSubjectInput.value.substring(0, cursorPos);
+                        const textAfter = emailSubjectInput.value.substring(cursorPos);
+                        
+                        emailSubjectInput.value = textBefore + `{${tagData}}` + textAfter;
+                        
+                        // Position cursor after inserted tag
+                        const newPos = cursorPos + tagData.length + 2;
+                        emailSubjectInput.setSelectionRange(newPos, newPos);
+                        emailSubjectInput.focus();
+                        
+                        // Visual feedback
+                        emailSubjectInput.classList.add('tag-inserted');
+                        setTimeout(() => {
+                            emailSubjectInput.classList.remove('tag-inserted');
+                        }, 500);
+                    }
+                });
+            }
         }
 
         // Initialize draggable tags
