@@ -5806,24 +5806,43 @@
                     return;
                 }
             } else {
-                recipients = selectedCerts.map(cert => ({
-                    id: cert.id,
-                    clientName: cert.clientName,
-                    clientEmail: (cert.clientEmail || '').toLowerCase(),
-                    clientPhone: cert.clientPhone || '',
-                    // Aggiungi i dati del veicolo per i placeholder
-                    vehicle: `${cert.brand || ''} ${cert.model || ''}`.trim(),
-                    plate: cert.license_plate || '',
-                    year: cert.year || '',
-                    fuel: cert.fuel_type || '',
-                    km: cert.odometer || '',
-                    vin: cert.vin || '',
-                    serial: cert.serial || '',
-                    // Dati client dettagliati
-                    firstName: cert.client?.firstName || '',
-                    lastName: cert.client?.lastName || '',
-                    companyName: cert.client?.company || ''
-                }));
+                console.log('🔍 DEBUG: selectedCerts sample:', selectedCerts[0]);
+                console.log('🔍 DEBUG: Available keys:', Object.keys(selectedCerts[0] || {}));
+                
+                recipients = selectedCerts.map(cert => {
+                    console.log('🔍 DEBUG: Processing cert:', {
+                        id: cert.id,
+                        brand: cert.brand,
+                        model: cert.model,
+                        license_plate: cert.license_plate,
+                        year: cert.year,
+                        fuel_type: cert.fuel_type,
+                        odometer: cert.odometer,
+                        vin: cert.vin,
+                        serial: cert.serial
+                    });
+                    
+                    return {
+                        id: cert.id,
+                        clientName: cert.clientName,
+                        clientEmail: (cert.clientEmail || '').toLowerCase(),
+                        clientPhone: cert.clientPhone || '',
+                        // Aggiungi i dati del veicolo per i placeholder
+                        vehicle: `${cert.brand || ''} ${cert.model || ''}`.trim(),
+                        plate: cert.license_plate || '',
+                        year: cert.year || '',
+                        fuel: cert.fuel_type || '',
+                        km: cert.odometer || '',
+                        vin: cert.vin || '',
+                        serial: cert.serial || '',
+                        // Dati client dettagliati
+                        firstName: cert.client?.firstName || '',
+                        lastName: cert.client?.lastName || '',
+                        companyName: cert.client?.company || ''
+                    };
+                });
+                
+                console.log('🔍 DEBUG: Final recipients sample:', recipients[0]);
             }
 
             if (!sendToTest && !selectedCerts.length) {
