@@ -5806,7 +5806,24 @@
                     return;
                 }
             } else {
-                recipients = selectedCerts.map(r=>({ id:r.id, clientName:r.clientName, clientEmail:(r.clientEmail||'').toLowerCase(), clientPhone:r.clientPhone||'' }));
+                recipients = selectedCerts.map(cert => ({
+                    id: cert.id,
+                    clientName: cert.clientName,
+                    clientEmail: (cert.clientEmail || '').toLowerCase(),
+                    clientPhone: cert.clientPhone || '',
+                    // Aggiungi i dati del veicolo per i placeholder
+                    vehicle: `${cert.brand || ''} ${cert.model || ''}`.trim(),
+                    plate: cert.license_plate || '',
+                    year: cert.year || '',
+                    fuel: cert.fuel_type || '',
+                    km: cert.odometer || '',
+                    vin: cert.vin || '',
+                    serial: cert.serial || '',
+                    // Dati client dettagliati
+                    firstName: cert.client?.firstName || '',
+                    lastName: cert.client?.lastName || '',
+                    companyName: cert.client?.company || ''
+                }));
             }
 
             if (!sendToTest && !selectedCerts.length) {
