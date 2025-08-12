@@ -5888,6 +5888,10 @@
                     if (!subjectToUse) {
                         console.error('❌ NESSUN OGGETTO EMAIL RICEVUTO DAL SERVER!');
                         console.error('Data completa ricevuta:', data);
+                        console.error('Keys in data:', Object.keys(data));
+                        console.error('data.email_subject:', data.email_subject);
+                        console.error('typeof data.email_subject:', typeof data.email_subject);
+                        console.error('data.base_message length:', data.base_message?.length);
                         return;
                     }
                     
