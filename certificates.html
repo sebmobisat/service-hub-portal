@@ -5831,15 +5831,31 @@
                 recipients = selectedCerts.map(cert => {
                     console.log('🔍 DEBUG: Processing cert:', {
                         id: cert.id,
-                        brand: cert.brand,
-                        model: cert.model,
+                        // Check both nested and flat structure
+                        brand_flat: cert.brand,
+                        brand_nested: cert.vehicle?.brand,
+                        model_flat: cert.model,
+                        model_nested: cert.vehicle?.model,
                         license_plate: cert.license_plate,
+                        plate_nested: cert.vehicle?.plate,
                         year: cert.year,
+                        year_nested: cert.vehicle?.year,
                         fuel_type: cert.fuel_type,
+                        fuel_nested: cert.vehicle?.fuelType,
                         odometer: cert.odometer,
                         vin: cert.vin,
                         serial: cert.serial
                     });
+                    
+                    // Use nested data first, then fallback to flat
+                    const brand = cert.vehicle?.brand || cert.brand || '';
+                    const model = cert.vehicle?.model || cert.model || '';
+                    const plate = cert.vehicle?.plate || cert.license_plate || '';
+                    const year = cert.vehicle?.year || cert.year || '';
+                    const fuel = cert.vehicle?.fuelType || cert.fuel_type || '';
+                    const odometer = cert.odometer || '';
+                    const vin = cert.vin || '';
+                    const serial = cert.serial || '';
                     
                     return {
                         id: cert.id,
@@ -5847,13 +5863,13 @@
                         clientEmail: (cert.clientEmail || '').toLowerCase(),
                         clientPhone: cert.clientPhone || '',
                         // Aggiungi i dati del veicolo per i placeholder
-                        vehicle: `${cert.brand || ''} ${cert.model || ''}`.trim(),
-                        plate: cert.license_plate || '',
-                        year: cert.year || '',
-                        fuel: cert.fuel_type || '',
-                        km: cert.odometer || '',
-                        vin: cert.vin || '',
-                        serial: cert.serial || '',
+                        vehicle: `${brand} ${model}`.trim(),
+                        plate: plate,
+                        year: year,
+                        fuel: fuel,
+                        km: odometer,
+                        vin: vin,
+                        serial: serial,
                         // Dati client dettagliati
                         firstName: cert.client?.firstName || '',
                         lastName: cert.client?.lastName || '',
