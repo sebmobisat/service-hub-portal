@@ -1402,6 +1402,8 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
     try {
         const { channel, style, prompt, recipients, useFields, language = 'it', send = false, dealerSignatureText, dealerCompanyName = '', selectedVehicles = [], dealerId: bodyDealerId, baseMessage: providedBaseMessage, emailSubject: providedEmailSubject } = req.body;
 
+
+
         if (!Array.isArray(recipients) || recipients.length === 0) {
             return res.status(400).json({ success: false, error: 'no_recipients' });
         }
@@ -1467,8 +1469,15 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
 
             if (openai && process.env.OPENAI_API_KEY) {
                 try {
-                    // Carica prompt dal database
-                    const promptKey = channel === 'email' ? 'communication_email' : 'communication_whatsapp';
+                    // Carica prompt dal database in base al canale e al tono
+                    const styleMapping = {
+                        'informal': 'informal',
+                        'formal': 'formal', 
+                        'professional': 'professional'
+                    };
+                    const promptStyle = styleMapping[style] || 'informal';
+                    const promptKey = channel === 'email' ? `communication_email_${promptStyle}` : `communication_whatsapp_${promptStyle}`;
+                    console.log(`🎨 Using style: ${style} -> prompt: ${promptKey}`);
                     const dbPrompt = await getAIPrompt(promptKey, language);
                     
                     let systemMessage, userMessage, maxTokens, temperature;
@@ -1527,7 +1536,10 @@ ${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci ESATTAME
                     if (channel === 'email') {
                         console.log('🤖 AI raw response for email:', rawResponse);
                         try {
-                            const parsed = JSON.parse(rawResponse);
+                            // Pulisci i markdown code blocks prima del parsing
+                            const cleanedResponse = rawResponse.replace(/```json\s*/gi, '').replace(/```\s*$/gi, '').trim();
+                            console.log('🧹 Cleaned response for parsing:', cleanedResponse);
+                            const parsed = JSON.parse(cleanedResponse);
                             baseMessage = parsed.message || rawResponse;
                             emailSubject = parsed.subject || '';
                             
@@ -1554,8 +1566,8 @@ ${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci ESATTAME
                             if (parsed.message) {
                                 baseMessage = parsed.message;
                                 console.log('⚠️ AI returned JSON for WhatsApp, extracted message only');
-                            } else {
-                                baseMessage = rawResponse;
+                    } else {
+                        baseMessage = rawResponse;
                             }
                         } catch (parseError) {
                             // Non è JSON, usa direttamente la risposta
@@ -1605,14 +1617,28 @@ ${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci ESATTAME
         }
         const dealerId = bodyDealerId;
 
-        const buildSalutation = (fullName) => {
+        const buildSalutation = (fullName, communicationStyle = 'informal') => {
             const firstName = (fullName || '').trim().split(/\s+/)[0] || '';
             if (language === 'it') {
-                if (!firstName) return 'Gentile Cliente';
+                if (!firstName) {
+                    return communicationStyle === 'informal' ? 'Ciao!' : 'Gentile Cliente';
+                }
                 const isFemale = isLikelyFemale(firstName);
+                
+                if (communicationStyle === 'informal') {
                 return `${isFemale ? 'Cara' : 'Caro'} ${firstName}`;
+                } else {
+                    // formal or professional
+                    return `Gentile ${firstName}`;
+                }
             }
+            
+            // English
+            if (communicationStyle === 'informal') {
+                return firstName ? `Hi ${firstName}` : 'Hi there';
+            } else {
             return firstName ? `Dear ${firstName}` : 'Dear Customer';
+            }
         };
 
         const isLikelyFemale = (firstName) => {
@@ -1644,7 +1670,7 @@ ${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci ESATTAME
             const v = (selectedVehicles && selectedVehicles[i]) || {};
             const name = v.name || r.clientName || '';
             const replacements = {
-                '{SALUTATION}': buildSalutation(name),
+                '{SALUTATION}': buildSalutation(name, style),
                 '{NAME}': name || (language === 'it' ? 'Cliente' : 'Customer'),
                 '{NOME}': v.firstName || r.firstName || name.split(' ')[0] || (language === 'it' ? 'Cliente' : 'Customer'),
                 '{COGNOME}': v.lastName || r.lastName || name.split(' ').slice(1).join(' ') || '',
@@ -1898,8 +1924,12 @@ app.post('/api/communications/send-manual', express.json(), async (req, res) => 
         const results = [];
         let sentCount = 0;
 
+
+
         for (const recipient of recipients) {
             try {
+
+                
                 // Replace tags in message (support both languages)
                 const tagReplacements = {
                     // Italian tags
@@ -6678,6 +6708,12 @@ app.get('/api/communications/test-clients/:dealerId', async (req, res) => {
             .eq('dealer_id', dealerId)
             .order('created_at', { ascending: false });
         if (error) throw error;
+        
+        // DEBUG: Log del primo cliente test per vedere i dati del veicolo
+        if (data && data.length > 0) {
+            console.log('🚗 DEBUG TEST CLIENT SAMPLE:', JSON.stringify(data[0], null, 2));
+        }
+        
         res.json({ success: true, data });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message, data: [] });

@@ -1,0 +1,10 @@
+[33me63d636[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Fix duplicate selectedCerts mapping that was causing syntax error
+[33m12cd6ba[m Fix syntax error in selectedVehicles mapping for certificates
+[33ma374d68[m Add extensive debug logging for AI communication placeholder replacement
+[33m6f18667[m Integrate AI prompts from database - URGENT FIX for test client vehicle data
+[33m52c3855[m Fix test clients vehicle data mapping for placeholders
+[33meb98198[m Fix final vehicle data mapping function with nested structure support
+[33m05a5850[m Fix nested vehicle data structure mapping
+[33mbf6b00e[m Fix ALL vehicle placeholder mappings in communication functions
+[33m3f7d3cc[m Add debugging logs for vehicle placeholder issue
+[33m2504a6c[m Fix dialog height cutting issues on smaller screens

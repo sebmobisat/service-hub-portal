@@ -2380,7 +2380,7 @@
                     return;
                 }
             } else {
-                console.log('🔍 DEBUG OTHER: selectedCerts sample:', selectedCerts[0]);
+
                 recipients = selectedCerts.map(cert => ({
                     id: cert.id,
                     clientName: cert.clientName,
@@ -2399,7 +2399,7 @@
                     lastName: cert.client?.lastName || '',
                     companyName: cert.client?.company || ''
                 }));
-                console.log('🔍 DEBUG OTHER: Final recipients sample:', recipients[0]);
+
             }
 
             // Firma dealer selezionata
@@ -2461,8 +2461,7 @@
                     serial: c.serial || ''
                                 })));
 
-                console.log('🔍 DEBUG AI selectedVehicles:', selectedVehicles[0]);
-                console.log('🔍 DEBUG AI selectedVehicles vehicle data:', selectedVehicles[0]?.vehicle, selectedVehicles[0]?.plate, selectedVehicles[0]?.year);
+
 
                 const response = await fetch('/api/communications/generate', {
                     method: 'POST',
@@ -5812,7 +5811,7 @@
             
             // Carica clienti test
             const testClients = await fetch(`/api/communications/test-clients/${dealerId}`).then(r=>r.json()).then(j=> j.data||[]);
-            console.log('🔍 DEBUG TEST CLIENT SAMPLE:', testClients[0]);
+
             const testRecipients = testClients.map(c => ({
                 id: c.id,
                 clientName: [c.first_name, c.last_name].filter(Boolean).join(' ').trim() || 'Cliente Test',
@@ -5843,12 +5842,10 @@
                     return;
                 }
             } else {
-                console.log('🔍 DEBUG: selectedCerts sample:', selectedCerts[0]);
-                console.log('🔍 DEBUG: Available keys:', Object.keys(selectedCerts[0] || {}));
+
                 
                 recipients = selectedCerts.map(cert => {
-                    console.log('🔍 DEBUG: Processing cert:', {
-                        id: cert.id,
+                    return {
                         // Check both nested and flat structure
                         brand_flat: cert.brand,
                         brand_nested: cert.vehicle?.brand,
@@ -5863,7 +5860,7 @@
                         odometer: cert.odometer,
                         vin: cert.vin,
                         serial: cert.serial
-                    });
+                    };
                     
                     // Use nested data first, then fallback to flat
                     const brand = cert.vehicle?.brand || cert.brand || '';
@@ -6166,10 +6163,12 @@
                     console.log('🔍 DEBUG TEST CLIENT MAPPING:', {
                         vehicle_brand: c.vehicle_brand,
                         vehicle_model: c.vehicle_model,
-                        vehicle_plate: c.vehicle_plate,
-                        vehicle_year: c.vehicle_year,
-                        vehicle_fuel: c.vehicle_fuel,
-                        vehicle_fuelType: c.vehicle_fuelType
+                        fuel_type: c.fuel_type,
+                        odometer: c.odometer,
+                        plate: c.plate,
+                        year: c.year,
+                        vin: c.vin,
+                        serial: c.serial
                     });
                     
                     return {
@@ -6177,14 +6176,14 @@
                         clientName: [c.first_name, c.last_name].filter(Boolean).join(' ').trim() || 'Cliente Test',
                         clientEmail: (c.email||'').toLowerCase(),
                         clientPhone: c.phone||'',
-                        // AGGIUNGI I DATI DEL VEICOLO PER I CLIENTI TEST
+                        // CORREZIONE: tutti i campi ESISTONO nella tabella test_clients!
                         vehicle: `${c.vehicle_brand || ''} ${c.vehicle_model || ''}`.trim(),
-                        plate: c.vehicle_plate || '',
-                        year: c.vehicle_year || '',
-                        fuel: c.vehicle_fuel || c.vehicle_fuelType || '',
-                        km: c.vehicle_km || c.vehicle_odometer || '',
-                        vin: c.vehicle_vin || '',
-                        serial: c.vehicle_serial || ''
+                        plate: c.plate || '',
+                        year: c.year || '',
+                        fuel: c.fuel_type || '',
+                        km: c.odometer || '',
+                        vin: c.vin || '',
+                        serial: c.serial || ''
                     };
                 });
                 
@@ -6257,6 +6256,7 @@
                         style: style,
                         prompt: '',
                         recipients,
+                        selectedVehicles: recipients, // CORREZIONE: passa i dati del veicolo
                         useFields: useFields,
                         language,
                         send: true,
