@@ -1568,12 +1568,6 @@ ${channel === 'email' ? (language === 'it' ? 'Restituisci in formato JSON con su
                             to: `whatsapp:${r.clientPhone}`
                         });
                         sendResult = { success: true, sid: whatsappMessage.sid };
-                    } else if (channel === 'whatsapp' && !twilioClient) {
-                        console.error('❌ WhatsApp requested but Twilio client not available');
-                        sendResult = { success: false, error: 'Twilio client not initialized' };
-                    } else if (channel === 'whatsapp' && !r.clientPhone) {
-                        console.error('❌ WhatsApp requested but no client phone number');
-                        sendResult = { success: false, error: 'No client phone number' };
                         // Billing whatsapp
                         try {
                             const unit = 10; // cents
@@ -1582,6 +1576,12 @@ ${channel === 'email' ? (language === 'it' ? 'Restituisci in formato JSON con su
                             const current = bal?.[0]?.balance_cents ?? 0;
                             await supabaseAdmin.from('dealer_billing_accounts').update({ balance_cents: current - unit, updated_at: new Date().toISOString() }).eq('dealer_id', dealerId);
                         } catch (e) { console.warn('billing whatsapp event failed', e.message); }
+                    } else if (channel === 'whatsapp' && !twilioClient) {
+                        console.error('❌ WhatsApp requested but Twilio client not available');
+                        sendResult = { success: false, error: 'Twilio client not initialized' };
+                    } else if (channel === 'whatsapp' && !r.clientPhone) {
+                        console.error('❌ WhatsApp requested but no client phone number');
+                        sendResult = { success: false, error: 'No client phone number' };
                     }
                 } catch (e) {
                     console.error('WhatsApp sending failed:', e.message);
@@ -1758,12 +1758,6 @@ app.post('/api/communications/send-manual', express.json(), async (req, res) => 
                         to: `whatsapp:${recipient.phone}`
                     });
                     sendResult = { success: true, sid: whatsappMessage.sid };
-                } else if (channel === 'whatsapp' && !twilioClient) {
-                    console.error('❌ WhatsApp requested but Twilio client not available');
-                    sendResult = { success: false, error: 'Twilio client not initialized' };
-                } else if (channel === 'whatsapp' && !recipient.phone) {
-                    console.error('❌ WhatsApp requested but no recipient phone number');
-                    sendResult = { success: false, error: 'No recipient phone number' };
                     
                     if (sendResult.success) {
                         sentCount++;
@@ -1790,6 +1784,12 @@ app.post('/api/communications/send-manual', express.json(), async (req, res) => 
                             console.warn('billing whatsapp event failed', e.message);
                         }
                     }
+                } else if (channel === 'whatsapp' && !twilioClient) {
+                    console.error('❌ WhatsApp requested but Twilio client not available');
+                    sendResult = { success: false, error: 'Twilio client not initialized' };
+                } else if (channel === 'whatsapp' && !recipient.phone) {
+                    console.error('❌ WhatsApp requested but no recipient phone number');
+                    sendResult = { success: false, error: 'No recipient phone number' };
                 }
 
                 results.push({
