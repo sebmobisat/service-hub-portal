@@ -47,6 +47,65 @@ try {
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Cache per i prompt AI
+let promptCache = new Map();
+let promptCacheExpiry = 0;
+const PROMPT_CACHE_DURATION = 5 * 60 * 1000; // 5 minuti
+
+// Funzione per leggere i prompt dal database
+async function getAIPrompt(promptKey, language = 'it') {
+    try {
+        // Controlla cache
+        const now = Date.now();
+        const cacheKey = `${promptKey}_${language}`;
+        
+        if (promptCache.has(cacheKey) && now < promptCacheExpiry) {
+            console.log(`📋 Using cached prompt: ${promptKey}`);
+            return promptCache.get(cacheKey);
+        }
+        
+        // Query dal database
+        console.log(`📋 Loading prompt from database: ${promptKey}`);
+        const { data: prompts, error } = await supabaseAdmin
+            .from('ai_prompts')
+            .select('*')
+            .eq('prompt_key', promptKey)
+            .eq('is_active', true)
+            .limit(1);
+            
+        if (error) {
+            console.error('❌ Error loading prompt from database:', error);
+            return null;
+        }
+        
+        if (!prompts || prompts.length === 0) {
+            console.warn(`⚠️ Prompt not found in database: ${promptKey}`);
+            return null;
+        }
+        
+        const prompt = prompts[0];
+        const promptText = language === 'it' ? prompt.prompt_it : prompt.prompt_en;
+        
+        const result = {
+            text: promptText,
+            maxTokens: prompt.max_tokens || 1000,
+            temperature: parseFloat(prompt.temperature) || 0.7,
+            variables: prompt.variables || []
+        };
+        
+        // Aggiorna cache
+        promptCache.set(cacheKey, result);
+        promptCacheExpiry = now + PROMPT_CACHE_DURATION;
+        
+        console.log(`✅ Loaded prompt: ${promptKey}, tokens: ${result.maxTokens}, temp: ${result.temperature}`);
+        return result;
+        
+    } catch (error) {
+        console.error('❌ Error in getAIPrompt:', error);
+        return null;
+    }
+}
+
 // Initialize OpenAI with API key (optional for healthcheck)
 let openai = null;
 if (process.env.OPENAI_API_KEY) {
@@ -1408,10 +1467,31 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
 
             if (openai && process.env.OPENAI_API_KEY) {
                 try {
-                    const messages = [
-                        { role: 'system', content: language === 'it' ? 'Sei un assistente che scrive messaggi di contatto per clienti di un concessionario.' : 'You are an assistant writing outreach messages to dealership customers.' },
-                        { role: 'user', content:
-`${language === 'it' ? 'Scrivi un messaggio professionale per clienti di concessionario in stile' : 'Write a professional message for dealership customers in'} ${styleMap[style] || styleMap.professional}.
+                    // Carica prompt dal database
+                    const promptKey = channel === 'email' ? 'communication_email' : 'communication_whatsapp';
+                    const dbPrompt = await getAIPrompt(promptKey, language);
+                    
+                    let systemMessage, userMessage, maxTokens, temperature;
+                    
+                    if (dbPrompt) {
+                        // Usa prompt dal database
+                        console.log(`📋 Using database prompt: ${promptKey}`);
+                        systemMessage = language === 'it' ? 'Sei un assistente professionale che scrive messaggi di contatto per clienti di un concessionario.' : 'You are a professional assistant writing outreach messages to dealership customers.';
+                        
+                        // Sostituisci le variabili nel prompt
+                        userMessage = dbPrompt.text
+                            .replace('{context}', JSON.stringify(dataForPrompt))
+                            .replace('{clientInfo}', JSON.stringify({ placeholder_tokens: [...alwaysTokens, ...selectedTokens] }))
+                            .replace('{vehicleData}', JSON.stringify(vehicleSummary))
+                            .replace('{dealerInstructions}', prompt || '');
+                            
+                        maxTokens = dbPrompt.maxTokens;
+                        temperature = dbPrompt.temperature;
+                    } else {
+                        // Fallback al prompt hardcoded
+                        console.log(`⚠️ Using fallback hardcoded prompt for: ${promptKey}`);
+                        systemMessage = language === 'it' ? 'Sei un assistente che scrive messaggi di contatto per clienti di un concessionario.' : 'You are an assistant writing outreach messages to dealership customers.';
+                        userMessage = `${language === 'it' ? 'Scrivi un messaggio professionale per clienti di concessionario in stile' : 'Write a professional message for dealership customers in'} ${styleMap[style] || styleMap.professional}.
 
 ${language === 'it' ? 'ISTRUZIONI IMPORTANTI:' : 'IMPORTANT INSTRUCTIONS:'}
 ${language === 'it' ? '- Usa SOLO {SALUTATION} per il saluto (contiene già il nome del cliente)' : '- Use ONLY {SALUTATION} for greeting (already contains client name)'}
@@ -1424,10 +1504,22 @@ ${language === 'it' ? 'Istruzioni specifiche del dealer:' : 'Dealer specific ins
 
 ${language === 'it' ? 'Dati disponibili:' : 'Available data:'} ${JSON.stringify(dataForPrompt)}
 
-${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci ESATTAMENTE in questo formato JSON: {"subject": "oggetto email accattivante e specifico", "message": "testo del messaggio con \\n\\n tra i paragrafi"}. DEVI includere sia subject che message.' : 'MANDATORY: Return EXACTLY in this JSON format: {"subject": "engaging and specific email subject", "message": "message text with \\n\\n between paragraphs"}. You MUST include both subject and message.') : (language === 'it' ? 'Restituisci SOLO il testo del messaggio con \\n\\n tra i paragrafi, senza JSON.' : 'Return ONLY the message text with \\n\\n between paragraphs, no JSON.')}` }
+${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci ESATTAMENTE in questo formato JSON: {"subject": "oggetto email accattivante e specifico", "message": "testo del messaggio con \\n\\n tra i paragrafi"}. DEVI includere sia subject che message.' : 'MANDATORY: Return EXACTLY in this JSON format: {"subject": "engaging and specific email subject", "message": "message text with \\n\\n between paragraphs"}. You MUST include both subject and message.') : (language === 'it' ? 'Restituisci SOLO il testo del messaggio con \\n\\n tra i paragrafi, senza JSON.' : 'Return ONLY the message text with \\n\\n between paragraphs, no JSON.')}`;
+                        maxTokens = 1000;
+                        temperature = 0.7;
+                    }
+                    
+                    const messages = [
+                        { role: 'system', content: systemMessage },
+                        { role: 'user', content: userMessage }
                     ];
                     console.log('🤖 Calling OpenAI with model: gpt-4o');
-                    const completion = await openai.chat.completions.create({ model: 'gpt-4o', messages });
+                    const completion = await openai.chat.completions.create({ 
+                        model: 'gpt-4o', 
+                        messages,
+                        max_tokens: maxTokens,
+                        temperature: temperature
+                    });
                     const rawResponse = completion.choices?.[0]?.message?.content?.trim() || '';
                     console.log('🎯 OpenAI response received from model:', completion.model);
                     
