@@ -1201,23 +1201,23 @@
                         <div>
                             <p class="text-xs text-gray-400 mb-2" data-i18n="contact.fields">Dati da includere</p>
                             <div id="fieldsChipGroup" class="flex flex-wrap gap-2">
-                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="name">Cliente</button>
-                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="email">Email</button>
-                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="phone">Telefono</button>
-                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="brandModel">Veicolo</button>
-                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="plate">Targa</button>
-                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover-border-emerald-500" data-field="year">Anno</button>
-                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover-border-emerald-500" data-field="fuel">Carburante</button>
-                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover-border-emerald-500" data-field="km">Km</button>
-                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover-border-emerald-500" data-field="vin">VIN</button>
-                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover-border-emerald-500" data-field="serial">Serial</button>
+                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="name" data-i18n="contact.field.client">Cliente</button>
+                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="email" data-i18n="contact.field.email">Email</button>
+                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="phone" data-i18n="contact.field.phone">Telefono</button>
+                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="brandModel" data-i18n="contact.field.vehicle">Veicolo</button>
+                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="plate" data-i18n="contact.field.plate">Targa</button>
+                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="year" data-i18n="contact.field.year">Anno</button>
+                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="fuel" data-i18n="contact.field.fuel">Carburante</button>
+                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="km" data-i18n="contact.field.km">Km</button>
+                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="vin" data-i18n="contact.field.vin">VIN</button>
+                                <button type="button" class="px-3 py-1 border border-gray-600 rounded-full text-sm hover:border-emerald-500" data-field="serial" data-i18n="contact.field.serial">Serial</button>
 
                             </div>
                             <!-- Firma dealer selector -->
                             <div class="space-y-2 bg-gray-800 border border-gray-700 rounded p-3 mt-2">
-                                <label class="text-xs text-gray-400">Firma dealer</label>
+                                <label class="text-xs text-gray-400" data-i18n="contact.dealer_signature">Firma dealer</label>
                                 <select id="dealerSignatureSelect" class="w-full rounded bg-gray-900 border border-gray-700 p-2">
-                                    <option value="none">Nessuna firma</option>
+                                    <option value="none" data-i18n="contact.no_signature">Nessuna firma</option>
                                 </select>
                             </div>
                             <!-- Invio ai clienti test -->
@@ -1231,7 +1231,7 @@
                     <div class="lg:col-span-2 space-y-4">
                         <div>
                             <p class="text-xs text-gray-400 mb-2" data-i18n="contact.prompt">Prompt per l'AI</p>
-                            <textarea id="aiPromptInput" rows="6" class="w-full rounded bg-gray-800 border border-gray-700 p-3" placeholder="Scrivi qui le istruzioni per l'AI..."></textarea>
+                            <textarea id="aiPromptInput" rows="6" class="w-full rounded bg-gray-800 border border-gray-700 p-3" data-i18n-placeholder="contact.prompt.placeholder" placeholder="Scrivi qui le istruzioni per l'AI..."></textarea>
                         </div>
                         <!-- Dealer balance (read-only) -->
                         <div class="mt-2 flex items-center justify-between">
@@ -1240,13 +1240,13 @@
                         </div>
                         <!-- Email Subject Field (shown only for email) -->
                         <div id="emailSubjectField" class="hidden">
-                            <p class="text-xs text-gray-400 mb-2" data-en="Email Subject" data-it="Oggetto Email">Oggetto Email</p>
-                            <input id="emailSubjectInput" type="text" class="w-full rounded bg-gray-800 border border-gray-700 p-2 text-sm mb-3" placeholder="L'AI genererà l'oggetto automaticamente...">
+                            <p class="text-xs text-gray-400 mb-2" data-i18n="contact.email_subject">Oggetto Email</p>
+                            <input id="emailSubjectInput" type="text" class="w-full rounded bg-gray-800 border border-gray-700 p-2 text-sm mb-3" data-i18n-placeholder="contact.email_subject_placeholder" placeholder="L'AI genererà l'oggetto automaticamente...">
                         </div>
 
                         <div>
                             <p class="text-xs text-gray-400 mb-2" data-i18n="contact.preview">Anteprima messaggi (editabile)</p>
-                            <textarea id="aiResults" class="h-48 w-full bg-gray-800 border border-gray-700 rounded p-3 text-sm resize-none" placeholder="L'anteprima del messaggio generato dall'AI apparirà qui..."></textarea>
+                            <textarea id="aiResults" class="h-48 w-full bg-gray-800 border border-gray-700 rounded p-3 text-sm resize-none" data-i18n-placeholder="contact.message_preview_placeholder" placeholder="L'anteprima del messaggio generato dall'AI apparirà qui..."></textarea>
                             <div id="costSummary" class="mt-2 text-xs text-gray-300"></div>
                         </div>
 
@@ -1254,17 +1254,17 @@
                         <div>
                             <p class="text-xs text-gray-400 mb-2" data-i18n="contact.available_tags">Tags disponibili (trascina nell'anteprima)</p>
                             <div id="availableTagsAI" class="flex flex-wrap gap-2 p-3 bg-gray-800 border border-gray-700 rounded min-h-[60px]">
-                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="NOME">{NOME}</div>
-                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="COGNOME">{COGNOME}</div>
-                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="EMAIL">{EMAIL}</div>
-                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="TELEFONO">{TELEFONO}</div>
-                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="VEICOLO">{VEICOLO}</div>
-                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="TARGA">{TARGA}</div>
-                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="ANNO">{ANNO}</div>
-                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="CARBURANTE">{CARBURANTE}</div>
-                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="KM">{KM}</div>
-                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="VIN">{VIN}</div>
-                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="SERIAL">{SERIAL}</div>
+                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="NOME" data-i18n="ai.tags.nome">{NOME}</div>
+                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="COGNOME" data-i18n="ai.tags.cognome">{COGNOME}</div>
+                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="EMAIL" data-i18n="ai.tags.email">{EMAIL}</div>
+                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="TELEFONO" data-i18n="ai.tags.telefono">{TELEFONO}</div>
+                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="VEICOLO" data-i18n="ai.tags.veicolo">{VEICOLO}</div>
+                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="TARGA" data-i18n="ai.tags.targa">{TARGA}</div>
+                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="ANNO" data-i18n="ai.tags.anno">{ANNO}</div>
+                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="CARBURANTE" data-i18n="ai.tags.carburante">{CARBURANTE}</div>
+                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="KM" data-i18n="ai.tags.km">{KM}</div>
+                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="VIN" data-i18n="ai.tags.vin">{VIN}</div>
+                                <div class="tag-item cursor-move px-2 py-1 bg-emerald-600 text-white rounded text-xs" draggable="true" data-tag="SERIAL" data-i18n="ai.tags.serial">{SERIAL}</div>
                             </div>
                         </div>
                     </div>
@@ -1350,7 +1350,7 @@
 
                         <div>
                             <p class="text-xs text-gray-400 mb-2" data-i18n="manual_contact.your_message">Il Tuo Messaggio</p>
-                            <textarea id="manualMessageInput" rows="12" class="w-full rounded bg-gray-800 border border-gray-700 p-3 font-mono text-sm" 
+                            <textarea id="manualMessageInput" rows="8" class="w-full rounded bg-gray-800 border border-gray-700 p-3 font-mono text-sm" 
                                 data-i18n-placeholder="manual_contact.message_placeholder" placeholder="Scrivi qui il tuo messaggio personalizzato...&#10;&#10;Puoi trascinare i tags dai dati disponibili per inserire informazioni dinamiche.&#10;&#10;Esempio:&#10;Gentile {NOME},&#10;il suo veicolo {VEICOLO} con targa {TARGA}..."></textarea>
                         </div>
                         
@@ -6558,6 +6558,14 @@
                     updateManualMessagePreview();
                 });
             }
+            
+            // Add listener for email subject input to update preview
+            const emailSubjectInput = document.getElementById('emailSubjectInputNoAI');
+            if (emailSubjectInput) {
+                emailSubjectInput.addEventListener('input', () => {
+                    updateManualMessagePreview();
+                });
+            }
         }
 
         // Drag and drop handlers
@@ -6658,6 +6666,9 @@
                         emailSubjectField?.classList.add('hidden');
                     }
                     
+                    // Update preview when channel changes
+                    updateManualMessagePreview();
+                    
                     // Refresh templates for new channel
                     populateTemplateDropdown('templateSelectorNoAI', 'manual', e.target.dataset.value);
                 }
@@ -6684,7 +6695,37 @@
             const currentLanguage = window.i18n?.currentLanguage || 'it';
             const isEnglish = currentLanguage === 'en';
             
+            // Helper function to generate salutation (same logic as server)
+            const buildSalutation = (fullName, language = 'it') => {
+                const firstName = (fullName || '').trim().split(/\s+/)[0] || '';
+                if (language === 'it') {
+                    if (!firstName) {
+                        return 'Gentile Cliente';
+                    }
+                    const isFemale = isLikelyFemale(firstName);
+                    return `Gentile ${firstName}`;
+                }
+                // English
+                return firstName ? `Dear ${firstName}` : 'Dear Customer';
+            };
+
+            const isLikelyFemale = (firstName) => {
+                const name = firstName.toLowerCase();
+                // Lista di nomi femminili comuni
+                const femaleNames = ['anna', 'maria', 'giulia', 'francesca', 'sara', 'laura', 'elena', 'chiara', 'valentina', 'alessandra', 'monica', 'paola', 'barbara', 'roberta', 'simona', 'daniela', 'claudia', 'silvia', 'federica', 'elisa'];
+                // Lista di nomi maschili che finiscono con 'a'
+                const maleNamesEndingA = ['luca', 'andrea', 'mattia', 'nicola', 'simone', 'gabriele', 'michele', 'daniele'];
+                
+                if (femaleNames.includes(name)) return true;
+                if (maleNamesEndingA.includes(name)) return false;
+                
+                // Fallback: euristica finale 'a'
+                return name.endsWith('a');
+            };
+
             let sampleData = {
+                // Salutation tag (the missing piece!)
+                'SALUTATION': buildSalutation(isEnglish ? 'John Smith' : 'Mario Rossi', currentLanguage),
                 // Italian and English tags
                 'NOME': window.i18n ? window.i18n.t('manual_contact.sample.name') : 'Mario',
                 'NAME': window.i18n ? window.i18n.t('manual_contact.sample.name') : 'John',
@@ -6718,7 +6759,10 @@
                     const selectedClient = testClients.find(c => c.id === testClientSelect.value);
                     
                     if (selectedClient) {
+                        const clientFullName = `${selectedClient.first_name || ''} ${selectedClient.last_name || ''}`.trim();
                         sampleData = {
+                            // Salutation for selected test client
+                            'SALUTATION': buildSalutation(clientFullName, currentLanguage),
                             'NOME': selectedClient.first_name || (window.i18n ? window.i18n.t('manual_contact.sample.client_name') : 'Nome'),
                             'COGNOME': selectedClient.last_name || (window.i18n ? window.i18n.t('manual_contact.sample.client_surname') : 'Cognome'),
                             'COMPANY_NAME': selectedClient.company || (window.i18n ? window.i18n.t('manual_contact.sample.client_company') : 'Azienda Cliente'),
@@ -6739,13 +6783,30 @@
                 }
             }
 
+            // Get email subject and process it too
+            const emailSubject = document.getElementById('emailSubjectInputNoAI').value || '';
+            const isEmailChannel = document.querySelector('#channelToggleGroupNoAI .active-chip')?.dataset.value === 'email';
+            
             let previewText = message;
+            let previewSubject = emailSubject;
+            
+            // Replace tags in both message and subject
             Object.keys(sampleData).forEach(key => {
                 const regex = new RegExp(`\\{${key}\\}`, 'g');
-                previewText = previewText.replace(regex, `<span class="bg-emerald-600 text-white px-1 rounded text-xs">${sampleData[key]}</span>`);
+                const replacement = `<span class="bg-emerald-600 text-white px-1 rounded text-xs">${sampleData[key]}</span>`;
+                previewText = previewText.replace(regex, replacement);
+                previewSubject = previewSubject.replace(regex, replacement);
             });
 
-            preview.innerHTML = `<div class="text-sm">${previewText.replace(/\n/g, '<br>')}</div>`;
+            // Build preview HTML with subject (if email) and message
+            let previewHTML = '';
+            if (isEmailChannel && previewSubject.trim()) {
+                previewHTML += `<div class="text-xs text-gray-400 mb-2">Oggetto:</div>`;
+                previewHTML += `<div class="text-sm font-semibold mb-3 pb-2 border-b border-gray-600">${previewSubject}</div>`;
+            }
+            previewHTML += `<div class="text-sm">${previewText.replace(/\n/g, '<br>')}</div>`;
+
+            preview.innerHTML = previewHTML;
         }
 
         // Toggle test clients button visibility
@@ -6974,13 +7035,25 @@
                     const year = cert.vehicle?.year || cert.year || '';
                     const fuel = cert.vehicle?.fuelType || cert.fuel_type || '';
                     
+                    // Debug: Log client data structure
+                    console.log('🔍 DEBUG MANUAL3: cert.client structure:', cert.client);
+                    console.log('🔍 DEBUG MANUAL3: cert.clientName:', cert.clientName);
+                    console.log('🔍 DEBUG MANUAL3: cert.clientEmail:', cert.clientEmail);
+                    
+                    // Try different ways to get the client name
+                    const clientName = cert.clientName || 
+                                     `${cert.client?.firstName || ''} ${cert.client?.lastName || ''}`.trim() ||
+                                     cert.client?.name || '';
+                    
+                    console.log('🔍 DEBUG MANUAL3: Final clientName:', clientName);
+                    
                     return {
-                        name: `${cert.client?.firstName || ''} ${cert.client?.lastName || ''}`.trim(),
-                        firstName: cert.client?.firstName || '',
-                        lastName: cert.client?.lastName || '',
+                        name: clientName,
+                        firstName: cert.client?.firstName || cert.clientName?.split(' ')[0] || '',
+                        lastName: cert.client?.lastName || cert.clientName?.split(' ').slice(1).join(' ') || '',
                         companyName: cert.client?.company || '',
-                        email: cert.client?.email?.toLowerCase() || '',
-                        phone: cert.client?.phone || '',
+                        email: cert.client?.email?.toLowerCase() || cert.clientEmail?.toLowerCase() || '',
+                        phone: cert.client?.phone || cert.clientPhone || '',
                         vehicle: `${brand} ${model}`.trim(),
                         plate: plate,
                         year: year,
