@@ -7800,6 +7800,291 @@ app.put('/api/templates/:templateId', express.json(), async (req, res) => {
     }
 });
 
+// ===== SAVED SEARCHES API ENDPOINTS =====
+
+// Get all saved searches for a dealer
+app.get('/api/saved-searches/:dealerId', async (req, res) => {
+    try {
+        const { dealerId } = req.params;
+        console.log(`🔍 Getting saved searches for dealer ${dealerId}...`);
+        
+        if (!dealerId) {
+            return res.status(400).json({ success: false, error: 'dealer_id_required' });
+        }
+        
+        const { data: searches, error } = await supabaseAdmin
+            .from('saved_searches')
+            .select('*')
+            .eq('dealer_id', dealerId)
+            .order('last_used_at', { ascending: false, nullsLast: true })
+            .order('created_at', { ascending: false });
+        
+        if (error) {
+            console.error('❌ Error fetching saved searches:', error);
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        
+        console.log(`✅ Found ${searches.length} saved searches for dealer ${dealerId}`);
+        res.json({ success: true, data: searches });
+        
+    } catch (error) {
+        console.error('❌ Error in get saved searches:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Create a new saved search
+app.post('/api/saved-searches', async (req, res) => {
+    try {
+        const { dealerId, name, description, searchCriteria, color, icon, isFavorite } = req.body;
+        console.log(`💾 Creating saved search "${name}" for dealer ${dealerId}...`);
+        
+        if (!dealerId || !name || !searchCriteria) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'missing_required_fields',
+                message: 'dealerId, name, and searchCriteria are required' 
+            });
+        }
+        
+        if (!Array.isArray(searchCriteria) || searchCriteria.length === 0) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'invalid_search_criteria',
+                message: 'searchCriteria must be a non-empty array' 
+            });
+        }
+        
+        const { data: search, error } = await supabaseAdmin
+            .from('saved_searches')
+            .insert({
+                dealer_id: dealerId,
+                name: name.trim(),
+                description: description?.trim() || null,
+                search_criteria: searchCriteria,
+                color: color || '#6b7280',
+                icon: icon || 'search',
+                is_favorite: isFavorite || false,
+                usage_count: 0
+            })
+            .select()
+            .single();
+        
+        if (error) {
+            console.error('❌ Error creating saved search:', error);
+            if (error.code === '23505') { // Unique constraint violation
+                return res.status(409).json({
+                    success: false,
+                    error: 'duplicate_name',
+                    message: `Una ricerca con il nome "${name}" esiste già per questo dealer`
+                });
+            }
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        
+        console.log(`✅ Created saved search: ${search.name} (ID: ${search.id})`);
+        res.json({ success: true, data: search });
+        
+    } catch (error) {
+        console.error('❌ Error in create saved search:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Update a saved search
+app.put('/api/saved-searches/:searchId', async (req, res) => {
+    try {
+        const { searchId } = req.params;
+        const { name, description, searchCriteria, color, icon, isFavorite } = req.body;
+        console.log(`📝 Updating saved search ${searchId}...`);
+        
+        if (!searchId) {
+            return res.status(400).json({ success: false, error: 'search_id_required' });
+        }
+        
+        const updateData = {};
+        if (name !== undefined) updateData.name = name.trim();
+        if (description !== undefined) updateData.description = description?.trim() || null;
+        if (searchCriteria !== undefined) {
+            if (!Array.isArray(searchCriteria) || searchCriteria.length === 0) {
+                return res.status(400).json({ 
+                    success: false, 
+                    error: 'invalid_search_criteria',
+                    message: 'searchCriteria must be a non-empty array' 
+                });
+            }
+            updateData.search_criteria = searchCriteria;
+        }
+        if (color !== undefined) updateData.color = color;
+        if (icon !== undefined) updateData.icon = icon;
+        if (isFavorite !== undefined) updateData.is_favorite = isFavorite;
+        
+        const { data: search, error } = await supabaseAdmin
+            .from('saved_searches')
+            .update(updateData)
+            .eq('id', searchId)
+            .select()
+            .single();
+        
+        if (error) {
+            console.error('❌ Error updating saved search:', error);
+            if (error.code === '23505') { // Unique constraint violation
+                return res.status(409).json({
+                    success: false,
+                    error: 'duplicate_name',
+                    message: `Una ricerca con questo nome esiste già per questo dealer`
+                });
+            }
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        
+        if (!search) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'search_not_found',
+                message: 'Ricerca salvata non trovata' 
+            });
+        }
+        
+        console.log(`✅ Updated saved search: ${search.name} (ID: ${search.id})`);
+        res.json({ success: true, data: search });
+        
+    } catch (error) {
+        console.error('❌ Error in update saved search:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Delete a saved search
+app.delete('/api/saved-searches/:searchId', async (req, res) => {
+    try {
+        const { searchId } = req.params;
+        console.log(`🗑️ Deleting saved search ${searchId}...`);
+        
+        if (!searchId) {
+            return res.status(400).json({ success: false, error: 'search_id_required' });
+        }
+        
+        const { data: search, error } = await supabaseAdmin
+            .from('saved_searches')
+            .delete()
+            .eq('id', searchId)
+            .select()
+            .single();
+        
+        if (error) {
+            console.error('❌ Error deleting saved search:', error);
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        
+        if (!search) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'search_not_found',
+                message: 'Ricerca salvata non trovata' 
+            });
+        }
+        
+        console.log(`✅ Deleted saved search: ${search.name} (ID: ${search.id})`);
+        res.json({ success: true, data: search });
+        
+    } catch (error) {
+        console.error('❌ Error in delete saved search:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Use a saved search (increment usage count and update last_used_at)
+app.post('/api/saved-searches/:searchId/use', async (req, res) => {
+    try {
+        const { searchId } = req.params;
+        console.log(`🎯 Using saved search ${searchId}...`);
+        
+        if (!searchId) {
+            return res.status(400).json({ success: false, error: 'search_id_required' });
+        }
+        
+        // First get current usage_count
+        const { data: currentSearch, error: fetchError } = await supabaseAdmin
+            .from('saved_searches')
+            .select('usage_count')
+            .eq('id', searchId)
+            .single();
+            
+        if (fetchError) {
+            console.error('❌ Error fetching current search:', fetchError);
+            return res.status(500).json({ success: false, error: fetchError.message });
+        }
+        
+        // Then update with incremented count
+        const { data: search, error } = await supabaseAdmin
+            .from('saved_searches')
+            .update({ 
+                usage_count: (currentSearch.usage_count || 0) + 1,
+                last_used_at: new Date().toISOString()
+            })
+            .eq('id', searchId)
+            .select()
+            .single();
+        
+        if (error) {
+            console.error('❌ Error using saved search:', error);
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        
+        if (!search) {
+            return res.status(404).json({ 
+                success: false, 
+                error: 'search_not_found',
+                message: 'Ricerca salvata non trovata' 
+            });
+        }
+        
+        console.log(`✅ Used saved search: ${search.name} (Usage: ${search.usage_count})`);
+        res.json({ success: true, data: search });
+        
+    } catch (error) {
+        console.error('❌ Error in use saved search:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Get popular saved searches for a dealer (most used)
+app.get('/api/saved-searches/:dealerId/popular', async (req, res) => {
+    try {
+        const { dealerId } = req.params;
+        const { limit = 5 } = req.query;
+        console.log(`⭐ Getting popular saved searches for dealer ${dealerId}...`);
+        
+        if (!dealerId) {
+            return res.status(400).json({ success: false, error: 'dealer_id_required' });
+        }
+        
+        const { data: searches, error } = await supabaseAdmin
+            .from('saved_searches')
+            .select('*')
+            .eq('dealer_id', dealerId)
+            .gt('usage_count', 0)
+            .order('usage_count', { ascending: false })
+            .order('last_used_at', { ascending: false })
+            .limit(parseInt(limit));
+        
+        if (error) {
+            console.error('❌ Error fetching popular saved searches:', error);
+            return res.status(500).json({ success: false, error: error.message });
+        }
+        
+        console.log(`✅ Found ${searches.length} popular saved searches for dealer ${dealerId}`);
+        res.json({ success: true, data: searches });
+        
+    } catch (error) {
+        console.error('❌ Error in get popular saved searches:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// ===== END SAVED SEARCHES API ENDPOINTS =====
+
 // Delete template
 app.delete('/api/templates/:templateId', async (req, res) => {
     try {

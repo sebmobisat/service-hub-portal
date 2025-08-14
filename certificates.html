@@ -31,6 +31,16 @@
             color: #111827;
         }
         
+        /* Force Italian date format styling */
+        input[type="date"] {
+            position: relative;
+        }
+        
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            color: #9CA3AF;
+            cursor: pointer;
+        }
+        
         .certificate-card .card-title {
             color: #111827;
         }
@@ -809,87 +819,204 @@
         </div>
     </div>
 
-    <!-- Advanced Search Modal -->
+    <!-- Enhanced Advanced Search Modal -->
     <div id="advancedSearchModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50 p-4">
-        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-6xl max-h-[85vh] overflow-y-auto border border-gray-700">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-xl font-bold text-white flex items-center gap-2">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="bg-gray-800 rounded-xl p-6 w-full max-w-7xl max-h-[90vh] overflow-hidden border border-gray-600 shadow-2xl">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-700">
+                <div class="flex items-center gap-3">
+                    <div class="p-2 bg-gradient-to-r from-emerald-500 to-blue-600 rounded-lg">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
                     </svg>
-                    <span data-i18n="advanced_search.title">Advanced Search</span>
-                </h2>
-                <button onclick="closeAdvancedSearchModal()" class="text-gray-400 hover:text-white transition-colors">
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-white" data-i18n="advanced_search.title">Advanced Search</h2>
+                        <p class="text-sm text-gray-400" data-i18n="advanced_search.description">Create complex search queries with multiple criteria</p>
+                    </div>
+                </div>
+                <button onclick="closeAdvancedSearchModal()" class="text-gray-400 hover:text-white transition-colors p-2 hover:bg-gray-700 rounded-lg">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
 
-            <!-- Search Criteria Container -->
-            <div class="space-y-4 mb-6">
-                <div class="flex items-center justify-between">
-                    <p class="text-gray-300 text-sm" data-i18n="advanced_search.description">
-                        Create complex search queries with multiple criteria and operators
-                    </p>
-                                            <button onclick="addSearchCriteria()" class="px-3 py-1 bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white rounded text-sm transition-colors flex items-center gap-1" style="color: white !important;">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-                        </svg>
-                        <span data-i18n="advanced_search.add_criteria">Add Criteria</span>
-                    </button>
-                </div>
+            <div class="flex gap-6 h-full max-h-[75vh]">
+                <!-- Left Panel: Criteria Builder -->
+                <div class="flex-1 overflow-y-auto">
+                    <!-- Saved Searches Section -->
+                    <div class="mb-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
+                        <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z"/>
+                            </svg>
+                            <span data-i18n="advanced_search.saved_searches">Ricerche Salvate</span>
+                        </h3>
+                        <div class="flex gap-3">
+                            <div class="flex-1 relative">
+                                <select id="savedSearchesDropdown" class="w-full bg-gray-700 border border-gray-600 text-white text-sm rounded-lg px-3 py-2 pr-10 focus:ring-2 focus:ring-purple-500 focus:border-transparent" onchange="handleSavedSearchSelection(this.value)">
+                                    <option value="" data-i18n="advanced_search.select_saved_search">Seleziona ricerca salvata...</option>
+                                </select>
+                                <button id="deleteSearchButton" onclick="deleteSelectedSavedSearch()" class="absolute right-2 top-1/2 transform -translate-y-1/2 text-red-400 hover:text-red-300 p-1 hidden" title="Elimina ricerca selezionata">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            <button onclick="saveAdvancedSearch()" class="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm transition-colors flex items-center gap-2 font-medium">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                                </svg>
+                                <span data-i18n="advanced_search.save_search">Salva Ricerca</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Search Templates -->
+                    <div class="mb-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                </svg>
+                                <span data-i18n="advanced_search.search_templates">Search Templates</span>
+                            </h3>
+                            <button onclick="toggleTemplateVisibility()" id="templateToggle" class="text-gray-400 hover:text-white transition-colors">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div id="searchTemplates" class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <button onclick="applyTemplate('recent_certificates')" class="p-3 bg-gray-700 hover:bg-gray-600 border border-gray-600 text-gray-200 rounded-lg text-sm transition-colors flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span data-i18n="advanced_search.template_recent_certificates">Recent</span>
+                            </button>
+                            <button onclick="applyTemplate('high_mileage_vehicles')" class="p-3 bg-gray-700 hover:bg-gray-600 border border-gray-600 text-gray-200 rounded-lg text-sm transition-colors flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                </svg>
+                                <span data-i18n="advanced_search.template_high_mileage_vehicles">High Mileage</span>
+                            </button>
+                            <button onclick="applyTemplate('new_vehicles')" class="p-3 bg-gray-700 hover:bg-gray-600 border border-gray-600 text-gray-200 rounded-lg text-sm transition-colors flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                                </svg>
+                                <span data-i18n="advanced_search.template_new_vehicles">New Cars</span>
+                            </button>
+                            <button onclick="applyTemplate('specific_brand')" class="p-3 bg-gray-700 hover:bg-gray-600 border border-gray-600 text-gray-200 rounded-lg text-sm transition-colors flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                </svg>
+                                <span data-i18n="advanced_search.template_specific_brand">By Brand</span>
+                            </button>
+                            <button onclick="applyTemplate('client_search')" class="p-3 bg-gray-700 hover:bg-gray-600 border border-gray-600 text-gray-200 rounded-lg text-sm transition-colors flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                                <span data-i18n="advanced_search.template_client_search">By Client</span>
+                            </button>
+                            <button onclick="applyTemplate('device_search')" class="p-3 bg-gray-700 hover:bg-gray-600 border border-gray-600 text-gray-200 rounded-lg text-sm transition-colors flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+                                </svg>
+                                <span data-i18n="advanced_search.template_device_search">By Device</span>
+                            </button>
+                        </div>
+                    </div>
+
+
+                    <!-- Criteria Builder -->
+                    <div class="mb-6">
+                        <div class="mb-4">
+                            <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                </svg>
+                                <span data-i18n="advanced_search.criteria_builder">Criteria Builder</span>
+                            </h3>
+                        </div>
                 
-                <!-- Search Criteria List -->
-                <div id="searchCriteriaContainer" class="space-y-3">
-                    <!-- Criteria will be added dynamically -->
+                        <!-- Search Criteria Container -->
+                        <div id="searchCriteriaContainer" class="space-y-4 mb-4" ondrop="handleCriteriaDrop(event)" ondragover="allowDrop(event)">
+                            <!-- Criteria will be added dynamically -->
+                        </div>
+                        
+                        <!-- Add Criteria Button - Moved to bottom -->
+                        <div class="flex justify-center">
+                            <button onclick="addSearchCriteria()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm transition-colors flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                </svg>
+                                <span data-i18n="advanced_search.add_criteria">Add Criteria</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Quick Date Range Presets -->
-            <div class="mb-6 p-4 bg-gray-900 rounded border border-gray-700">
-                <h3 class="text-lg font-semibold text-white mb-3" data-i18n="advanced_search.quick_filters">Quick Filters</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    <button onclick="applyQuickFilter('today')" class="px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors" data-i18n="advanced_search.today" style="color: white !important;">Today</button>
-                    <button onclick="applyQuickFilter('this_week')" class="px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors" data-i18n="advanced_search.this_week" style="color: white !important;">This Week</button>
-                    <button onclick="applyQuickFilter('this_month')" class="px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors" data-i18n="advanced_search.this_month" style="color: white !important;">This Month</button>
-                    <button onclick="applyQuickFilter('this_year')" class="px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors" data-i18n="advanced_search.this_year" style="color: white !important;">This Year</button>
-                    <button onclick="applyQuickFilter('last_30_days')" class="px-3 py-2 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-700 transition-colors" data-i18n="advanced_search.last_30_days" style="color: white !important;">Last 30 Days</button>
-                    <button onclick="applyQuickFilter('last_90_days')" class="px-3 py-2 bg-indigo-600 text-white rounded text-sm hover:bg-indigo-700 transition-colors" data-i18n="advanced_search.last_90_days" style="color: white !important;">Last 90 Days</button>
-                                            <button onclick="applyQuickFilter('new_cars_2024')" class="px-3 py-2 bg-slate-600 hover:bg-slate-700 dark:bg-slate-600 dark:hover:bg-slate-700 text-white rounded text-sm transition-colors" data-i18n="advanced_search.new_cars_2024" style="color: white !important;">New Cars 2024+</button>
-                    <button onclick="applyQuickFilter('high_mileage')" class="px-3 py-2 bg-orange-600 text-white rounded text-sm hover:bg-orange-700 transition-colors" data-i18n="advanced_search.high_mileage" style="color: white !important;">High Mileage</button>
-                </div>
-            </div>
-
-            <!-- Search Results Preview -->
-            <div class="mb-6 p-4 bg-gray-900 rounded border border-gray-700">
-                <h3 class="text-lg font-semibold text-white mb-3" data-i18n="advanced_search.preview">Search Preview</h3>
+                <!-- Right Panel: Live Preview -->
+                <div class="w-80 bg-gray-900 rounded-xl p-4 border border-gray-700">
+                    <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        <span data-i18n="advanced_search.live_preview">Live Preview</span>
+                    </h3>
+                    
+                    <!-- Results Count -->
+                    <div class="mb-4 p-4 bg-gray-800 rounded-lg border border-gray-600">
                 <div class="flex items-center justify-between mb-2">
-                    <span class="text-gray-300 text-sm" data-i18n="advanced_search.matching_certificates">Matching Certificates:</span>
-                    <span id="advancedSearchCount" class="text-green-400 font-bold">0</span>
+                            <span class="text-gray-300 text-sm" data-i18n="advanced_search.matching_certificates">Matching:</span>
+                            <div class="flex items-center gap-2">
+                                <span id="advancedSearchCount" class="text-2xl font-bold text-emerald-400">0</span>
+                                <span class="text-gray-400 text-sm">results</span>
                 </div>
-                <div id="advancedSearchQuery" class="text-xs text-gray-400 bg-gray-800 p-2 rounded font-mono max-h-20 overflow-y-auto">
-                    <!-- Generated SQL query will be shown here -->
                 </div>
-                <div class="text-xs text-gray-500 mt-1">
-                    <span data-i18n="advanced_search.query_note">ℹ️ Questa query è solo per riferimento. Il filtro viene applicato lato client sui dati già caricati.</span>
+                        <div class="w-full bg-gray-700 rounded-full h-2">
+                            <div id="searchProgressBar" class="bg-gradient-to-r from-emerald-500 to-blue-500 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+
+
+                    <!-- Smart Suggestions -->
+                    <div id="smartSuggestions" class="mb-4" style="display: none;">
+                        <h4 class="text-sm font-semibold text-gray-300 mb-2 flex items-center gap-1">
+                            <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                            </svg>
+                            <span data-i18n="advanced_search.smart_suggestions">Smart Suggestions</span>
+                        </h4>
+                        <div id="suggestionsList" class="space-y-2">
+                            <!-- Suggestions will be added dynamically -->
                 </div>
             </div>
 
             <!-- Action Buttons -->
-            <div class="flex justify-end gap-3 pt-4 border-t border-gray-700">
-                <button onclick="clearAdvancedSearch()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition-colors" data-i18n="advanced_search.clear" style="color: #1f2937 !important;">
-                    Clear All
+                    <div class="space-y-3">
+                        <button onclick="applyAdvancedSearch()" class="w-full px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2 font-medium">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                            <span data-i18n="advanced_search.apply">Applica Ricerca</span>
                 </button>
-                                        <button onclick="saveAdvancedSearch()" class="px-4 py-2 bg-slate-600 hover:bg-slate-700 dark:bg-slate-600 dark:hover:bg-slate-700 text-white rounded transition-colors" data-i18n="advanced_search.save" style="color: white !important;">
-                    Save Search
+                        
+                        <button onclick="clearAdvancedSearch()" class="w-full px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg text-sm transition-colors flex items-center justify-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4l11.733 11.733m0 0L20 20m-4.267-4.267L20 4l-11.733 11.733"/>
+                            </svg>
+                            <span data-i18n="advanced_search.reset">Reset</span>
+                        </button>
+                        
+                        <button onclick="closeAdvancedSearchModal()" class="w-full px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg text-sm transition-colors">
+                            <span data-i18n="common.cancel">Cancel</span>
                 </button>
-                <button onclick="closeAdvancedSearchModal()" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 transition-colors" data-i18n="common.cancel" style="color: #1f2937 !important;">
-                    Cancel
-                </button>
-                                        <button onclick="applyAdvancedSearch()" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-700 text-white rounded transition-colors" data-i18n="advanced_search.apply" style="color: white !important;">
-                    Apply Search
-                </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -1957,7 +2084,7 @@
                         <div class="flex justify-between items-start mb-6">
                             <div>
                                 <h2 class="card-title text-xl font-bold mb-1">${t('card.title')}</h2>
-                                <p class="card-subtitle text-sm">${new Date(cert.createdAt).toLocaleDateString('it-IT')}</p>
+                                <p class="card-subtitle text-sm">${formatDateOnly(cert.createdAt)}</p>
                             </div>
                             <div class="flex items-center gap-3">
                                 <span class="card-id text-2xl font-bold">#${cert.id}</span>
@@ -2161,9 +2288,15 @@
                     displayValue = `<td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-white cursor-pointer hover:bg-blue-600/20 transition-colors" ondblclick="copyToClipboard('${copyValue}', '${copyLabel}')" title="Double-click to copy">${value}</td>`;
                     break;
                 case 'createdAt':
-                    value = new Date(cert.createdAt).toLocaleDateString('it-IT');
+                    value = formatDateOnly(cert.createdAt);
                     copyValue = value;
-                    copyLabel = 'Date';
+                    copyLabel = 'Date Created';
+                    displayValue = `<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-300 cursor-pointer hover:bg-blue-600/20 transition-colors" ondblclick="copyToClipboard('${copyValue}', '${copyLabel}')" title="Double-click to copy">${value}</td>`;
+                    break;
+                case 'updatedAt':
+                    value = formatDateOnly(cert.updatedAt);
+                    copyValue = value;
+                    copyLabel = 'Date Updated';
                     displayValue = `<td class="px-4 py-3 whitespace-nowrap text-sm text-gray-300 cursor-pointer hover:bg-blue-600/20 transition-colors" ondblclick="copyToClipboard('${copyValue}', '${copyLabel}')" title="Double-click to copy">${value}</td>`;
                     break;
                 case 'clientName':
@@ -3558,8 +3691,33 @@
              }
          }
 
+        // Force Italian locale for date inputs
+        function setupItalianDateInputs() {
+            // Set document locale to Italian
+            if (document.documentElement) {
+                document.documentElement.lang = 'it-IT';
+            }
+            
+            // Add event listener for all date inputs to force Italian format
+            document.addEventListener('focus', function(e) {
+                if (e.target.type === 'date') {
+                    e.target.setAttribute('lang', 'it-IT');
+                }
+            }, true);
+            
+            // Also apply to existing date inputs
+            document.addEventListener('input', function(e) {
+                if (e.target.type === 'date') {
+                    e.target.setAttribute('lang', 'it-IT');
+                }
+            }, true);
+         }
+
                          // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
+            // Setup Italian date formatting first
+            setupItalianDateInputs();
+            
             // Migrate existing localStorage data to cookies
             migrateFromLocalStorageToCookies();
             
@@ -3604,6 +3762,7 @@
         // ===== ADVANCED SEARCH SYSTEM =====
         let advancedSearchCriteria = [];
         let criteriaIdCounter = 0;
+        let currentEditingSearchId = null; // Track which search is being edited
 
         // Open Advanced Search Modal
         function openAdvancedSearchModal() {
@@ -3614,6 +3773,14 @@
             if (advancedSearchCriteria.length === 0) {
                 addSearchCriteria();
             }
+            
+            // Load saved searches
+            loadSavedSearches().catch(error => {
+                console.error('❌ Error loading saved searches on modal open:', error);
+            });
+            
+            // Update button text based on current mode
+            updateSaveButtonText();
             
             updateAdvancedSearchPreview();
             window.i18n.updateAllTranslations();
@@ -3663,6 +3830,21 @@
         function closeAdvancedSearchModal() {
             const modal = document.getElementById('advancedSearchModal');
             modal.classList.add('hidden');
+            
+            // Only reset dropdown if we weren't editing an existing search
+            const wasEditing = currentEditingSearchId !== null;
+            
+            // Reset editing mode when closing modal
+            currentEditingSearchId = null;
+            
+            // Reset dropdown selection ONLY if we weren't editing
+            if (!wasEditing) {
+                const dropdown = document.getElementById('savedSearchesDropdown');
+                const deleteButton = document.getElementById('deleteSearchButton');
+                
+                if (dropdown) dropdown.value = '';
+                if (deleteButton) deleteButton.classList.add('hidden');
+            }
         }
 
         // Add new search criteria
@@ -3684,6 +3866,13 @@
 
         // Remove search criteria
         function removeSearchCriteria(criteriaId) {
+            // Prevent removing the first (primary) criteria
+            const criteriaIndex = advancedSearchCriteria.findIndex(c => c.id === criteriaId);
+            if (criteriaIndex === 0) {
+                showCopyNotification('Il primo criterio non può essere eliminato', 'warning');
+                return;
+            }
+            
             advancedSearchCriteria = advancedSearchCriteria.filter(c => c.id !== criteriaId);
             // Remove logical operator from first criteria if it exists
             if (advancedSearchCriteria.length > 0) {
@@ -3711,28 +3900,93 @@
             }
         }
 
-        // Render all search criteria
+        // Render all search criteria with enhanced UX
         function renderSearchCriteria() {
             const container = document.getElementById('searchCriteriaContainer');
             
             if (advancedSearchCriteria.length === 0) {
-                container.innerHTML = '<p class="text-gray-400 text-center py-4" data-i18n="advanced_search.no_criteria">No search criteria added</p>';
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <svg class="w-16 h-16 text-gray-600 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <p class="text-gray-400 text-lg mb-2" data-i18n="advanced_search.no_criteria">No search criteria added</p>
+                        <p class="text-gray-500 text-sm" data-i18n="advanced_search.add_criteria_hint">Click "Add Criteria" or select a template to get started</p>
+                    </div>
+                `;
                 return;
             }
             
             container.innerHTML = advancedSearchCriteria.map((criteria, index) => `
-                <div class="bg-gray-900 rounded p-4 border border-gray-700">
-                    <div class="flex items-center gap-3 mb-3">
+                <div class="criteria-card bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl p-5 border border-gray-600 shadow-lg transition-all hover:shadow-xl hover:border-gray-500" 
+                     data-criteria-id="${criteria.id}">
+                    
+                    <!-- Criteria Header -->
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-3">
                         ${index > 0 ? `
-                            <select onchange="updateSearchCriteria('${criteria.id}', 'logicalOperator', this.value)" class="bg-gray-700 border border-gray-600 text-white text-sm rounded px-2 py-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs text-gray-400 uppercase tracking-wide">Logic:</span>
+                                    <select onchange="updateSearchCriteria('${criteria.id}', 'logicalOperator', this.value)" 
+                                            class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg px-3 py-1 focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
                                 <option value="AND" ${criteria.logicalOperator === 'AND' ? 'selected' : ''}>${t('advanced_search.and')}</option>
                                 <option value="OR" ${criteria.logicalOperator === 'OR' ? 'selected' : ''}>${t('advanced_search.or')}</option>
                             </select>
+                                </div>
+                            ` : `
+                                <div class="px-3 py-1 bg-emerald-600 text-white text-xs rounded-full font-semibold">
+                                    ${t('advanced_search.first_criteria') || 'Primary'}
+                                </div>
+                            `}
+                        </div>
+                        
+                        <div class="flex items-center gap-2">
+                            <button onclick="duplicateCriteria('${criteria.id}')" 
+                                    class="text-blue-400 hover:text-blue-300 transition-colors p-1 rounded hover:bg-gray-700" 
+                                    title="${t('advanced_search.duplicate_criteria')}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                </svg>
+                            </button>
+                            <button onclick="toggleCriteria('${criteria.id}')" 
+                                    class="text-yellow-400 hover:text-yellow-300 transition-colors p-1 rounded hover:bg-gray-700" 
+                                    title="${t('advanced_search.toggle_criteria')}">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="${criteria.disabled ? 'M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21' : 'M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z'}"/>
+                                </svg>
+                            </button>
+                            <button onclick="removeSearchCriteria('${criteria.id}')" 
+                                    class="${index === 0 ? 'text-gray-600 cursor-not-allowed' : 'text-red-400 hover:text-red-300 transition-colors hover:bg-gray-700'} p-1 rounded" 
+                                    title="${index === 0 ? t('advanced_search.first_criteria_cannot_delete') || 'First criteria cannot be deleted' : t('advanced_search.remove_criteria')}"
+                                    ${index === 0 ? 'disabled' : ''}>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    ${criteria.disabled ? `
+                        <div class="mb-3 p-2 bg-yellow-900 border border-yellow-600 rounded-lg">
+                            <p class="text-yellow-300 text-xs flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.502 0L4.312 15.5c-.77.833.192 2.5 1.732 2.5z"/>
+                                </svg>
+                                <span data-i18n="advanced_search.criteria_disabled">This criteria is disabled</span>
+                            </p>
+                        </div>
                         ` : ''}
                         
-                        <div class="flex-1 grid grid-cols-1 md:grid-cols-4 gap-2">
-                            <!-- Field Selection -->
-                            <select onchange="updateSearchCriteria('${criteria.id}', 'field', this.value)" class="bg-gray-700 border border-gray-600 text-white text-sm rounded px-2 py-1">
+                    <!-- Criteria Configuration -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 ${criteria.disabled ? 'opacity-50' : ''}">
+                        <!-- Step 1: Field Selection -->
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold text-gray-300 uppercase tracking-wide flex items-center gap-1">
+                                <span class="w-5 h-5 bg-emerald-500 text-white rounded-full flex items-center justify-center text-xs">1</span>
+                                <span data-i18n="advanced_search.step_1">Select Field</span>
+                            </label>
+                            <select onchange="updateSearchCriteria('${criteria.id}', 'field', this.value)" 
+                                    class="w-full bg-gray-700 border border-gray-600 text-white text-sm rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all">
                                 <option value="" data-i18n="advanced_search.select_field">Select Field</option>
                                 <optgroup label="${t('advanced_search.dates')}">
                                     <option value="createdAt" ${criteria.field === 'createdAt' ? 'selected' : ''}>${t('advanced_search.field_created_date')}</option>
@@ -3756,29 +4010,40 @@
                                     <option value="odometer" ${criteria.field === 'odometer' ? 'selected' : ''}>${t('advanced_search.field_odometer')}</option>
                                 </optgroup>
                             </select>
-                            
-                            <!-- Operator Selection -->
-                            <select onchange="updateSearchCriteria('${criteria.id}', 'operator', this.value)" class="bg-gray-700 border border-gray-600 text-white text-sm rounded px-2 py-1" ${!criteria.field ? 'disabled' : ''}>
+                        </div>
+                        
+                        <!-- Step 2: Operator Selection -->
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold text-gray-300 uppercase tracking-wide flex items-center gap-1">
+                                <span class="w-5 h-5 ${criteria.field ? 'bg-blue-500' : 'bg-gray-500'} text-white rounded-full flex items-center justify-center text-xs">2</span>
+                                <span data-i18n="advanced_search.step_2">Choose Operator</span>
+                            </label>
+                            <select onchange="updateSearchCriteria('${criteria.id}', 'operator', this.value)" 
+                                    class="w-full bg-gray-700 border border-gray-600 text-white text-sm rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" 
+                                    ${!criteria.field ? 'disabled' : ''}>
                                 ${getOperatorOptions(criteria.field, criteria.operator)}
                             </select>
-                            
-                            <!-- Value Input(s) -->
-                            <div class="col-span-2 flex gap-2">
+                        </div>
+                        
+                        <!-- Step 3: Value Input -->
+                        <div class="space-y-2">
+                            <label class="text-xs font-semibold text-gray-300 uppercase tracking-wide flex items-center gap-1">
+                                <span class="w-5 h-5 ${criteria.operator ? 'bg-purple-500' : 'bg-gray-500'} text-white rounded-full flex items-center justify-center text-xs">3</span>
+                                <span data-i18n="advanced_search.step_3">Enter Value</span>
+                            </label>
+                            <div class="flex gap-2">
                                 ${getValueInputs(criteria)}
+                            </div>
                             </div>
                         </div>
                         
-                        <button onclick="removeSearchCriteria('${criteria.id}')" class="text-red-400 hover:text-red-300 transition-colors" title="${t('advanced_search.remove_criteria')}">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-                            </svg>
-                        </button>
-                    </div>
+
                 </div>
             `).join('');
             
-            // Update translations after rendering
+            // Update translations and preview after rendering
             window.i18n.updateAllTranslations();
+            updateAdvancedSearchPreview();
         }
 
         // Get operator options based on field type
@@ -3838,16 +4103,17 @@
             const numericFields = ['id', 'deviceId', 'vehicleYear', 'odometer'];
             
             if (criteria.operator === 'BETWEEN') {
-                const inputType = dateFields.includes(criteria.field) ? 'datetime-local' : 'number';
+                const inputType = dateFields.includes(criteria.field) ? 'date' : 'number';
+                const dateTitle = dateFields.includes(criteria.field) ? 'title="Formato: DD/MM/YYYY"' : '';
                 return `
-                    <input type="${inputType}" value="${criteria.value}" onchange="updateSearchCriteria('${criteria.id}', 'value', this.value)" class="bg-gray-700 border border-gray-600 text-white text-sm rounded px-2 py-1 flex-1" placeholder="${t('advanced_search.from')}">
+                    <input type="${inputType}" value="${criteria.value}" onchange="updateSearchCriteria('${criteria.id}', 'value', this.value)" class="bg-gray-700 border border-gray-600 text-white text-sm rounded px-2 py-1 flex-1" placeholder="${t('advanced_search.from')}" ${dateTitle}>
                     <span class="text-gray-400 text-sm py-1">${t('advanced_search.to')}</span>
-                    <input type="${inputType}" value="${criteria.value2}" onchange="updateSearchCriteria('${criteria.id}', 'value2', this.value)" class="bg-gray-700 border border-gray-600 text-white text-sm rounded px-2 py-1 flex-1" placeholder="${t('advanced_search.to')}">
+                    <input type="${inputType}" value="${criteria.value2}" onchange="updateSearchCriteria('${criteria.id}', 'value2', this.value)" class="bg-gray-700 border border-gray-600 text-white text-sm rounded px-2 py-1 flex-1" placeholder="${t('advanced_search.to')}" ${dateTitle}>
                 `;
             }
             
             if (dateFields.includes(criteria.field)) {
-                return `<input type="datetime-local" value="${criteria.value}" onchange="updateSearchCriteria('${criteria.id}', 'value', this.value)" class="bg-gray-700 border border-gray-600 text-white text-sm rounded px-2 py-1 flex-1">`;
+                return `<input type="date" value="${criteria.value}" onchange="updateSearchCriteria('${criteria.id}', 'value', this.value)" class="bg-gray-700 border border-gray-600 text-white text-sm rounded px-2 py-1 flex-1" title="Formato: DD/MM/YYYY">`;
             }
             
             if (numericFields.includes(criteria.field)) {
@@ -3859,23 +4125,84 @@
 
         // Update advanced search preview
         function updateAdvancedSearchPreview() {
-            const validCriteria = advancedSearchCriteria.filter(c => c.field && c.operator && c.value);
+            const validCriteria = advancedSearchCriteria.filter(c => c.field && c.operator && c.value && !c.disabled);
             
             // Count matching certificates (client-side preview)
             let matchingCount = 0;
-            if (validCriteria.length > 0 && allCertificates) {
+            let totalCount = 0;
+            
+            if (allCertificates) {
+                totalCount = allCertificates.filter(cert => cert.status === 'active').length;
+                
+                if (validCriteria.length > 0) {
                 matchingCount = allCertificates.filter(cert => {
+                        if (cert.status !== 'active') return false;
                     return evaluateAdvancedSearchCriteria(cert, validCriteria);
                 }).length;
-            } else if (allCertificates) {
-                matchingCount = allCertificates.filter(cert => cert.status === 'active').length;
+                } else {
+                    matchingCount = totalCount;
+                }
             }
             
+            // Update count and progress bar
             document.getElementById('advancedSearchCount').textContent = matchingCount;
+            const percentage = totalCount > 0 ? Math.round((matchingCount / totalCount) * 100) : 0;
+            document.getElementById('searchProgressBar').style.width = percentage + '%';
             
-            // Generate query preview
-            const queryPreview = generateQueryPreview(validCriteria);
-            document.getElementById('advancedSearchQuery').textContent = queryPreview;
+
+            
+            // Show smart suggestions if results are too broad or too narrow
+            showSmartSuggestions(matchingCount, totalCount);
+        }
+        
+        // Smart suggestions system
+        function showSmartSuggestions(filteredCount, totalCount) {
+            const suggestionsContainer = document.getElementById('smartSuggestions');
+            const suggestionsList = document.getElementById('suggestionsList');
+            
+            if (!suggestionsContainer || !suggestionsList) return;
+            
+            if (filteredCount === 0) {
+                suggestionsContainer.style.display = 'block';
+                suggestionsList.innerHTML = `
+                    <div class="p-3 bg-red-900 border border-red-600 rounded-lg">
+                        <p class="text-red-300 text-sm mb-2" data-i18n="advanced_search.suggestions_no_results">${t('advanced_search.suggestions_no_results')}</p>
+                        <ul class="text-red-200 text-xs space-y-1">
+                            <li data-i18n="advanced_search.suggestions_remove_criteria">${t('advanced_search.suggestions_remove_criteria')}</li>
+                            <li data-i18n="advanced_search.suggestions_use_or">${t('advanced_search.suggestions_use_or')}</li>
+                            <li data-i18n="advanced_search.suggestions_check_typos">${t('advanced_search.suggestions_check_typos')}</li>
+                        </ul>
+                    </div>
+                `;
+            } else if (filteredCount === totalCount) {
+                suggestionsContainer.style.display = 'block';
+                suggestionsList.innerHTML = `
+                    <div class="p-3 bg-blue-900 border border-blue-600 rounded-lg">
+                        <p class="text-blue-300 text-sm mb-2" data-i18n="advanced_search.suggestions_showing_all">${t('advanced_search.suggestions_showing_all')}</p>
+                        <ul class="text-blue-200 text-xs space-y-1">
+                            <li data-i18n="advanced_search.suggestions_date_ranges">${t('advanced_search.suggestions_date_ranges')}</li>
+                            <li data-i18n="advanced_search.suggestions_specific_brands">${t('advanced_search.suggestions_specific_brands')}</li>
+                            <li data-i18n="advanced_search.suggestions_client_filters">${t('advanced_search.suggestions_client_filters')}</li>
+                        </ul>
+                    </div>
+                `;
+            } else if (totalCount > 0 && filteredCount > totalCount * 0.8) {
+                suggestionsContainer.style.display = 'block';
+                suggestionsList.innerHTML = `
+                    <div class="p-3 bg-yellow-900 border border-yellow-600 rounded-lg">
+                        <p class="text-yellow-300 text-sm">
+                            <span data-i18n="advanced_search.suggestions_broad_results">${t('advanced_search.suggestions_broad_results')}</span> 
+                            (${Math.round((filteredCount/totalCount)*100)}% 
+                            <span data-i18n="advanced_search.suggestions_of_total">${t('advanced_search.suggestions_of_total')}</span>
+                        </p>
+                    </div>
+                `;
+            } else {
+                suggestionsContainer.style.display = 'none';
+            }
+            
+            // Update translations after rendering
+            window.i18n.updateAllTranslations();
         }
 
         // Generate SQL query preview
@@ -4003,9 +4330,17 @@
             const numericFields = ['id', 'deviceId', 'vehicleYear', 'odometer'];
             
             if (dateFields.includes(field)) {
+                // Normalize dates to start of day for comparison (ignore time)
                 actualValue = new Date(actualValue);
+                actualValue.setHours(0, 0, 0, 0);
+                
                 const compareValue = new Date(value);
+                compareValue.setHours(0, 0, 0, 0);
+                
                 const compareValue2 = value2 ? new Date(value2) : null;
+                if (compareValue2) {
+                    compareValue2.setHours(0, 0, 0, 0);
+                }
                 
                 switch (operator) {
                     case '=': 
@@ -4243,14 +4578,674 @@
             );
         }
 
-        // Save advanced search (placeholder for future implementation)
+        // Save advanced search with enhanced dialog
         function saveAdvancedSearch() {
-            const searchName = prompt(t('advanced_search.enter_search_name'));
-            if (searchName) {
-                // TODO: Implement saved searches functionality
-                showCopyNotification(t('advanced_search.search_saved') + ': ' + searchName, 'success');
+            if (currentEditingSearchId) {
+                // We're editing an existing search - update it directly
+                updateExistingSearch();
+            } else {
+                // We're creating a new search - show dialog
+                saveAdvancedSearchWithDialog();
             }
         }
+        
+        // Update existing search with current criteria
+        async function updateExistingSearch() {
+            try {
+                const validCriteria = advancedSearchCriteria.filter(c => c.field && c.operator && c.value && !c.disabled);
+                if (validCriteria.length === 0) {
+                    showCopyNotification('Aggiungi almeno un criterio di ricerca valido', 'error');
+                    return;
+                }
+                
+                // Find the current search
+                const currentSearch = savedSearches.find(s => s.id == currentEditingSearchId);
+                if (!currentSearch) {
+                    showCopyNotification('Ricerca da aggiornare non trovata', 'error');
+                    return;
+                }
+                
+                console.log('🔄 Updating existing search:', currentSearch.name);
+                
+                const response = await fetch(`/api/saved-searches/${currentEditingSearchId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        searchCriteria: validCriteria,
+                        filtersCount: validCriteria.length
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ Server error:', response.status, errorText);
+                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('✅ Search updated:', data.data);
+                    showCopyNotification(`✅ Ricerca "${currentSearch.name}" aggiornata con successo!`, 'success');
+                    
+                    // Save current dropdown selection before reloading
+                    const dropdown = document.getElementById('savedSearchesDropdown');
+                    const currentSelection = dropdown.value;
+                    
+                    await loadSavedSearches(); // Reload list
+                    
+                    // Restore dropdown selection
+                    if (currentSelection) {
+                        dropdown.value = currentSelection;
+                    }
+                } else {
+                    showCopyNotification('Errore nell\'aggiornare la ricerca', 'error');
+                }
+                
+            } catch (error) {
+                console.error('❌ Error updating search:', error);
+                showCopyNotification('Errore di connessione nell\'aggiornare la ricerca', 'error');
+            }
+        }
+
+        // Enhanced save function with dialog
+        function saveAdvancedSearchWithDialog() {
+            // Create a beautiful dialog for saving search
+            const dialog = document.createElement('div');
+            dialog.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-4';
+            dialog.innerHTML = `
+                <div class="bg-gray-800 rounded-xl p-6 w-full max-w-md border border-gray-600 shadow-2xl">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="p-2 bg-gradient-to-r from-emerald-500 to-blue-600 rounded-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-white" data-i18n="advanced_search.save_search">Salva Ricerca</h3>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-300 mb-2" data-i18n="advanced_search.search_name">Nome Ricerca</label>
+                            <input type="text" id="searchNameInput" 
+                                   class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent" 
+                                   placeholder="Es. Certificati Recenti BMW" maxlength="100">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-300 mb-2" data-i18n="advanced_search.description">Descrizione (Opzionale)</label>
+                            <textarea id="searchDescriptionInput" 
+                                      class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 focus:border-transparent" 
+                                      placeholder="Descrivi questa ricerca..." rows="2" maxlength="255"></textarea>
+                        </div>
+                        
+                        <div class="flex items-center gap-4">
+                            <div class="flex-1">
+                                <label class="block text-sm font-semibold text-gray-300 mb-2" data-i18n="advanced_search.color">Colore</label>
+                                <div class="flex gap-2">
+                                    <input type="color" id="searchColorInput" value="#6b7280" 
+                                           class="w-12 h-10 bg-gray-700 border border-gray-600 rounded-lg cursor-pointer">
+                                    <input type="text" id="searchColorText" value="#6b7280" 
+                                           class="flex-1 bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 text-sm font-mono">
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-300 mb-2">
+                                    <input type="checkbox" id="searchFavoriteInput" class="mr-2">
+                                    <span data-i18n="advanced_search.favorite">Preferita</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex gap-3 mt-6 pt-4 border-t border-gray-700">
+                        <button onclick="closeSaveDialog()" 
+                                class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors">
+                            <span data-i18n="common.cancel">Annulla</span>
+                        </button>
+                        <button onclick="confirmSaveSearch()" 
+                                class="flex-1 px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-lg transition-all">
+                            <span data-i18n="advanced_search.save">Salva</span>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(dialog);
+            
+            // Setup color sync
+            const colorInput = document.getElementById('searchColorInput');
+            const colorText = document.getElementById('searchColorText');
+            
+            colorInput.addEventListener('input', (e) => {
+                colorText.value = e.target.value;
+            });
+            
+            colorText.addEventListener('input', (e) => {
+                if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) {
+                    colorInput.value = e.target.value;
+                }
+            });
+            
+            // Focus name input
+            setTimeout(() => {
+                document.getElementById('searchNameInput').focus();
+            }, 100);
+            
+            // Update translations
+            window.i18n.updateAllTranslations();
+            
+            // Store dialog reference
+            window.currentSaveDialog = dialog;
+        }
+        
+        // Close save dialog
+        function closeSaveDialog() {
+            if (window.currentSaveDialog) {
+                document.body.removeChild(window.currentSaveDialog);
+                window.currentSaveDialog = null;
+            }
+        }
+        
+        // Confirm save search
+        async function confirmSaveSearch() {
+            const name = document.getElementById('searchNameInput').value;
+            const description = document.getElementById('searchDescriptionInput').value;
+            const color = document.getElementById('searchColorInput').value;
+            const isFavorite = document.getElementById('searchFavoriteInput').checked;
+            
+            if (await saveCurrentSearch(name, description, color, 'search', isFavorite)) {
+                closeSaveDialog();
+            }
+        }
+        // ===== ENHANCED ADVANCED SEARCH FUNCTIONS =====
+        
+
+        
+        // Duplicate criteria
+        function duplicateCriteria(criteriaId) {
+            const originalCriteria = advancedSearchCriteria.find(c => c.id === criteriaId);
+            if (!originalCriteria) return;
+            
+            const newCriteriaId = 'criteria_' + (++criteriaIdCounter);
+            const duplicatedCriteria = {
+                ...originalCriteria,
+                id: newCriteriaId,
+                logicalOperator: 'AND'
+            };
+            
+            // Insert after the original criteria
+            const originalIndex = advancedSearchCriteria.findIndex(c => c.id === criteriaId);
+            advancedSearchCriteria.splice(originalIndex + 1, 0, duplicatedCriteria);
+            
+            renderSearchCriteria();
+            updateAdvancedSearchPreview();
+            
+            // Show notification
+            showCopyNotification(t('advanced_search.criteria_duplicated') || 'Criteria duplicated!', 'success');
+        }
+        
+        // Toggle criteria enabled/disabled
+        function toggleCriteria(criteriaId) {
+            const criteria = advancedSearchCriteria.find(c => c.id === criteriaId);
+            if (!criteria) return;
+            
+            criteria.disabled = !criteria.disabled;
+            renderSearchCriteria();
+            updateAdvancedSearchPreview();
+        }
+        
+        // Apply search template
+        function applyTemplate(templateType) {
+            // Clear existing criteria
+            advancedSearchCriteria = [];
+            criteriaIdCounter = 0;
+            
+            switch (templateType) {
+                case 'recent_certificates':
+                    addSearchCriteria();
+                    updateSearchCriteria('criteria_1', 'field', 'createdAt');
+                    updateSearchCriteria('criteria_1', 'operator', '>');
+                    const lastWeek = new Date();
+                    lastWeek.setDate(lastWeek.getDate() - 7);
+                    updateSearchCriteria('criteria_1', 'value', lastWeek.toISOString().split('T')[0]);
+                    break;
+                    
+                case 'high_mileage_vehicles':
+                    addSearchCriteria();
+                    updateSearchCriteria('criteria_1', 'field', 'odometer');
+                    updateSearchCriteria('criteria_1', 'operator', '>');
+                    updateSearchCriteria('criteria_1', 'value', '100000');
+                    break;
+                    
+                case 'new_vehicles':
+                    addSearchCriteria();
+                    updateSearchCriteria('criteria_1', 'field', 'vehicleYear');
+                    updateSearchCriteria('criteria_1', 'operator', '>=');
+                    updateSearchCriteria('criteria_1', 'value', '2024');
+                    break;
+                    
+                case 'specific_brand':
+                    addSearchCriteria();
+                    updateSearchCriteria('criteria_1', 'field', 'vehicleBrand');
+                    updateSearchCriteria('criteria_1', 'operator', 'contains');
+                    updateSearchCriteria('criteria_1', 'value', '');
+                    break;
+                    
+                case 'client_search':
+                    addSearchCriteria();
+                    updateSearchCriteria('criteria_1', 'field', 'clientName');
+                    updateSearchCriteria('criteria_1', 'operator', 'contains');
+                    updateSearchCriteria('criteria_1', 'value', '');
+                    break;
+                    
+                case 'device_search':
+                    addSearchCriteria();
+                    updateSearchCriteria('criteria_1', 'field', 'imei');
+                    updateSearchCriteria('criteria_1', 'operator', 'contains');
+                    updateSearchCriteria('criteria_1', 'value', '');
+                    break;
+            }
+            
+            renderSearchCriteria();
+            updateAdvancedSearchPreview();
+            showCopyNotification(t('advanced_search.template_applied') || 'Template applied!', 'success');
+        }
+        
+        // Toggle template visibility
+        function toggleTemplateVisibility() {
+            const templates = document.getElementById('searchTemplates');
+            const toggle = document.getElementById('templateToggle');
+            
+            if (templates.style.display === 'none') {
+                templates.style.display = 'grid';
+                toggle.innerHTML = `
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                `;
+            } else {
+                templates.style.display = 'none';
+                toggle.innerHTML = `
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                `;
+            }
+        }
+        
+        // ===== DATE FORMATTING UTILITIES =====
+        
+        // Format date for Italian locale (DD/MM/YYYY) without time
+        function formatDateOnly(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                const date = new Date(dateString);
+                // Use Italian locale with specific options to ensure only date is shown
+                return date.toLocaleDateString('it-IT', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric'
+                });
+            } catch (error) {
+                console.warn('Error formatting date:', dateString, error);
+                return 'N/A';
+            }
+        }
+        
+        // Format date with time for Italian locale (DD/MM/YYYY HH:mm)
+        function formatDateTime(dateString) {
+            if (!dateString) return 'N/A';
+            try {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('it-IT', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: false
+                });
+            } catch (error) {
+                console.warn('Error formatting datetime:', dateString, error);
+                return 'N/A';
+            }
+        }
+        
+        // ===== SAVED SEARCHES MANAGEMENT =====
+        
+        let savedSearches = [];
+        
+        // Load saved searches for current dealer
+        async function loadSavedSearches() {
+            try {
+                console.log('🔍 Loading saved searches for dealer:', currentDealerId);
+                const response = await fetch(`/api/saved-searches/${currentDealerId}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    savedSearches = data.data;
+                    console.log(`✅ Loaded ${savedSearches.length} saved searches`);
+                    renderSavedSearchesDropdown();
+                    return savedSearches;
+                } else {
+                    console.error('❌ Error loading saved searches:', data.error);
+                    showCopyNotification('Errore nel caricamento delle ricerche salvate', 'error');
+                    return [];
+                }
+            } catch (error) {
+                console.error('❌ Error in loadSavedSearches:', error);
+                showCopyNotification('Errore di connessione nel caricamento delle ricerche', 'error');
+                return [];
+            }
+        }
+        
+        // Save current search criteria
+        async function saveCurrentSearch(name, description = '', color = '#6b7280', icon = 'search', isFavorite = false) {
+            try {
+                if (!name || !name.trim()) {
+                    showCopyNotification(t('advanced_search.enter_search_name') || 'Inserisci il nome della ricerca', 'error');
+                    return false;
+                }
+                
+                const validCriteria = advancedSearchCriteria.filter(c => c.field && c.operator && c.value && !c.disabled);
+                if (validCriteria.length === 0) {
+                    showCopyNotification('Aggiungi almeno un criterio di ricerca valido', 'error');
+                    return false;
+                }
+                
+                console.log('💾 Saving search:', name);
+                console.log('👤 Current dealer ID:', currentDealerId);
+                
+                if (!currentDealerId) {
+                    console.error('❌ No dealer ID available');
+                    showCopyNotification('Errore: ID dealer non disponibile', 'error');
+                    return false;
+                }
+                
+                const requestData = {
+                    dealerId: currentDealerId,
+                    name: name.trim(),
+                    description: description.trim(),
+                    searchCriteria: validCriteria,
+                    color: color,
+                    icon: icon,
+                    isFavorite: isFavorite
+                };
+                
+                console.log('📦 Request data:', requestData);
+                
+                const response = await fetch('/api/saved-searches', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData)
+                });
+                
+                console.log('📡 Response status:', response.status, response.statusText);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ Server error:', response.status, errorText);
+                    throw new Error(`Server error: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('✅ Search saved:', data.data);
+                    showCopyNotification(`${t('advanced_search.search_saved')}: ${name}`, 'success');
+                    await loadSavedSearches(); // Reload list
+                    return data.data;
+                } else {
+                    if (data.error === 'duplicate_name') {
+                        showCopyNotification(`⚠️ ${data.message}`, 'warning');
+                    } else {
+                        showCopyNotification('Errore nel salvare la ricerca', 'error');
+                    }
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Error in saveCurrentSearch:', error);
+                showCopyNotification('Errore di connessione nel salvare la ricerca', 'error');
+                return false;
+            }
+        }
+        
+        // Load and apply a saved search
+        async function loadSavedSearch(searchId) {
+            try {
+                console.log('📂 Loading saved search:', searchId, 'type:', typeof searchId);
+                console.log('📋 Available searches:', savedSearches.map(s => ({ id: s.id, name: s.name, idType: typeof s.id })));
+                
+                // Find search in local array (handle both string and number IDs)
+                const search = savedSearches.find(s => s.id == searchId); // Use == instead of === for loose comparison
+                if (!search) {
+                    console.error('❌ Search not found. SearchId:', searchId, 'Available IDs:', savedSearches.map(s => s.id));
+                    showCopyNotification('Ricerca salvata non trovata', 'error');
+                    return false;
+                }
+                
+                // Clear current criteria and set editing mode
+                advancedSearchCriteria = [];
+                criteriaIdCounter = 0;
+                currentEditingSearchId = searchId; // Track that we're editing this search
+                
+                // Load criteria from saved search
+                if (search.search_criteria && Array.isArray(search.search_criteria)) {
+                    search.search_criteria.forEach((criteria, index) => {
+                        const newId = 'criteria_' + (++criteriaIdCounter);
+                        advancedSearchCriteria.push({
+                            id: newId,
+                            field: criteria.field,
+                            operator: criteria.operator,
+                            value: criteria.value,
+                            value2: criteria.value2 || '',
+                            logicalOperator: index > 0 ? (criteria.logicalOperator || 'AND') : ''
+                        });
+                    });
+                }
+                
+                // Re-render criteria
+                renderSearchCriteria();
+                updateAdvancedSearchPreview();
+                
+                // Update UI to show we're editing
+                updateSaveButtonText();
+                
+                // Mark search as used
+                await markSearchAsUsed(searchId);
+                
+                showCopyNotification(`Ricerca caricata per modifica: ${search.name}`, 'success');
+                console.log('✅ Search loaded successfully for editing');
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Error in loadSavedSearch:', error);
+                showCopyNotification('Errore nel caricare la ricerca salvata', 'error');
+                return false;
+            }
+        }
+        
+        // Delete a saved search
+        async function deleteSavedSearch(searchId) {
+            try {
+                const search = savedSearches.find(s => s.id === searchId);
+                if (!search) {
+                    showCopyNotification('Ricerca non trovata', 'error');
+                    return false;
+                }
+                
+                if (!confirm(`Sei sicuro di voler eliminare la ricerca "${search.name}"?`)) {
+                    return false;
+                }
+                
+                console.log('🗑️ Deleting saved search:', searchId);
+                const response = await fetch(`/api/saved-searches/${searchId}`, {
+                    method: 'DELETE'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log('✅ Search deleted:', data.data.name);
+                    showCopyNotification(`Ricerca eliminata: ${data.data.name}`, 'success');
+                    await loadSavedSearches(); // Reload list
+                    return true;
+                } else {
+                    showCopyNotification('Errore nell\'eliminare la ricerca', 'error');
+                    return false;
+                }
+            } catch (error) {
+                console.error('❌ Error in deleteSavedSearch:', error);
+                showCopyNotification('Errore di connessione nell\'eliminare la ricerca', 'error');
+                return false;
+            }
+        }
+        
+        // Mark search as used (increment usage count)
+        async function markSearchAsUsed(searchId) {
+            try {
+                console.log('🎯 Marking search as used:', searchId);
+                const response = await fetch(`/api/saved-searches/${searchId}/use`, {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    console.log(`✅ Search usage updated: ${data.data.name} (${data.data.usage_count} uses)`);
+                    // Update local array
+                    const searchIndex = savedSearches.findIndex(s => s.id === searchId);
+                    if (searchIndex !== -1) {
+                        savedSearches[searchIndex] = data.data;
+                    }
+                } else {
+                    console.warn('⚠️ Could not update search usage:', data.error);
+                }
+            } catch (error) {
+                console.warn('⚠️ Error in markSearchAsUsed:', error);
+                // Non-critical error, don't show notification
+            }
+        }
+        
+        // Update save button text based on editing mode
+        function updateSaveButtonText() {
+            const saveButton = document.querySelector('button[onclick="saveAdvancedSearch()"]');
+            const saveButtonSpan = saveButton?.querySelector('span');
+            
+            if (currentEditingSearchId) {
+                // We're editing an existing search
+                if (saveButtonSpan) {
+                    saveButtonSpan.setAttribute('data-i18n', 'advanced_search.save_changes');
+                    saveButtonSpan.textContent = t('advanced_search.save_changes') || 'Salva Cambiamenti';
+                }
+                console.log('🔄 UI updated for editing mode');
+            } else {
+                // We're creating a new search
+                if (saveButtonSpan) {
+                    saveButtonSpan.setAttribute('data-i18n', 'advanced_search.save_search');
+                    saveButtonSpan.textContent = t('advanced_search.save_search') || 'Salva Ricerca';
+                }
+                console.log('🔄 UI updated for new search mode');
+            }
+        }
+
+
+
+        // Handle saved search selection change
+        async function handleSavedSearchSelection(searchId) {
+            console.log('🔄 Search selection changed:', searchId);
+            
+            const deleteButton = document.getElementById('deleteSearchButton');
+            
+            if (!searchId) {
+                // Empty selection - reset to new search mode
+                currentEditingSearchId = null;
+                advancedSearchCriteria = [];
+                renderSearchCriteria();
+                updateAdvancedSearchPreview();
+                updateSaveButtonText();
+                
+                // Hide delete button when no search is selected
+                if (deleteButton) deleteButton.classList.add('hidden');
+                return;
+            }
+            
+            // Show delete button when a search is selected
+            if (deleteButton) deleteButton.classList.remove('hidden');
+            
+            // Auto-load the selected search
+            console.log('📂 Auto-loading saved search ID:', searchId);
+            const success = await loadSavedSearch(searchId);
+            if (success) {
+                showCopyNotification(`Ricerca "${success.name}" caricata per modifica!`, 'success');
+            }
+        }
+        
+
+        
+        // Delete the selected saved search
+        async function deleteSelectedSavedSearch() {
+            const dropdown = document.getElementById('savedSearchesDropdown');
+            const searchId = dropdown.value;
+            
+            if (!searchId) {
+                showCopyNotification('Seleziona prima una ricerca da eliminare', 'warning');
+                return;
+            }
+            
+            // Find search name for confirmation (handle both string and number IDs)
+            const search = savedSearches.find(s => s.id == searchId);
+            const searchName = search ? search.name : 'ricerca selezionata';
+            
+            console.log('🔍 Delete search - ID:', searchId, 'Found:', !!search, 'Name:', searchName);
+            
+            // Confirm deletion
+            if (!confirm(`Sei sicuro di voler eliminare la ricerca "${searchName}"?`)) {
+                return;
+            }
+            
+            console.log('🗑️ Deleting saved search ID:', searchId);
+            const success = await deleteSavedSearch(searchId);
+            if (success) {
+                showCopyNotification(`Ricerca "${searchName}" eliminata con successo!`, 'success');
+                // Reset dropdown and reload list
+                dropdown.value = '';
+                await loadSavedSearches();
+            }
+        }
+
+        // Render saved searches dropdown (placeholder)
+        function renderSavedSearchesDropdown() {
+            console.log('📋 Rendering saved searches dropdown with', savedSearches.length, 'searches');
+            console.log('📋 Searches data:', savedSearches);
+            
+            const dropdown = document.getElementById('savedSearchesDropdown');
+            if (!dropdown) {
+                console.error('❌ Dropdown element not found');
+                return;
+            }
+            
+            // Clear existing options except the first one
+            dropdown.innerHTML = '<option value="" data-i18n="advanced_search.select_saved_search">Seleziona ricerca salvata...</option>';
+            
+            // Add saved searches as options
+            savedSearches.forEach(search => {
+                const option = document.createElement('option');
+                option.value = search.id;
+                option.textContent = `${search.name} (${search.filters_count} criteri)`;
+                if (search.description) {
+                    option.title = search.description;
+                }
+                console.log('➕ Adding option:', { value: search.id, text: option.textContent });
+                dropdown.appendChild(option);
+            });
+            
+            // Update translations
+            window.i18n.updateAllTranslations();
+        }
+        
         // ===== END ADVANCED SEARCH SYSTEM =====
         
         // Open vehicle details page
@@ -4777,8 +5772,8 @@
                                 ">
                                     <span id="modalSelectedCount">0</span> / <span id="modalTotalCount">0</span> <span data-i18n="group_filter.selected">selezionati</span>
                                 </div>
-                            </div>
-                            
+                        </div>
+                        
                             <!-- Beautiful button container -->
                             <div id="groupButtonsContainer" class="group-buttons-container" style="
                                 display: grid;
@@ -4798,7 +5793,7 @@
                                     padding: 20px;
                                     font-style: italic;
                                 " data-i18n="group_filter.loading">Caricamento gruppi...</div>
-                            </div>
+                        </div>
                             
                             <div style="
                                 display: flex;
@@ -4837,8 +5832,8 @@
                                 " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(239, 68, 68, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(239, 68, 68, 0.3)';" data-i18n="group_filter.deselect_all">
                                     Deseleziona Tutti
                                 </button>
-                            </div>
-                        </div>
+                    </div>
+                </div>
                         
                         <div style="display: flex; justify-content: flex-end; gap: 16px; padding-top: 24px; border-top: 1px solid #374151;">
                             <button onclick="closeDynamicModal()" style="
@@ -5706,8 +6701,8 @@
                         showNotification(`⚠️ ${data.message}`, 'warning');
                         // Reload AI suggestions to remove the duplicate
                         await loadAISuggestions();
-                    } else {
-                        throw new Error(data.message || 'Failed to create group');
+                } else {
+                    throw new Error(data.message || 'Failed to create group');
                     }
                 }
             } catch (error) {
@@ -5774,7 +6769,7 @@
                         <button onclick="manageGroupVehicles('${group.id}')" class="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors">
                             <span data-it="Gestisci Veicoli" data-en="Manage Vehicles">Gestisci Veicoli</span>
                         </button>
-                        <span class="text-xs text-gray-500">Creato: ${new Date(group.created_at).toLocaleDateString()}</span>
+                        <span class="text-xs text-gray-500" data-i18n="date.created">${t('date.created')}: ${formatDateOnly(group.created_at)}</span>
                     </div>
                 </div>
             `).join('');

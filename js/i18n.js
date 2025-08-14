@@ -333,6 +333,7 @@ class I18nManager {
                 'advanced_search.select_field': 'Seleziona Campo',
                 'advanced_search.select_operator': 'Seleziona Operatore',
                 'advanced_search.remove_criteria': 'Rimuovi Criterio',
+                'advanced_search.first_criteria_cannot_delete': 'Il primo criterio non può essere eliminato',
                 'advanced_search.and': 'E',
                 'advanced_search.or': 'O',
                 
@@ -396,6 +397,7 @@ class I18nManager {
                 
                 // Actions
                 'advanced_search.clear': 'Pulisci Tutto',
+                'advanced_search.reset': 'Reset',
                 'advanced_search.save': 'Salva Ricerca',
                 'advanced_search.apply': 'Applica Ricerca',
                 'advanced_search.search_applied': 'Ricerca applicata',
@@ -403,6 +405,69 @@ class I18nManager {
                 'advanced_search.enter_search_name': 'Inserisci nome della ricerca',
                 'advanced_search.search_saved': 'Ricerca salvata',
                 'advanced_search.query_note': 'ℹ️ Questa query è solo per riferimento. Il filtro viene applicato lato client sui dati già caricati.',
+                
+                // Enhanced UX
+                'advanced_search.step_1': 'Passo 1: Seleziona Campo',
+                'advanced_search.step_2': 'Passo 2: Scegli Operatore',
+                'advanced_search.step_3': 'Passo 3: Inserisci Valore',
+                'advanced_search.common_searches': 'Ricerche Comuni',
+                'advanced_search.recent_searches': 'Ricerche Recenti',
+                'advanced_search.search_templates': 'Template di Ricerca',
+                'advanced_search.live_preview': 'Anteprima Live',
+                'advanced_search.smart_suggestions': 'Suggerimenti Intelligenti',
+                'advanced_search.field_helper': 'Aiuto Campo',
+                'advanced_search.operator_helper': 'Aiuto Operatore',
+                'advanced_search.value_helper': 'Aiuto Valore',
+                'advanced_search.criteria_builder': 'Costruttore Criteri',
+                'advanced_search.visual_mode': 'Modalità Visuale',
+                'advanced_search.code_mode': 'Modalità Codice',
+                'advanced_search.duplicate_criteria': 'Duplica Criterio',
+                'advanced_search.toggle_criteria': 'Attiva/Disattiva Criterio',
+                'advanced_search.criteria_disabled': 'Criterio Disabilitato',
+                
+                // Templates
+                'advanced_search.template_recent_certificates': 'Certificati Recenti',
+                'advanced_search.template_high_mileage_vehicles': 'Veicoli Alto Chilometraggio',
+                'advanced_search.template_new_vehicles': 'Veicoli Nuovi',
+                'advanced_search.template_specific_brand': 'Marca Specifica',
+                'advanced_search.template_client_search': 'Ricerca Cliente',
+                'advanced_search.template_device_search': 'Ricerca Dispositivo',
+                'advanced_search.add_criteria_hint': 'Clicca "Aggiungi Criterio" o seleziona un template per iniziare',
+                'advanced_search.first_criteria': 'Primario',
+                'advanced_search.criteria_duplicated': 'Criterio duplicato!',
+                'advanced_search.template_applied': 'Template applicato!',
+                
+                // Smart Suggestions
+                'advanced_search.suggestions_no_results': 'Nessun risultato trovato. Prova:',
+                'advanced_search.suggestions_remove_criteria': '• Rimuovere alcuni criteri',
+                'advanced_search.suggestions_use_or': '• Usare "O" invece di "E"',
+                'advanced_search.suggestions_check_typos': '• Controllare i valori per errori di battitura',
+                'advanced_search.suggestions_showing_all': 'Mostrando tutti i risultati. Considera di aggiungere criteri:',
+                'advanced_search.suggestions_date_ranges': '• Intervalli di date',
+                'advanced_search.suggestions_specific_brands': '• Marche specifiche di veicoli',
+                'advanced_search.suggestions_client_filters': '• Filtri cliente',
+                'advanced_search.suggestions_broad_results': 'I risultati sono abbastanza ampi',
+                'advanced_search.suggestions_of_total': 'del totale). Considera di aggiungere criteri più specifici.',
+                
+                // Saved Searches
+                'advanced_search.save_search': 'Salva Ricerca',
+                'advanced_search.save_changes': 'Salva Cambiamenti',
+                'advanced_search.search_name': 'Nome Ricerca',
+                'advanced_search.description': 'Descrizione (Opzionale)',
+                'advanced_search.color': 'Colore',
+                'advanced_search.favorite': 'Preferita',
+                'advanced_search.saved_searches': 'Ricerche Salvate',
+
+                'advanced_search.delete_search': 'Elimina',
+                'advanced_search.select_saved_search': 'Seleziona ricerca salvata...',
+                'advanced_search.no_saved_searches': 'Nessuna ricerca salvata',
+                'advanced_search.recent_searches': 'Ricerche Recenti',
+                'advanced_search.popular_searches': 'Ricerche Popolari',
+                
+                // Date formatting
+                'date.created': 'Creato',
+                'date.updated': 'Aggiornato',
+                'date.format_dd_mm_yyyy': 'gg/mm/aaaa',
                 
                 // Vehicle Page
                 'meta.vehicle.title': 'Dettagli Veicolo - Service Hub Portal',
@@ -864,6 +929,7 @@ class I18nManager {
                 'advanced_search.select_field': 'Select Field',
                 'advanced_search.select_operator': 'Select Operator',
                 'advanced_search.remove_criteria': 'Remove Criteria',
+                'advanced_search.first_criteria_cannot_delete': 'First criteria cannot be deleted',
                 'advanced_search.and': 'AND',
                 'advanced_search.or': 'OR',
                 
@@ -927,6 +993,7 @@ class I18nManager {
                 
                 // Actions
                 'advanced_search.clear': 'Clear All',
+                'advanced_search.reset': 'Reset',
                 'advanced_search.save': 'Save Search',
                 'advanced_search.apply': 'Apply Search',
                 'advanced_search.search_applied': 'Search applied',
@@ -934,6 +1001,69 @@ class I18nManager {
                 'advanced_search.enter_search_name': 'Enter search name',
                 'advanced_search.search_saved': 'Search saved',
                 'advanced_search.query_note': 'ℹ️ This query is for reference only. Filtering is applied client-side on already loaded data.',
+                
+                // Enhanced UX
+                'advanced_search.step_1': 'Step 1: Select Field',
+                'advanced_search.step_2': 'Step 2: Choose Operator',
+                'advanced_search.step_3': 'Step 3: Enter Value',
+                'advanced_search.common_searches': 'Common Searches',
+                'advanced_search.recent_searches': 'Recent Searches',
+                'advanced_search.search_templates': 'Search Templates',
+                'advanced_search.live_preview': 'Live Preview',
+                'advanced_search.smart_suggestions': 'Smart Suggestions',
+                'advanced_search.field_helper': 'Field Help',
+                'advanced_search.operator_helper': 'Operator Help',
+                'advanced_search.value_helper': 'Value Help',
+                'advanced_search.criteria_builder': 'Criteria Builder',
+                'advanced_search.visual_mode': 'Visual Mode',
+                'advanced_search.code_mode': 'Code Mode',
+                'advanced_search.duplicate_criteria': 'Duplicate Criteria',
+                'advanced_search.toggle_criteria': 'Enable/Disable Criteria',
+                'advanced_search.criteria_disabled': 'Criteria Disabled',
+                
+                // Templates
+                'advanced_search.template_recent_certificates': 'Recent Certificates',
+                'advanced_search.template_high_mileage_vehicles': 'High Mileage Vehicles',
+                'advanced_search.template_new_vehicles': 'New Vehicles',
+                'advanced_search.template_specific_brand': 'Specific Brand',
+                'advanced_search.template_client_search': 'Client Search',
+                'advanced_search.template_device_search': 'Device Search',
+                'advanced_search.add_criteria_hint': 'Click "Add Criteria" or select a template to get started',
+                'advanced_search.first_criteria': 'Primary',
+                'advanced_search.criteria_duplicated': 'Criteria duplicated!',
+                'advanced_search.template_applied': 'Template applied!',
+                
+                // Smart Suggestions
+                'advanced_search.suggestions_no_results': 'No results found. Try:',
+                'advanced_search.suggestions_remove_criteria': '• Removing some criteria',
+                'advanced_search.suggestions_use_or': '• Using "OR" instead of "AND"',
+                'advanced_search.suggestions_check_typos': '• Checking your values for typos',
+                'advanced_search.suggestions_showing_all': 'Showing all results. Consider adding criteria:',
+                'advanced_search.suggestions_date_ranges': '• Date ranges',
+                'advanced_search.suggestions_specific_brands': '• Specific vehicle brands',
+                'advanced_search.suggestions_client_filters': '• Client filters',
+                'advanced_search.suggestions_broad_results': 'Results are quite broad',
+                'advanced_search.suggestions_of_total': 'of total). Consider adding more specific criteria.',
+                
+                // Saved Searches
+                'advanced_search.save_search': 'Save Search',
+                'advanced_search.save_changes': 'Save Changes',
+                'advanced_search.search_name': 'Search Name',
+                'advanced_search.description': 'Description (Optional)',
+                'advanced_search.color': 'Color',
+                'advanced_search.favorite': 'Favorite',
+                'advanced_search.saved_searches': 'Saved Searches',
+
+                'advanced_search.delete_search': 'Delete',
+                'advanced_search.select_saved_search': 'Select saved search...',
+                'advanced_search.no_saved_searches': 'No saved searches',
+                'advanced_search.recent_searches': 'Recent Searches',
+                'advanced_search.popular_searches': 'Popular Searches',
+                
+                // Date formatting
+                'date.created': 'Created',
+                'date.updated': 'Updated',
+                'date.format_dd_mm_yyyy': 'dd/mm/yyyy',
                 
                 // Vehicle Page
                 'meta.vehicle.title': 'Vehicle Details - Service Hub Portal',
