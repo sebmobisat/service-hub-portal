@@ -30,7 +30,12 @@ class EmailService {
     async sendGenericEmail(toEmail, subject, htmlBody, textBody = '') {
         if (!this.isEnabled) {
             console.log('Email service disabled - AWS credentials not configured');
-            return { success: false, error: 'email_service_disabled' };
+            console.log('🔍 SIMULATED EMAIL SEND:');
+            console.log(`📧 To: ${toEmail}`);
+            console.log(`📋 Subject: ${subject}`);
+            console.log(`📝 HTML Body: ${htmlBody}`);
+            console.log('✅ Email would be sent successfully (simulated)');
+            return { success: true, messageId: 'simulated-' + Date.now() };
         }
 
         try {

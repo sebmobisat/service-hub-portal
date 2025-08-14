@@ -8807,6 +8807,9 @@
             try {
                 const templates = await loadTemplatesForDropdown(templateType, channel);
                 
+                // Cache all loaded templates to avoid race conditions
+                templates.forEach(t => templateCache.set(t.id, t));
+                
                 dropdown.innerHTML = '<option value="">-- Seleziona Template --</option>';
                 
                 templates.forEach(template => {
@@ -8817,9 +8820,20 @@
                     option.textContent = `${channelIcon} ${template.name} (${template.channel} - ${styleText})`;
                     dropdown.appendChild(option);
                 });
+                
+                console.log(`📋 Populated ${dropdownId} with ${templates.length} templates, cached ${templateCache.size} total`);
             } catch (error) {
                 console.error('Error populating template dropdown:', error);
             }
+        }
+
+        // Cache for loaded templates to avoid race conditions
+        let templateCache = new Map();
+        
+        // Clear template cache when needed (e.g., after saving new template)
+        function clearTemplateCache() {
+            templateCache.clear();
+            console.log('🗑️ Template cache cleared');
         }
 
         // Handle template selection for manual dialog
@@ -8827,28 +8841,52 @@
             const dropdown = document.getElementById('templateSelectorNoAI');
             const templateId = dropdown.value;
             
-            if (!templateId) return;
+            if (!templateId) {
+                // Clear fields when no template selected
+                document.getElementById('emailSubjectInputNoAI').value = '';
+                document.getElementById('manualMessageInput').value = '';
+                updateManualMessagePreview();
+                return;
+            }
 
             try {
-                // Get all templates and find the selected one
-                const response = await fetch(`/api/templates/${getCurrentDealerId()}`);
-                if (!response.ok) throw new Error('Failed to load template');
+                let template = templateCache.get(templateId);
                 
-                const result = await response.json();
-                const templates = result.data || [];
-                const template = templates.find(t => t.id === templateId);
+                // If not in cache, fetch it
+                if (!template) {
+                    const response = await fetch(`/api/templates/${getCurrentDealerId()}`);
+                    if (!response.ok) throw new Error('Failed to load template');
+                    
+                    const result = await response.json();
+                    const templates = result.data || [];
+                    
+                    // Cache all templates
+                    templates.forEach(t => templateCache.set(t.id, t));
+                    
+                    template = templates.find(t => t.id === templateId);
+                }
                 
                 if (!template) {
-                    console.error('Template not found');
+                    console.error('Template not found:', templateId);
                     return;
                 }
 
-                // Apply template to form
-                if (template.email_subject) {
-                    document.getElementById('emailSubjectInputNoAI').value = template.email_subject;
+                console.log('📋 Loading template:', template.name, 'Subject:', template.email_subject);
+
+                // Apply template to form - ALWAYS set subject first
+                const subjectInput = document.getElementById('emailSubjectInputNoAI');
+                if (template.email_subject && subjectInput) {
+                    subjectInput.value = template.email_subject;
+                    console.log('✅ Subject set to:', template.email_subject);
+                } else {
+                    subjectInput.value = '';
+                    console.log('⚠️ No subject in template or input not found');
                 }
                 
-                document.getElementById('manualMessageInput').value = template.message_content;
+                const messageInput = document.getElementById('manualMessageInput');
+                if (messageInput) {
+                    messageInput.value = template.message_content || '';
+                }
                 
                 // Set channel if different
                 if (template.channel) {
@@ -9005,7 +9043,8 @@
 
                 alert('Template salvato con successo!');
                 
-                // Refresh template dropdown
+                // Clear cache and refresh template dropdown
+                clearTemplateCache();
                 populateTemplateDropdown('templateSelectorNoAI', 'manual', channel);
                 
             } catch (error) {
@@ -9068,7 +9107,8 @@
 
                 alert('Template salvato con successo!');
                 
-                // Refresh template dropdown
+                // Clear cache and refresh template dropdown
+                clearTemplateCache();
                 populateTemplateDropdown('templateSelectorAI', 'ai', channel);
                 
             } catch (error) {

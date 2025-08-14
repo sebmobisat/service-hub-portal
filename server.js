@@ -1930,8 +1930,40 @@ app.post('/api/communications/send-manual', express.json(), async (req, res) => 
             try {
 
                 
+                // Helper function to generate salutation (same logic as frontend)
+                const buildSalutation = (fullName, language = 'it') => {
+                    const firstName = (fullName || '').trim().split(/\s+/)[0] || '';
+                    if (language === 'it') {
+                        if (!firstName) {
+                            return 'Gentile Cliente';
+                        }
+                        const isFemale = isLikelyFemale(firstName);
+                        return `Gentile ${firstName}`;
+                    }
+                    // English
+                    return firstName ? `Dear ${firstName}` : 'Dear Customer';
+                };
+
+                const isLikelyFemale = (firstName) => {
+                    const name = firstName.toLowerCase();
+                    // Lista di nomi femminili comuni
+                    const femaleNames = ['anna', 'maria', 'giulia', 'francesca', 'chiara', 'alessia', 'federica', 'valentina', 'paola', 'laura', 'sara', 'elena', 'martina', 'silvia', 'jessica', 'lisa', 'monica', 'claudia', 'alice', 'barbara', 'mary', 'susan', 'jennifer', 'linda', 'patricia', 'elizabeth', 'sarah', 'nancy', 'donna', 'carol', 'ruth', 'sharon', 'michelle', 'laura', 'sarah', 'kimberly', 'deborah', 'dorothy', 'lisa', 'nancy', 'karen', 'betty', 'helen', 'sandra', 'donna', 'carol', 'ruth', 'sharon', 'michelle', 'emily', 'amanda', 'melissa', 'deborah', 'stephanie', 'dorothy', 'rebecca', 'sharon', 'laura', 'cynthia', 'kathleen', 'amy', 'angela', 'brenda', 'emma', 'olivia', 'sophia'];
+                    const maleNamesEndingA = ['andrea', 'luca', 'mattia', 'nicola', 'joshua'];
+                    
+                    if (femaleNames.includes(name)) return true;
+                    if (maleNamesEndingA.includes(name)) return false;
+                    
+                    // Fallback: euristica finale 'a'
+                    return name.endsWith('a');
+                };
+
+                // Build full name for salutation
+                const fullName = `${recipient.firstName || ''} ${recipient.lastName || ''}`.trim() || recipient.name || '';
+
                 // Replace tags in message (support both languages)
                 const tagReplacements = {
+                    // Salutation tag (the missing piece!)
+                    '{SALUTATION}': buildSalutation(fullName, language),
                     // Italian tags
                     '{NOME}': recipient.firstName || recipient.name || '',
                     '{COGNOME}': recipient.lastName || '',
