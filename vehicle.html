@@ -2381,7 +2381,7 @@
             const container = document.getElementById('summaryStats');
             
             // Get current language
-            const currentLanguage = document.documentElement.lang || 'it';
+            const currentLanguage = localStorage.getItem('servicehub-language') || 'it';
             
             const stats = [
                 {
@@ -4765,7 +4765,7 @@ _La prevenzione è sempre più conveniente!_ 💪`;
             const deviceInfo = window.certificateData?.imei || 'N/A';
             
             // Format dates based on current language
-            const currentLang = document.documentElement.lang || 'it';
+            const currentLang = localStorage.getItem('servicehub-language') || 'it';
             const dateFormat = currentLang === 'it' ? 'dd/MM/yyyy' : 'MM/dd/yyyy';
             
             const startDateFormatted = formatDate(new Date(startDate), dateFormat);
@@ -4915,7 +4915,7 @@ _La prevenzione è sempre più conveniente!_ 💪`;
                     dailyMaxs.push(Math.max(...values));
                     
                     // Format date for display
-                    const currentLang = document.documentElement.lang || 'it';
+                    const currentLang = localStorage.getItem('servicehub-language') || 'it';
                     const dateFormat = currentLang === 'it' ? 'dd/MM' : 'MM/dd';
                     labels.push(formatDate(dayData.date, dateFormat));
                 }
@@ -4933,7 +4933,7 @@ _La prevenzione è sempre più conveniente!_ 💪`;
         }
 
         function createChartElement(pid, mapping, data) {
-            const currentLang = document.documentElement.lang || 'it';
+            const currentLang = localStorage.getItem('servicehub-language') || 'it';
             const title = currentLang === 'it' ? mapping.it : mapping.name;
             
             const chartId = `obd-chart-${pid}`;
@@ -5053,7 +5053,7 @@ _La prevenzione è sempre più conveniente!_ 💪`;
                                     return context[0].label;
                                 },
                                 label: function(context) {
-                                    const currentLang = document.documentElement.lang || 'it';
+                                    const currentLang = localStorage.getItem('servicehub-language') || 'it';
                                     const labels = {
                                         'Average Value': currentLang === 'it' ? 'Media' : 'Average',
                                         'Lowest Peak': currentLang === 'it' ? 'Minimo' : 'Min',
@@ -5102,7 +5102,7 @@ _La prevenzione è sempre più conveniente!_ 💪`;
         }
 
         function formatTime(date) {
-            const currentLang = document.documentElement.lang || 'it';
+            const currentLang = localStorage.getItem('servicehub-language') || 'it';
             const timeFormat = currentLang === 'it' ? 'HH:mm' : 'h:mm a';
             
             const hours = date.getHours().toString().padStart(2, '0');

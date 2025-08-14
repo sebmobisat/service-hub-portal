@@ -519,7 +519,7 @@
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const year = date.getFullYear();
         
-        const currentLang = document.documentElement.lang || 'it';
+        const currentLang = localStorage.getItem('servicehub-language') || 'it';
         if (currentLang === 'en') {
           return `${month}/${day}/${year}`; // MM/DD/YYYY per inglese
         } else {

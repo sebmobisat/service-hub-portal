@@ -1386,7 +1386,7 @@
 
                 <div class="flex justify-end gap-2 mt-6 flex-wrap">
                     <button onclick="generateAIContent()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded text-white text-sm min-w-fit whitespace-nowrap" data-i18n="contact.generate">Genera bozza</button>
-                    <button onclick="saveTemplateFromAI()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-white text-sm min-w-fit whitespace-nowrap" data-i18n="contact.save_template">💾 Salva Template</button>
+                    <button id="saveTemplateAIBtn" onclick="saveTemplateFromAI()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 rounded text-white text-sm min-w-fit whitespace-nowrap" data-i18n="contact.save_template">💾 Salva Template</button>
                     <button id="sendToTestClientsAIBtn" onclick="sendAIToTestClients()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm hidden min-w-fit whitespace-nowrap" data-i18n="contact.send_to_test_clients_button">Invia comunicazione clienti test</button>
                     <button id="sendAICommunicationsBtn" onclick="sendAICommunications()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm min-w-fit whitespace-nowrap" data-i18n="contact.send_communications">Invia comunicazioni</button>
                 </div>
@@ -1494,7 +1494,7 @@
                 </div>
 
                 <div class="flex justify-end gap-2 mt-6">
-                    <button onclick="saveTemplateFromManual()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded text-white text-sm" data-i18n="manual_contact.save_template">💾 Salva Template</button>
+                    <button id="saveTemplateManualBtn" onclick="saveTemplateFromManual()" class="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded text-white text-sm" data-i18n="manual_contact.save_template">💾 Salva Template</button>
                     <button id="sendToTestClientsBtn" onclick="sendToTestClients()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white text-sm hidden" data-i18n="manual_contact.send_to_test_clients_button">Invia ai Clienti Test</button>
                     <button id="sendToSelectedBtn" onclick="sendToSelected()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded text-white text-sm" data-i18n="manual_contact.send_to_selected">Invia ai Selezionati</button>
                 </div>
@@ -1503,7 +1503,7 @@
 
         <script>
         async function confirmAndSend(){
-            const language = document.documentElement.lang || 'it';
+            const language = localStorage.getItem('servicehub-language') || 'it';
             const dealerId = getCurrentDealerId();
             const selected = getSelectedCertificates();
             // Costi: email 5c, whatsapp 10c, openAI 20x (mostriamo stima base 0.20€ se 1c provider)
@@ -2520,7 +2520,7 @@
         async function generateAndOptionallySend(sendNow = false) {
             const channel = document.querySelector('#channelToggleGroup .active-chip')?.dataset.value || 'email';
             const style = document.querySelector('#styleToggleGroup .active-chip')?.dataset.value || 'professional';
-            const language = document.documentElement.lang || 'it';
+            const language = localStorage.getItem('servicehub-language') || 'it';
             const prompt = document.getElementById('aiPromptInput').value || '';
             const useFields = {};
             document.querySelectorAll('#fieldsChipGroup .active-chip').forEach(chip => {
@@ -3781,6 +3781,12 @@
             
             loadCertificates();
             
+            // Initialize template button texts
+            setTimeout(() => {
+                updateSaveButtonText('saveTemplateAIBtn', 'templateSelectorAI');
+                updateSaveButtonText('saveTemplateManualBtn', 'templateSelectorNoAI');
+            }, 100);
+            
             // Load vehicle groups after certificates are loaded
             setTimeout(() => {
                 loadVehicleGroups().catch(error => {
@@ -4018,6 +4024,93 @@
                     }
                 };
                 document.addEventListener('keydown', handleEnter);
+            });
+        }
+
+        // New unified template dialog with name + description
+        async function showTemplateDialog(isEdit = false, currentName = '', currentDescription = '') {
+            return new Promise((resolve) => {
+                const lang = localStorage.getItem('servicehub-language') || 'it';
+                const title = isEdit 
+                    ? (lang === 'en' ? 'Edit Template' : 'Modifica Template')
+                    : (lang === 'en' ? 'Save Template' : 'Salva Template');
+                
+                const dialog = document.createElement('div');
+                dialog.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70] p-4';
+                dialog.innerHTML = `
+                    <div class="bg-gray-800 rounded-xl p-6 w-full max-w-md border border-gray-600 shadow-2xl">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                </div>
+                                <h3 class="text-xl font-bold text-white">${title}</h3>
+                            </div>
+                            <button onclick="this.closest('.fixed').remove(); resolve(null);" 
+                                    class="text-gray-300 hover:text-white bg-gray-700/50 hover:bg-red-600/30 transition-all p-2.5 rounded-lg border border-gray-500 hover:border-red-400 group shadow-lg"
+                                    title="Chiudi (ESC)">
+                                <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    ${lang === 'en' ? 'Template Name' : 'Nome Template'} *
+                                </label>
+                                <input type="text" id="templateNameInput" value="${currentName}" 
+                                       class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent" 
+                                       placeholder="${lang === 'en' ? 'Enter template name...' : 'Inserisci nome template...'}">
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-300 mb-2">
+                                    ${lang === 'en' ? 'Description (optional)' : 'Descrizione (opzionale)'}
+                                </label>
+                                <textarea id="templateDescriptionInput" 
+                                          class="w-full bg-gray-700 border border-gray-600 text-white rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none" 
+                                          rows="3"
+                                          placeholder="${lang === 'en' ? 'Enter description...' : 'Inserisci descrizione...'}">${currentDescription}</textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="flex gap-3 mt-6 pt-4 border-t border-gray-700">
+                            <button onclick="this.closest('.fixed').remove(); resolve(null);" 
+                                    class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors">
+                                ${lang === 'en' ? 'Cancel' : 'Annulla'}
+                            </button>
+                            <button onclick="const name = document.getElementById('templateNameInput').value.trim(); const desc = document.getElementById('templateDescriptionInput').value.trim(); this.closest('.fixed').remove(); resolve(name ? {name, description: desc} : null);" 
+                                    class="flex-1 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg transition-all">
+                                ${isEdit ? (lang === 'en' ? 'Save Changes' : 'Salva Modifiche') : (lang === 'en' ? 'Save Template' : 'Salva Template')}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(dialog);
+                
+                // Focus the name input
+                setTimeout(() => {
+                    const nameInput = document.getElementById('templateNameInput');
+                    if (nameInput) {
+                        nameInput.focus();
+                        nameInput.select();
+                    }
+                }, 100);
+                
+                // Handle ESC key
+                const handleEscape = (e) => {
+                    if (e.key === 'Escape') {
+                        dialog.remove();
+                        document.removeEventListener('keydown', handleEscape);
+                        resolve(null);
+                    }
+                };
+                document.addEventListener('keydown', handleEscape);
             });
         }
 
@@ -7685,7 +7778,7 @@
 
         // Genera contenuto AI con conferma billing
         async function generateAIContent() {
-            const language = document.documentElement.lang || 'it';
+            const language = localStorage.getItem('servicehub-language') || 'it';
             
             // Conferma spesa AI
             const aiCost = 0.20; // €0.20 per chiamata AI
@@ -7958,7 +8051,7 @@
 
         // Invia comunicazioni AI
         async function sendAICommunications() {
-            const language = document.documentElement.lang || 'it';
+            const language = localStorage.getItem('servicehub-language') || 'it';
             const selectedCerts = getSelectedCertificates();
             const channel = document.querySelector('#channelToggleGroup .active-chip')?.dataset.value || 'email';
             
@@ -7996,7 +8089,7 @@
 
         // Invia ai clienti test AI
         async function sendAIToTestClients() {
-            const language = document.documentElement.lang || 'it';
+            const language = localStorage.getItem('servicehub-language') || 'it';
             const dealerId = getCurrentDealerId();
             
             // Carica clienti test
@@ -8036,7 +8129,7 @@
 
         // Funzione comune per invio messaggi AI
         async function sendAIMessages(isTestMode) {
-            const language = document.documentElement.lang || 'it';
+            const language = localStorage.getItem('servicehub-language') || 'it';
             const channel = document.querySelector('#channelToggleGroup .active-chip')?.dataset.value || 'email';
             const style = document.querySelector('#styleToggleGroup .active-chip')?.dataset.value || 'professional';
             const prompt = document.getElementById('aiPromptInput').value || '';
@@ -9115,6 +9208,27 @@
             console.log('🗑️ Template cache cleared');
         }
 
+        // Update save button text based on template selection
+        function updateSaveButtonText(buttonId, dropdownId) {
+            const dropdown = document.getElementById(dropdownId);
+            const button = document.getElementById(buttonId);
+            const lang = localStorage.getItem('servicehub-language') || 'it';
+            
+            if (!dropdown || !button) return;
+            
+            const isTemplateSelected = dropdown.value && dropdown.value !== '';
+            
+            if (isTemplateSelected) {
+                // Template selected - show "Save Changes"
+                button.innerHTML = lang === 'en' ? '💾 Save Changes' : '💾 Salva Modifiche';
+                button.setAttribute('data-i18n', lang === 'en' ? 'contact.save_changes' : 'contact.salva_modifiche');
+            } else {
+                // No template selected - show "Save Template" 
+                button.innerHTML = lang === 'en' ? '💾 Save Template' : '💾 Salva Template';
+                button.setAttribute('data-i18n', 'contact.save_template');
+            }
+        }
+
         // Handle template selection for manual dialog
         async function onTemplateSelectedManual() {
             const dropdown = document.getElementById('templateSelectorNoAI');
@@ -9125,6 +9239,8 @@
                 document.getElementById('emailSubjectInputNoAI').value = '';
                 document.getElementById('manualMessageInput').value = '';
                 updateManualMessagePreview();
+                // Update save button text for no template selected
+                updateSaveButtonText('saveTemplateManualBtn', 'templateSelectorNoAI');
                 return;
             }
 
@@ -9202,6 +9318,9 @@
                 const message = lang === 'en' ? 'Error loading template' : 'Errore nel caricamento del template';
                 await window.customDialog.alert(title, message, 'OK');
             }
+            
+            // Update save button text based on template selection
+            updateSaveButtonText('saveTemplateManualBtn', 'templateSelectorNoAI');
         }
 
         // Handle template selection for AI dialog
@@ -9209,7 +9328,11 @@
             const dropdown = document.getElementById('templateSelectorAI');
             const templateId = dropdown.value;
             
-            if (!templateId) return;
+            if (!templateId) {
+                // Update save button text for no template selected
+                updateSaveButtonText('saveTemplateAIBtn', 'templateSelectorAI');
+                return;
+            }
 
             try {
                 // Get all templates and find the selected one
@@ -9278,6 +9401,9 @@
                 const message = lang === 'en' ? 'Error loading template' : 'Errore nel caricamento del template';
                 await window.customDialog.alert(title, message, 'OK');
             }
+            
+            // Update save button text based on template selection
+            updateSaveButtonText('saveTemplateAIBtn', 'templateSelectorAI');
         }
 
         // Save template from manual dialog
@@ -9285,6 +9411,11 @@
             const channel = document.querySelector('#channelToggleGroupNoAI .active-chip')?.dataset.value;
             const subject = document.getElementById('emailSubjectInputNoAI').value;
             const message = document.getElementById('manualMessageInput').value;
+            
+            // Check if we're updating an existing template
+            const dropdown = document.getElementById('templateSelectorNoAI');
+            const selectedTemplateId = dropdown?.value;
+            const isUpdating = selectedTemplateId && selectedTemplateId !== '';
             
             if (!channel) {
                 const lang = localStorage.getItem('servicehub-language') || 'it';
@@ -9295,22 +9426,39 @@
             }
             
             if (!message.trim()) {
-                const title = window.i18n ? window.i18n.t('common.warning') : 'Attenzione';
-                await window.customDialog.alert(title, 'Inserisci un messaggio prima di salvare', 'OK');
+                const lang = localStorage.getItem('servicehub-language') || 'it';
+                const title = lang === 'en' ? 'Warning' : 'Attenzione';
+                const message = lang === 'en' ? 'Enter a message before saving' : 'Inserisci un messaggio prima di salvare';
+                await window.customDialog.alert(title, message, 'OK');
                 return;
             }
 
-            const name = await customPrompt('Nome Template', 'Inserisci il nome del template:');
-            if (!name) return;
-
-            const description = await customPrompt('Descrizione Template', 'Inserisci una descrizione (opzionale):') || '';
+            let result;
+            if (isUpdating) {
+                // Get existing template data for editing
+                try {
+                    const existingTemplate = templateCache.get(selectedTemplateId);
+                    if (existingTemplate) {
+                        result = await showTemplateDialog(true, existingTemplate.name, existingTemplate.description);
+                    } else {
+                        result = await showTemplateDialog(true);
+                    }
+                } catch (error) {
+                    console.error('Error loading existing template:', error);
+                    result = await showTemplateDialog(true);
+                }
+            } else {
+                // Creating new template
+                result = await showTemplateDialog(false);
+            }
+            if (!result) return;
 
             try {
                 const dealerId = getCurrentDealerId();
                 const templateData = {
                     dealer_id: dealerId,
-                    name: name.trim(),
-                    description: description.trim(),
+                    name: result.name,
+                    description: result.description,
                     channel: channel,
                     style: 'professional', // Default style for manual templates
                     template_type: 'manual',
@@ -9319,8 +9467,11 @@
                     email_subject: channel === 'email' ? subject.trim() : null
                 };
 
-                const response = await fetch('/api/templates', {
-                    method: 'POST',
+                const url = isUpdating ? `/api/templates/${selectedTemplateId}` : '/api/templates';
+                const method = isUpdating ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(templateData)
                 });
@@ -9330,8 +9481,12 @@
                     throw new Error(error.error || 'Errore nel salvataggio');
                 }
 
-                const title = window.i18n ? window.i18n.t('common.success') : 'Successo';
-                await window.customDialog.alert(title, 'Template salvato con successo!', 'OK');
+                const lang = localStorage.getItem('servicehub-language') || 'it';
+                const title = lang === 'en' ? 'Success' : 'Successo';
+                const message = isUpdating 
+                    ? (lang === 'en' ? 'Changes saved successfully!' : 'Modifiche salvate con successo!')
+                    : (lang === 'en' ? 'Template saved successfully!' : 'Template salvato con successo!');
+                await window.customDialog.alert(title, message, 'OK');
                 
                 // Clear cache and refresh template dropdown
                 clearTemplateCache();
@@ -9339,7 +9494,7 @@
                 
             } catch (error) {
                 console.error('Error saving template:', error);
-                const title = window.i18n ? window.i18n.t('common.error') : 'Errore';
+                const title = localStorage.getItem('servicehub-language') === 'en' ? 'Error' : 'Errore';
                 await window.customDialog.alert(title, 'Errore nel salvataggio del template: ' + error.message, 'OK');
             }
         }
@@ -9351,6 +9506,11 @@
             const promptText = document.getElementById('aiPromptInput').value;
             const content = document.getElementById('aiResults').value;
             
+            // Check if we're updating an existing template
+            const dropdown = document.getElementById('templateSelectorAI');
+            const selectedTemplateId = dropdown?.value;
+            const isUpdating = selectedTemplateId && selectedTemplateId !== '';
+            
             if (!channel) {
                 const lang = localStorage.getItem('servicehub-language') || 'it';
                 const title = lang === 'en' ? 'Warning' : 'Attenzione';
@@ -9360,17 +9520,38 @@
             }
             
             if (!promptText.trim() && !content.trim()) {
-                const title = window.i18n ? window.i18n.t('common.warning') : 'Attenzione';
-                await window.customDialog.alert(title, 'Genera prima una comunicazione AI o inserisci un prompt', 'OK');
+                const lang = localStorage.getItem('servicehub-language') || 'it';
+                const title = lang === 'en' ? 'Warning' : 'Attenzione';
+                const message = lang === 'en' ? 'Generate an AI communication first or enter a prompt' : 'Genera prima una comunicazione AI o inserisci un prompt';
+                await window.customDialog.alert(title, message, 'OK');
                 return;
             }
 
-            const name = await customPrompt('Nome Template', 'Inserisci il nome del template:');
-            if (!name) return;
-
-            const description = await customPrompt('Descrizione Template', 'Inserisci una descrizione (opzionale):') || '';
+            let result;
+            if (isUpdating) {
+                // Get existing template data for editing
+                try {
+                    const existingTemplate = templateCache.get(selectedTemplateId);
+                    if (existingTemplate) {
+                        result = await showTemplateDialog(true, existingTemplate.name, existingTemplate.description);
+                    } else {
+                        result = await showTemplateDialog(true);
+                    }
+                } catch (error) {
+                    console.error('Error loading existing template:', error);
+                    result = await showTemplateDialog(true);
+                }
+            } else {
+                // Creating new template
+                result = await showTemplateDialog(false);
+            }
+            if (!result) return;
             
-            const templateType = await customPrompt('Tipo Template', 'Scegli il tipo di template:\n1 = AI (solo prompt)\n2 = Manuale (solo contenuto)\n3 = Ibrido (entrambi)', '3');
+            const lang = localStorage.getItem('servicehub-language') || 'it';
+            const templateTypePrompt = lang === 'en' 
+                ? 'Choose template type:\n1 = AI (prompt only)\n2 = Manual (content only)\n3 = Hybrid (both)'
+                : 'Scegli il tipo di template:\n1 = AI (solo prompt)\n2 = Manuale (solo contenuto)\n3 = Ibrido (entrambi)';
+            const templateType = await customPrompt('Tipo Template', templateTypePrompt, '3');
             let type = 'hybrid';
             if (templateType === '1') type = 'ai';
             else if (templateType === '2') type = 'manual';
@@ -9379,8 +9560,8 @@
                 const dealerId = getCurrentDealerId();
                 const templateData = {
                     dealer_id: dealerId,
-                    name: name.trim(),
-                    description: description.trim(),
+                    name: result.name,
+                    description: result.description,
                     channel: channel,
                     style: style || 'professional',
                     template_type: type,
@@ -9389,8 +9570,11 @@
                     email_subject: null // Will be generated by AI
                 };
 
-                const response = await fetch('/api/templates', {
-                    method: 'POST',
+                const url = isUpdating ? `/api/templates/${selectedTemplateId}` : '/api/templates';
+                const method = isUpdating ? 'PUT' : 'POST';
+                
+                const response = await fetch(url, {
+                    method: method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(templateData)
                 });
@@ -9400,8 +9584,11 @@
                     throw new Error(error.error || 'Errore nel salvataggio');
                 }
 
-                const title = window.i18n ? window.i18n.t('common.success') : 'Successo';
-                await window.customDialog.alert(title, 'Template salvato con successo!', 'OK');
+                const title = localStorage.getItem('servicehub-language') === 'en' ? 'Success' : 'Successo';
+                const message = isUpdating 
+                    ? (localStorage.getItem('servicehub-language') === 'en' ? 'Changes saved successfully!' : 'Modifiche salvate con successo!')
+                    : (localStorage.getItem('servicehub-language') === 'en' ? 'Template saved successfully!' : 'Template salvato con successo!');
+                await window.customDialog.alert(title, message, 'OK');
                 
                 // Clear cache and refresh template dropdown
                 clearTemplateCache();
@@ -9409,7 +9596,7 @@
                 
             } catch (error) {
                 console.error('Error saving template:', error);
-                const title = window.i18n ? window.i18n.t('common.error') : 'Errore';
+                const title = localStorage.getItem('servicehub-language') === 'en' ? 'Error' : 'Errore';
                 await window.customDialog.alert(title, 'Errore nel salvataggio del template: ' + error.message, 'OK');
             }
         }
