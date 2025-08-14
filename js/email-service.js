@@ -1,6 +1,6 @@
 /**
  * Email Service - Amazon SES Integration
- * Service Hub Portal - Email functionality for PIN delivery
+ * Service Portal - Email functionality for PIN delivery
  */
 
 const { SESClient, SendEmailCommand } = require('@aws-sdk/client-ses');
@@ -76,8 +76,8 @@ class EmailService {
 
         try {
             const subject = language === 'it' 
-                ? `Service Hub Portal - Il tuo PIN di accesso`
-                : `Service Hub Portal - Your Access PIN`;
+                ? `Service Portal - Il tuo PIN di accesso`
+                : `Service Portal - Your Access PIN`;
 
             const htmlBody = this.generateEmailHTML(dealerName, pin, language);
             const textBody = this.generateEmailText(dealerName, pin, language);
@@ -127,7 +127,7 @@ class EmailService {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>${isItalian ? 'Service Hub Portal - PIN di Accesso' : 'Service Hub Portal - Access PIN'}</title>
+            <title>${isItalian ? 'Service Portal - PIN di Accesso' : 'Service Portal - Access PIN'}</title>
             <style>
                 body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -142,15 +142,15 @@ class EmailService {
         <body>
             <div class="container">
                 <div class="header">
-                    <h1>🔧 Service Hub Portal</h1>
+                    <h1>🔧 Service Portal</h1>
                 </div>
                 
                 <div class="content">
                     <h2>${isItalian ? 'Ciao' : 'Hello'} ${dealerName}!</h2>
                     
                     <p>${isItalian 
-                        ? 'Hai richiesto un PIN di accesso per il Service Hub Portal. Ecco il tuo PIN:'
-                        : 'You requested an access PIN for the Service Hub Portal. Here is your PIN:'
+                        ? 'Hai richiesto un PIN di accesso per il Service Portal. Ecco il tuo PIN:'
+                        : 'You requested an access PIN for the Service Portal. Here is your PIN:'
                     }</p>
                     
                     <div class="pin-box">
@@ -171,14 +171,14 @@ class EmailService {
                     </div>
                     
                     <p>${isItalian
-                        ? 'Grazie per aver scelto Service Hub Portal!'
-                        : 'Thank you for choosing Service Hub Portal!'
+                        ? 'Grazie per aver scelto Service Portal!'
+                        : 'Thank you for choosing Service Portal!'
                     }</p>
                 </div>
                 
                 <div class="footer">
                     <p>${isItalian ? 'Personale autorizzato solo. Tutti gli accessi sono monitorati.' : 'Authorized personnel only. All access is monitored.'}</p>
-                    <p>© 2024 Mobisat - Service Hub Portal</p>
+                    <p>© 2024 Mobisat - Service Portal</p>
                 </div>
             </div>
         </body>
@@ -192,13 +192,13 @@ class EmailService {
     generateEmailText(dealerName, pin, language) {
         const isItalian = language === 'it';
         
-        return `${isItalian ? 'Service Hub Portal - PIN di Accesso' : 'Service Hub Portal - Access PIN'}
+        return `${isItalian ? 'Service Portal - PIN di Accesso' : 'Service Portal - Access PIN'}
 
 ${isItalian ? 'Ciao' : 'Hello'} ${dealerName}!
 
 ${isItalian 
-    ? 'Hai richiesto un PIN di accesso per il Service Hub Portal. Ecco il tuo PIN:'
-    : 'You requested an access PIN for the Service Hub Portal. Here is your PIN:'
+    ? 'Hai richiesto un PIN di accesso per il Service Portal. Ecco il tuo PIN:'
+    : 'You requested an access PIN for the Service Portal. Here is your PIN:'
 }
 
 PIN: ${pin}
@@ -215,13 +215,13 @@ ${isItalian
 }
 
 ${isItalian
-    ? 'Grazie per aver scelto Service Hub Portal!'
-    : 'Thank you for choosing Service Hub Portal!'
+    ? 'Grazie per aver scelto Service Portal!'
+    : 'Thank you for choosing Service Portal!'
 }
 
 ---
 ${isItalian ? 'Personale autorizzato solo. Tutti gli accessi sono monitorati.' : 'Authorized personnel only. All access is monitored.'}
-© 2024 Mobisat - Service Hub Portal`;
+© 2024 Mobisat - Service Portal`;
     }
 
     /**

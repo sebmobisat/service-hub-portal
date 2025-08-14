@@ -1,4 +1,4 @@
-// Service Hub Portal - Login Page JavaScript
+// Service Portal - Login Page JavaScript
 // Clean and functional version
 
 document.addEventListener('DOMContentLoaded', function() {

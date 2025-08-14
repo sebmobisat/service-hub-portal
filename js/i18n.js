@@ -1,6 +1,6 @@
 /**
  * GLOBAL INTERNATIONALIZATION SYSTEM
- * Service Hub Portal - Complete I18N Implementation
+ * Service Portal - Complete I18N Implementation
  * 
  * This system handles ALL text translation across the entire application
  * including page titles, meta tags, UI elements, and content.
@@ -49,9 +49,9 @@ class I18nManager {
         return {
             it: {
                 // Meta and Page Titles
-                'meta.dashboard.title': 'Dashboard - Service Hub Portal',
-                'meta.certificates.title': 'Certificati - Service Hub Portal', 
-                'meta.settings.title': 'Impostazioni - Service Hub Portal',
+                'meta.dashboard.title': 'Dashboard - Service Portal',
+                'meta.certificates.title': 'Certificati - Service Portal', 
+                'meta.settings.title': 'Impostazioni - Service Portal',
                 
                 // Navigation and Sidebar
                 'nav.dashboard': 'Dashboard',
@@ -61,7 +61,7 @@ class I18nManager {
                 'nav.logout': 'Logout',
                 
                 // Login Page
-                'login.title': 'Service Hub Portal',
+                'login.title': 'Service Portal',
                 'login.subtitle': 'Accedi al tuo account dealer',
                 'login.email': 'Email',
                 'login.phone': 'Numero di Telefono',
@@ -88,12 +88,12 @@ class I18nManager {
                 
                 // Page Headers
                 'page.dashboard.title': 'Dashboard',
-                'page.dashboard.subtitle': 'Service Hub Portal',
+                'page.dashboard.subtitle': 'Service Portal',
                 'page.certificates.title': 'Certificati',
                 'page.certificates.subtitle': 'Gestisci e visualizza tutti i certificati del tuo dealer',
                 'page.settings.title': 'Impostazioni',
                 'page.settings.subtitle': 'Configura le impostazioni del tuo account',
-                'meta.billing.title': 'Credito & Consumi - Service Hub Portal',
+                'meta.billing.title': 'Credito & Consumi - Service Portal',
                 'page.billing.title': 'Credito & Consumi',
                 'page.billing.subtitle': 'Saldo Stripe e consumi per canale',
                 'billing.balance': 'Credito disponibile',
@@ -470,7 +470,7 @@ class I18nManager {
                 'date.format_dd_mm_yyyy': 'gg/mm/aaaa',
                 
                 // Vehicle Page
-                'meta.vehicle.title': 'Dettagli Veicolo - Service Hub Portal',
+                'meta.vehicle.title': 'Dettagli Veicolo - Service Portal',
                 'vehicle.page_title': 'Dettagli Veicolo',
                 'vehicle.page_subtitle': 'Informazioni complete del veicolo e storico',
                 'vehicle.open_details': 'Apri dettagli veicolo',
@@ -645,9 +645,9 @@ class I18nManager {
             
             en: {
                 // Meta and Page Titles
-                'meta.dashboard.title': 'Dashboard - Service Hub Portal',
-                'meta.certificates.title': 'Certificates - Service Hub Portal',
-                'meta.settings.title': 'Settings - Service Hub Portal',
+                'meta.dashboard.title': 'Dashboard - Service Portal',
+                'meta.certificates.title': 'Certificates - Service Portal',
+                'meta.settings.title': 'Settings - Service Portal',
                 
                 // Navigation and Sidebar
                 'nav.dashboard': 'Dashboard',
@@ -657,7 +657,7 @@ class I18nManager {
                 'nav.logout': 'Logout',
                 
                 // Login Page
-                'login.title': 'Service Hub Portal',
+                'login.title': 'Service Portal',
                 'login.subtitle': 'Access your dealer account',
                 'login.email': 'Email',
                 'login.phone': 'Phone Number',
@@ -684,12 +684,12 @@ class I18nManager {
                 
                 // Page Headers
                 'page.dashboard.title': 'Dashboard',
-                'page.dashboard.subtitle': 'Service Hub Portal',
+                'page.dashboard.subtitle': 'Service Portal',
                 'page.certificates.title': 'Certificates',
                 'page.certificates.subtitle': 'Manage and view all your dealer certificates',
                 'page.settings.title': 'Settings',
                 'page.settings.subtitle': 'Configure your account settings',
-                'meta.billing.title': 'Credit & Usage - Service Hub Portal',
+                'meta.billing.title': 'Credit & Usage - Service Portal',
                 'page.billing.title': 'Credit & Usage',
                 'page.billing.subtitle': 'Stripe balance and per-channel usage',
                 'billing.balance': 'Available credit',
@@ -1066,7 +1066,7 @@ class I18nManager {
                 'date.format_dd_mm_yyyy': 'dd/mm/yyyy',
                 
                 // Vehicle Page
-                'meta.vehicle.title': 'Vehicle Details - Service Hub Portal',
+                'meta.vehicle.title': 'Vehicle Details - Service Portal',
                 'vehicle.page_title': 'Vehicle Details',
                 'vehicle.page_subtitle': 'Complete vehicle information and history',
                 'vehicle.open_details': 'Open vehicle details',

@@ -1,6 +1,6 @@
 /**
  * IP Geolocation Service
- * Service Hub Portal - IP-based geolocation and phone number formatting
+ * Service Portal - IP-based geolocation and phone number formatting
  * 
  * Provides IP-based location detection and automatic phone number formatting
  * for international users with localized placeholders and validation.

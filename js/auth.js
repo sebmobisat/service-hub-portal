@@ -1,4 +1,4 @@
-// Service Hub Portal - Frontend Authentication Module
+// Service Portal - Frontend Authentication Module
 // Works with Node.js backend and EmailJS integration
 
 class AuthManager {

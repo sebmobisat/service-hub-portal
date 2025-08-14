@@ -1,4 +1,4 @@
-// Service Hub Portal - Service Worker
+// Service Portal - Service Worker
 // Minimal service worker to prevent 404 errors
 
 self.addEventListener('install', function(event) {

@@ -1,6 +1,6 @@
 /**
  * Authentication Configuration
- * Service Hub Portal - Auth Management
+ * Service Portal - Auth Management
  */
 
 // Authentication configuration

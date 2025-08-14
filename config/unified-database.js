@@ -1,4 +1,4 @@
-// Service Hub Portal - Unified Database Manager
+// Service Portal - Unified Database Manager
 // Handles both Mobisat (read-only) and Supabase (read/write) databases
 
 const { DatabaseManager } = require('./database.js');

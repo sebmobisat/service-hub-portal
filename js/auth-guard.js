@@ -1,5 +1,5 @@
 /**
- * AUTH GUARD - Service Hub Portal
+ * AUTH GUARD - Service Portal
  * Protects pages from unauthorized access in production
  */
 

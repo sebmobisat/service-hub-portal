@@ -1,4 +1,4 @@
-// Service Hub Portal - Supabase Configuration
+// Service Portal - Supabase Configuration
 // Supabase client for new database structure development
 
 const { createClient } = require('@supabase/supabase-js');

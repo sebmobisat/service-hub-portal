@@ -1,6 +1,6 @@
 /**
  * Custom Dialog Component
- * Service Hub Portal - Custom Dialog Utility
+ * Service Portal - Custom Dialog Utility
  */
 
 class CustomDialog {

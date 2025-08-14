@@ -1,4 +1,4 @@
-// Service Hub Portal - Database Configuration
+// Service Portal - Database Configuration
 // PostgreSQL connection to Mobisat database
 
 const { Pool } = require('pg');

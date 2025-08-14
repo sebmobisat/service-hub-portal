@@ -1,6 +1,6 @@
 /**
  * GLOBAL THEME MANAGEMENT SYSTEM
- * Service Hub Portal - Light/Dark Theme Controller
+ * Service Portal - Light/Dark Theme Controller
  * 
  * This script automatically manages theme switching across all pages
  * and ensures consistent theming throughout the application.

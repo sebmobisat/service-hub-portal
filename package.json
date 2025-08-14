@@ -1,7 +1,7 @@
 {
   "name": "service-hub-portal",
   "version": "1.0.0",
-  "description": "Service Hub Portal - Authentication and Dashboard for Mobisat Dealers",
+  "description": "Service Portal - Authentication and Dashboard for Mobisat Dealers",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

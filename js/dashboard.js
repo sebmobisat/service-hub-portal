@@ -1,4 +1,4 @@
-// Service Hub Portal - Dashboard JavaScript
+// Service Portal - Dashboard JavaScript
 // Version: 1.0.0
 
 document.addEventListener('DOMContentLoaded', function() {

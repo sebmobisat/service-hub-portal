@@ -1,4 +1,4 @@
-// Service Hub Portal - Supabase PIN Manager
+// Service Portal - Supabase PIN Manager
 // Handles secure PIN storage and validation using Supabase
 // Part of dual-database approach: PostgreSQL (read) + Supabase (write)
 

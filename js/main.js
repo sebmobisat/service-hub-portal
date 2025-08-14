@@ -1,4 +1,4 @@
-// Service Hub Portal - Main JavaScript
+// Service Portal - Main JavaScript
 // Based on Mobisat architecture with portal-specific functionality
 // Version: 1.0.0
 
@@ -9,7 +9,7 @@ let currentUser = null;
 
 // Prevent double initialization
 if (window.serviceHubInitialized) {
-    console.log('Service Hub already initialized, skipping...');
+    console.log('Service Portal already initialized, skipping...');
 } else {
     window.serviceHubInitialized = true;
     
@@ -19,7 +19,7 @@ if (window.serviceHubInitialized) {
 
 // Main initialization function
 function initializeServiceHub() {
-    console.log('Initializing Service Hub Portal...');
+    console.log('Initializing Service Portal...');
     
     // Load user preferences first
     loadUserPreferences();
@@ -514,4 +514,4 @@ window.ServiceHub = {
     handleLogout
 };
 
-console.log('Service Hub Portal JavaScript loaded successfully'); 
+console.log('Service Portal JavaScript loaded successfully'); 
