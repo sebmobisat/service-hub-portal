@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Certificati - Service Hub Portal</title>
+    <title>Certificati - Service Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/css/styles.css">
     <!-- Authentication Guard -->
@@ -3704,11 +3704,16 @@
 
         // Logout function
         async function logout() {
+            const lang = localStorage.getItem('servicehub-language') || 'it';
+            const title = lang === 'en' ? 'Confirm Logout' : 'Conferma Logout';
+            const message = lang === 'en' ? 'Are you sure you want to logout?' : 'Sei sicuro di voler effettuare il logout?';
+            const confirmText = lang === 'en' ? 'Logout' : 'Esci';
+            const cancelText = lang === 'en' ? 'Cancel' : 'Annulla';
             const confirmed = await window.customDialog.confirm(
-                'Conferma Logout',
-                t('message.logout_confirm'),
-                'Esci',
-                'Annulla'
+                title,
+                message,
+                confirmText,
+                cancelText
             );
             
             if (confirmed) {
@@ -5284,11 +5289,18 @@
                     return false;
                 }
                 
+                const lang = localStorage.getItem('servicehub-language') || 'it';
+                const title = lang === 'en' ? 'Confirm Deletion' : 'Conferma Eliminazione';
+                const message = lang === 'en' 
+                    ? `Are you sure you want to delete search "${search.name}"?`
+                    : `Sei sicuro di voler eliminare la ricerca "${search.name}"?`;
+                const confirmText = lang === 'en' ? 'Delete' : 'Elimina';
+                const cancelText = lang === 'en' ? 'Cancel' : 'Annulla';
                 const proceed = await window.customDialog.confirm(
-                    'Conferma Eliminazione',
-                    `Sei sicuro di voler eliminare la ricerca "${search.name}"?`,
-                    'Elimina',
-                    'Annulla'
+                    title,
+                    message,
+                    confirmText,
+                    cancelText
                 );
                 if (!proceed) {
                     return false;
@@ -5416,11 +5428,18 @@
             console.log('🔍 Delete search - ID:', searchId, 'Found:', !!search, 'Name:', searchName);
             
             // Confirm deletion
+            const lang = localStorage.getItem('servicehub-language') || 'it';
+            const title = lang === 'en' ? 'Confirm Deletion' : 'Conferma Eliminazione';
+            const message = lang === 'en' 
+                ? `Are you sure you want to delete search "${searchName}"?`
+                : `Sei sicuro di voler eliminare la ricerca "${searchName}"?`;
+            const confirmText = lang === 'en' ? 'Delete' : 'Elimina';
+            const cancelText = lang === 'en' ? 'Cancel' : 'Annulla';
             const proceed = await window.customDialog.confirm(
-                'Conferma Eliminazione',
-                `Sei sicuro di voler eliminare la ricerca "${searchName}"?`,
-                'Elimina',
-                'Annulla'
+                title,
+                message,
+                confirmText,
+                cancelText
             );
             if (!proceed) {
                 return;
@@ -6795,8 +6814,11 @@
                 }
             } catch (error) {
                 console.error('Error filtering certificates by group:', error);
-                const title = window.i18n ? window.i18n.t('common.error') : 'Errore';
-                const message = 'Errore nel filtraggio: ' + error.message;
+                const lang = localStorage.getItem('servicehub-language') || 'it';
+                const title = lang === 'en' ? 'Error' : 'Errore';
+                const message = lang === 'en' 
+                    ? 'Filtering error: ' + error.message
+                    : 'Errore nel filtraggio: ' + error.message;
                 await window.customDialog.alert(title, message, 'OK');
             }
         }
@@ -8748,11 +8770,15 @@
                     ? window.i18n ? window.i18n.t('manual_contact.confirm_send_email', { count: testClients.length, cost: costEuro }) : `Stai per inviare ${testClients.length} email al costo di ${costEuro}. Sei sicuro di voler procedere?`
                     : window.i18n ? window.i18n.t('manual_contact.confirm_send_whatsapp', { count: testClients.length, cost: costEuro }) : `Stai per inviare ${testClients.length} WhatsApp al costo di ${costEuro}. Sei sicuro di voler procedere?`;
                 
+                const lang = localStorage.getItem('servicehub-language') || 'it';
+                const title = lang === 'en' ? 'Confirm Sending' : 'Conferma Invio';
+                const confirmText = lang === 'en' ? 'Send' : 'Invia';
+                const cancelText = lang === 'en' ? 'Cancel' : 'Annulla';
                 const confirmed = await window.customDialog.confirm(
-                    'Conferma Invio',
+                    title,
                     confirmMessage,
-                    'Invia',
-                    'Annulla'
+                    confirmText,
+                    cancelText
                 );
                 
                 if (!confirmed) return;
@@ -8800,11 +8826,15 @@
                 ? window.i18n ? window.i18n.t('manual_contact.confirm_send_email', { count: selectedCerts.length, cost: costEuro }) : `Stai per inviare ${selectedCerts.length} email al costo di ${costEuro}. Sei sicuro di voler procedere?`
                 : window.i18n ? window.i18n.t('manual_contact.confirm_send_whatsapp', { count: selectedCerts.length, cost: costEuro }) : `Stai per inviare ${selectedCerts.length} WhatsApp al costo di ${costEuro}. Sei sicuro di voler procedere?`;
             
+            const lang = localStorage.getItem('servicehub-language') || 'it';
+            const title = lang === 'en' ? 'Confirm Sending' : 'Conferma Invio';
+            const confirmText = lang === 'en' ? 'Send' : 'Invia';
+            const cancelText = lang === 'en' ? 'Cancel' : 'Annulla';
             const confirmed = await window.customDialog.confirm(
-                'Conferma Invio',
+                title,
                 confirmMessage,
-                'Invia',
-                'Annulla'
+                confirmText,
+                cancelText
             );
             
             if (!confirmed) return;
@@ -9167,8 +9197,10 @@
                 
             } catch (error) {
                 console.error('Error applying template:', error);
-                const title = window.i18n ? window.i18n.t('common.error') : 'Errore';
-                await window.customDialog.alert(title, 'Errore nel caricamento del template', 'OK');
+                const lang = localStorage.getItem('servicehub-language') || 'it';
+                const title = lang === 'en' ? 'Error' : 'Errore';
+                const message = lang === 'en' ? 'Error loading template' : 'Errore nel caricamento del template';
+                await window.customDialog.alert(title, message, 'OK');
             }
         }
 
@@ -9241,8 +9273,10 @@
                 
             } catch (error) {
                 console.error('Error applying template:', error);
-                const title = window.i18n ? window.i18n.t('common.error') : 'Errore';
-                await window.customDialog.alert(title, 'Errore nel caricamento del template', 'OK');
+                const lang = localStorage.getItem('servicehub-language') || 'it';
+                const title = lang === 'en' ? 'Error' : 'Errore';
+                const message = lang === 'en' ? 'Error loading template' : 'Errore nel caricamento del template';
+                await window.customDialog.alert(title, message, 'OK');
             }
         }
 
@@ -9253,8 +9287,10 @@
             const message = document.getElementById('manualMessageInput').value;
             
             if (!channel) {
-                const title = window.i18n ? window.i18n.t('common.warning') : 'Attenzione';
-                await window.customDialog.alert(title, 'Seleziona prima un canale', 'OK');
+                const lang = localStorage.getItem('servicehub-language') || 'it';
+                const title = lang === 'en' ? 'Warning' : 'Attenzione';
+                const message = lang === 'en' ? 'Select a channel first' : 'Seleziona prima un canale';
+                await window.customDialog.alert(title, message, 'OK');
                 return;
             }
             
@@ -9316,8 +9352,10 @@
             const content = document.getElementById('aiResults').value;
             
             if (!channel) {
-                const title = window.i18n ? window.i18n.t('common.warning') : 'Attenzione';
-                await window.customDialog.alert(title, 'Seleziona prima un canale', 'OK');
+                const lang = localStorage.getItem('servicehub-language') || 'it';
+                const title = lang === 'en' ? 'Warning' : 'Attenzione';
+                const message = lang === 'en' ? 'Select a channel first' : 'Seleziona prima un canale';
+                await window.customDialog.alert(title, message, 'OK');
                 return;
             }
             

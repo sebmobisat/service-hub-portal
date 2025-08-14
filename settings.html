@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Impostazioni - Service Hub Portal</title>
+    <title>Impostazioni - Service Portal</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/css/styles.css">
     <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico">
@@ -770,7 +770,7 @@
                                             <span class="font-semibold" data-en="System Version" data-it="Versione Sistema">Versione Sistema</span>
                                             <span class="text-xs px-2 py-1 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200">v1.0</span>
                                         </div>
-                                        <p class="text-sm text-gray-600 dark:text-gray-400">Service Hub Portal</p>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">Service Portal</p>
                                     </div>
                                     
                                     <div class="space-y-3">
@@ -1064,8 +1064,10 @@
                     const companyInput = document.getElementById('sig_company_name');
                     const companyName = companyInput?.value.trim() || '';
                     if (!companyName) {
-                        const title = window.i18n ? window.i18n.t('common.warning') : 'Attenzione';
-                        await window.customDialog.alert(title, 'Il nome della concessionaria è obbligatorio / Company name is required', 'OK');
+                        const lang = localStorage.getItem('servicehub-language') || 'it';
+                        const title = lang === 'en' ? 'Warning' : 'Attenzione';
+                        const message = lang === 'en' ? 'Company name is required' : 'Il nome della concessionaria è obbligatorio';
+                        await window.customDialog.alert(title, message, 'OK');
                         companyInput?.focus();
                         return;
                     }
@@ -1103,8 +1105,10 @@
                     const firstName = firstInput?.value.trim() || '';
                     const lastName = lastInput?.value.trim() || '';
                     if (!firstName || !lastName) {
-                        const title = window.i18n ? window.i18n.t('common.warning') : 'Attenzione';
-                        await window.customDialog.alert(title, 'Nome e cognome sono obbligatori / First name and last name are required', 'OK');
+                        const lang = localStorage.getItem('servicehub-language') || 'it';
+                        const title = lang === 'en' ? 'Warning' : 'Attenzione';
+                        const message = lang === 'en' ? 'First name and last name are required' : 'Nome e cognome sono obbligatori';
+                        await window.customDialog.alert(title, message, 'OK');
                         (firstName ? lastInput : firstInput)?.focus();
                         return;
                     }
@@ -1322,28 +1326,36 @@
 
                 // Validation
                 if (!name) {
-                    const title = window.i18n ? window.i18n.t('common.warning') : 'Attenzione';
-                    await window.customDialog.alert(title, 'Il nome del template è obbligatorio / Template name is required', 'OK');
+                    const lang = localStorage.getItem('servicehub-language') || 'it';
+                    const title = lang === 'en' ? 'Warning' : 'Attenzione';
+                    const message = lang === 'en' ? 'Template name is required' : 'Il nome del template è obbligatorio';
+                    await window.customDialog.alert(title, message, 'OK');
                     document.getElementById('tmpl_name')?.focus();
                     return;
                 }
                 
                 if (!channel || !style || !type) {
-                    const title = window.i18n ? window.i18n.t('common.warning') : 'Attenzione';
-                    await window.customDialog.alert(title, 'Canale, stile e tipo template sono obbligatori / Channel, style and template type are required', 'OK');
+                    const lang = localStorage.getItem('servicehub-language') || 'it';
+                    const title = lang === 'en' ? 'Warning' : 'Attenzione';
+                    const message = lang === 'en' ? 'Channel, style and template type are required' : 'Canale, stile e tipo template sono obbligatori';
+                    await window.customDialog.alert(title, message, 'OK');
                     return;
                 }
                 
                 if ((type === 'ai' || type === 'hybrid') && !promptText) {
-                    const title = window.i18n ? window.i18n.t('common.warning') : 'Attenzione';
-                    await window.customDialog.alert(title, 'Il prompt AI è obbligatorio per template AI e ibridi / AI prompt is required for AI and hybrid templates', 'OK');
+                    const lang = localStorage.getItem('servicehub-language') || 'it';
+                    const title = lang === 'en' ? 'Warning' : 'Attenzione';
+                    const message = lang === 'en' ? 'AI prompt is required for AI and hybrid templates' : 'Il prompt AI è obbligatorio per template AI e ibridi';
+                    await window.customDialog.alert(title, message, 'OK');
                     document.getElementById('tmpl_prompt')?.focus();
                     return;
                 }
                 
                 if ((type === 'manual' || type === 'hybrid') && !content) {
-                    const title = window.i18n ? window.i18n.t('common.warning') : 'Attenzione';
-                    await window.customDialog.alert(title, 'Il contenuto del messaggio è obbligatorio per template manuali e ibridi / Message content is required for manual and hybrid templates', 'OK');
+                    const lang = localStorage.getItem('servicehub-language') || 'it';
+                    const title = lang === 'en' ? 'Warning' : 'Attenzione';
+                    const message = lang === 'en' ? 'Message content is required for manual and hybrid templates' : 'Il contenuto del messaggio è obbligatorio per template manuali e ibridi';
+                    await window.customDialog.alert(title, message, 'OK');
                     document.getElementById('tmpl_content')?.focus();
                     return;
                 }
@@ -1377,16 +1389,23 @@
                         throw new Error(result.error || 'Errore nel salvataggio / Save error');
                     }
 
-                    const title = window.i18n ? window.i18n.t('common.success') : 'Successo';
-                    const message = editingTemplateId ? 'Template aggiornato con successo! / Template updated successfully!' : 'Template creato con successo! / Template created successfully!';
+                    const lang = localStorage.getItem('servicehub-language') || 'it';
+                    const title = lang === 'en' ? 'Success' : 'Successo';
+                    const message = editingTemplateId 
+                        ? (lang === 'en' ? 'Template updated successfully!' : 'Template aggiornato con successo!')
+                        : (lang === 'en' ? 'Template created successfully!' : 'Template creato con successo!');
                     await window.customDialog.alert(title, message, 'OK');
                     resetTemplateForm();
                     refreshTemplates();
                     
                 } catch (error) {
                     console.error('Error saving template:', error);
-                    const title = window.i18n ? window.i18n.t('common.error') : 'Errore';
-                    await window.customDialog.alert(title, 'Errore nel salvataggio del template / Error saving template: ' + error.message, 'OK');
+                    const lang = localStorage.getItem('servicehub-language') || 'it';
+                    const title = lang === 'en' ? 'Error' : 'Errore';
+                    const message = lang === 'en' 
+                        ? 'Error saving template: ' + error.message
+                        : 'Errore nel salvataggio del template: ' + error.message;
+                    await window.customDialog.alert(title, message, 'OK');
                 }
             }
 
@@ -1438,8 +1457,12 @@
                     
                 } catch (error) {
                     console.error('Error loading template for edit:', error);
-                    const title = window.i18n ? window.i18n.t('common.error') : 'Errore';
-                    await window.customDialog.alert(title, 'Errore nel caricamento del template / Error loading template: ' + error.message, 'OK');
+                    const lang = localStorage.getItem('servicehub-language') || 'it';
+                    const title = lang === 'en' ? 'Error' : 'Errore';
+                    const message = lang === 'en' 
+                        ? 'Error loading template: ' + error.message
+                        : 'Errore nel caricamento del template: ' + error.message;
+                    await window.customDialog.alert(title, message, 'OK');
                 }
             };
 
@@ -1472,15 +1495,24 @@
                     
                 } catch (error) {
                     console.error('Error duplicating template:', error);
-                    const title = window.i18n ? window.i18n.t('common.error') : 'Errore';
-                    await window.customDialog.alert(title, 'Errore nella duplicazione del template / Error duplicating template: ' + error.message, 'OK');
+                    const lang = localStorage.getItem('servicehub-language') || 'it';
+                    const title = lang === 'en' ? 'Error' : 'Errore';
+                    const message = lang === 'en' 
+                        ? 'Error duplicating template: ' + error.message
+                        : 'Errore nella duplicazione del template: ' + error.message;
+                    await window.customDialog.alert(title, message, 'OK');
                 }
             };
 
             window.deleteTemplate = async function(templateId, templateName) {
-                const title = 'Conferma Eliminazione / Confirm Deletion';
-                const message = `Sei sicuro di voler eliminare il template "${templateName}"?\n\nAre you sure you want to delete template "${templateName}"?\n\nQuesta azione non può essere annullata.\nThis action cannot be undone.`;
-                const confirmed = await window.customDialog.confirm(title, message, 'Elimina / Delete', 'Annulla / Cancel');
+                const lang = localStorage.getItem('servicehub-language') || 'it';
+                const title = lang === 'en' ? 'Confirm Deletion' : 'Conferma Eliminazione';
+                const message = lang === 'en' 
+                    ? `Are you sure you want to delete template "${templateName}"?\n\nThis action cannot be undone.`
+                    : `Sei sicuro di voler eliminare il template "${templateName}"?\n\nQuesta azione non può essere annullata.`;
+                const confirmText = lang === 'en' ? 'Delete' : 'Elimina';
+                const cancelText = lang === 'en' ? 'Cancel' : 'Annulla';
+                const confirmed = await window.customDialog.confirm(title, message, confirmText, cancelText);
                 
                 if (!confirmed) return;
                 
@@ -1495,8 +1527,10 @@
                         throw new Error(result.error || 'Errore nell\'eliminazione / Error deleting');
                     }
 
-                    const title = window.i18n ? window.i18n.t('common.success') : 'Successo';
-                    await window.customDialog.alert(title, 'Template eliminato con successo! / Template deleted successfully!', 'OK');
+                    const lang = localStorage.getItem('servicehub-language') || 'it';
+                    const title = lang === 'en' ? 'Success' : 'Successo';
+                    const message = lang === 'en' ? 'Template deleted successfully!' : 'Template eliminato con successo!';
+                    await window.customDialog.alert(title, message, 'OK');
                     refreshTemplates();
                     
                     // If we were editing this template, reset the form
@@ -1506,8 +1540,12 @@
                     
                 } catch (error) {
                     console.error('Error deleting template:', error);
-                    const title = window.i18n ? window.i18n.t('common.error') : 'Errore';
-                    await window.customDialog.alert(title, 'Errore nell\'eliminazione del template / Error deleting template: ' + error.message, 'OK');
+                    const lang = localStorage.getItem('servicehub-language') || 'it';
+                    const title = lang === 'en' ? 'Error' : 'Errore';
+                    const message = lang === 'en' 
+                        ? 'Error deleting template: ' + error.message
+                        : 'Errore nell\'eliminazione del template: ' + error.message;
+                    await window.customDialog.alert(title, message, 'OK');
                 }
             };
 

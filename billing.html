@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Credito & Consumi - Service Hub Portal</title>
+  <title>Credito & Consumi - Service Portal</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/css/styles.css" />
   <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico" />
@@ -410,11 +410,16 @@
 
     // Logout function
     async function logout() {
+        const lang = localStorage.getItem('servicehub-language') || 'it';
+        const title = lang === 'en' ? 'Confirm Logout' : 'Conferma Logout';
+        const message = lang === 'en' ? 'Are you sure you want to logout?' : 'Sei sicuro di voler effettuare il logout?';
+        const confirmText = lang === 'en' ? 'Logout' : 'Esci';
+        const cancelText = lang === 'en' ? 'Cancel' : 'Annulla';
         const confirmed = await window.customDialog.confirm(
-            'Conferma Logout',
-            'Sei sicuro di voler uscire?',
-            'Esci',
-            'Annulla'
+            title,
+            message,
+            confirmText,
+            cancelText
         );
         
         if (confirmed) {
@@ -564,14 +569,18 @@
         const toValue = toDateInput.value;
         
         if (!fromValue || !toValue) {
-          const title = window.i18n ? window.i18n.t('common.warning') : 'Attenzione';
-          await window.customDialog.alert(title, 'Seleziona entrambe le date per procedere', 'OK');
+          const lang = localStorage.getItem('servicehub-language') || 'it';
+          const title = lang === 'en' ? 'Warning' : 'Attenzione';
+          const message = lang === 'en' ? 'Select both dates to proceed' : 'Seleziona entrambe le date per procedere';
+          await window.customDialog.alert(title, message, 'OK');
           return;
         }
         
         if (fromValue > toValue) {
-          const title = window.i18n ? window.i18n.t('common.warning') : 'Attenzione';
-          await window.customDialog.alert(title, 'La data di inizio non può essere successiva alla data di fine', 'OK');
+          const lang = localStorage.getItem('servicehub-language') || 'it';
+          const title = lang === 'en' ? 'Warning' : 'Attenzione';
+          const message = lang === 'en' ? 'Start date cannot be later than end date' : 'La data di inizio non può essere successiva alla data di fine';
+          await window.customDialog.alert(title, message, 'OK');
           return;
         }
         
@@ -1079,8 +1088,10 @@
         } catch (error) {
           console.error('Error showing success modal:', error);
           // Fallback to custom dialog
-          const title = window.i18n ? window.i18n.t('common.success') : 'Successo';
-          await window.customDialog.alert(title, '✅ Ricarica completata con successo! Il tuo credito è stato aggiornato.', 'OK');
+          const lang = localStorage.getItem('servicehub-language') || 'it';
+          const title = lang === 'en' ? 'Success' : 'Successo';
+          const message = lang === 'en' ? '✅ Recharge completed successfully! Your credit has been updated.' : '✅ Ricarica completata con successo! Il tuo credito è stato aggiornato.';
+          await window.customDialog.alert(title, message, 'OK');
           window.location.href = '/billing.html';
         }
       }
@@ -1104,8 +1115,10 @@
         e.preventDefault();
         const amount = parseFloat(document.getElementById('customAmount').value);
         if (!amount || amount < 1 || amount > 10000) {
-          const title = window.i18n ? window.i18n.t('common.warning') : 'Attenzione';
-          await window.customDialog.alert(title, 'Inserisci un importo valido (da 1€ a 10.000€)', 'OK');
+          const lang = localStorage.getItem('servicehub-language') || 'it';
+          const title = lang === 'en' ? 'Warning' : 'Attenzione';
+          const message = lang === 'en' ? 'Enter a valid amount (from €1 to €10,000)' : 'Inserisci un importo valido (da 1€ a 10.000€)';
+          await window.customDialog.alert(title, message, 'OK');
           return;
         }
         
@@ -1129,14 +1142,17 @@
               'invalid_amount': 'Importo non valido. Inserisci un valore tra 1€ e 1000€.',
               'recharge_creation_failed': 'Errore nella creazione della ricarica. Riprova più tardi.'
             };
-            const userMessage = errorMessages[result.error] || `Errore: ${result.error || 'Errore sconosciuto'}`;
-            const title = window.i18n ? window.i18n.t('common.error') : 'Errore';
+            const lang = localStorage.getItem('servicehub-language') || 'it';
+            const userMessage = errorMessages[result.error] || (lang === 'en' ? `Error: ${result.error || 'Unknown error'}` : `Errore: ${result.error || 'Errore sconosciuto'}`);
+            const title = lang === 'en' ? 'Error' : 'Errore';
             await window.customDialog.alert(title, userMessage, 'OK');
           }
         } catch (error) {
           console.error('Errore ricarica:', error);
-          const title = window.i18n ? window.i18n.t('common.error') : 'Errore';
-          await window.customDialog.alert(title, 'Errore nella richiesta di ricarica', 'OK');
+          const lang = localStorage.getItem('servicehub-language') || 'it';
+          const title = lang === 'en' ? 'Error' : 'Errore';
+          const message = lang === 'en' ? 'Error in recharge request' : 'Errore nella richiesta di ricarica';
+          await window.customDialog.alert(title, message, 'OK');
         }
       });
 

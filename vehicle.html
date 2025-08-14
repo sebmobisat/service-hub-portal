@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title data-i18n="meta.vehicle.title">Vehicle Details - Service Hub Portal</title>
+    <title data-i18n="meta.vehicle.title">Vehicle Details - Service Portal</title>
     
     <!-- Global protection against Node.js exports errors - MUST BE FIRST -->
     <script>
@@ -1622,11 +1622,16 @@
 
         // Logout function
         async function logout() {
+            const lang = localStorage.getItem('servicehub-language') || 'it';
+            const title = lang === 'en' ? 'Confirm Logout' : 'Conferma Logout';
+            const message = lang === 'en' ? 'Are you sure you want to logout?' : 'Sei sicuro di voler effettuare il logout?';
+            const confirmText = lang === 'en' ? 'Logout' : 'Esci';
+            const cancelText = lang === 'en' ? 'Cancel' : 'Annulla';
             const confirmed = await window.customDialog.confirm(
-                'Conferma Logout',
-                window.i18n.t('message.logout_confirm'),
-                'Esci',
-                'Annulla'
+                title,
+                message,
+                confirmText,
+                cancelText
             );
             
             if (confirmed) {
