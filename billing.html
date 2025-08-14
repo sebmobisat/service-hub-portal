@@ -214,9 +214,11 @@
     <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md mx-4">
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-lg font-semibold">Ricarica Credito</h3>
-        <button id="closeRechargeModal" class="text-gray-400 hover:text-gray-600">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        <button id="closeRechargeModal" 
+                class="text-gray-300 hover:text-white bg-gray-700/50 hover:bg-red-600/30 transition-all p-2.5 rounded-lg border border-gray-500 hover:border-red-400 group shadow-lg"
+                title="Chiudi ricarica credito (ESC)">
+          <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
       </div>
@@ -254,9 +256,11 @@
     <div class="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-4xl mx-4 max-h-[80vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-lg font-semibold">Storico Ricariche</h3>
-        <button id="closeHistoryModal" class="text-gray-400 hover:text-gray-600">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        <button id="closeHistoryModal" 
+                class="text-gray-300 hover:text-white bg-gray-700/50 hover:bg-red-600/30 transition-all p-2.5 rounded-lg border border-gray-500 hover:border-red-400 group shadow-lg"
+                title="Chiudi storico ricariche (ESC)">
+          <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
           </svg>
         </button>
       </div>
@@ -351,6 +355,17 @@
   <!-- Modal Successo Ricarica -->
   <div id="successModal" class="fixed inset-0 bg-black bg-opacity-50 modal-backdrop hidden items-center justify-center z-50">
     <div class="bg-white dark:bg-gray-800 rounded-lg p-8 w-full max-w-md mx-4 text-center">
+      <!-- Header con X -->
+      <div class="flex justify-end mb-2">
+        <button id="closeSuccessModalX" 
+                class="text-gray-300 hover:text-white bg-gray-700/50 hover:bg-red-600/30 transition-all p-2.5 rounded-lg border border-gray-500 hover:border-red-400 group shadow-lg"
+                title="Chiudi successo ricarica (ESC)">
+          <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+      
       <!-- Icona successo animata -->
       <div class="mb-6">
         <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
@@ -412,6 +427,32 @@
                 window.location.href = '/pages/login.html';
             }
         }
+    }
+
+    // ESC key handlers for modals
+    function handleRechargeModalEscape(event) {
+      if (event.key === 'Escape') {
+        const modal = document.getElementById('rechargeModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function handleHistoryModalEscape(event) {
+      if (event.key === 'Escape') {
+        const modal = document.getElementById('rechargeHistoryModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function handleSuccessModalEscape(event) {
+      if (event.key === 'Escape') {
+        const modal = document.getElementById('successModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        window.location.href = '/billing.html';
+      }
     }
 
     document.addEventListener('DOMContentLoaded', async function(){
@@ -518,17 +559,19 @@
       observer.observe(document.documentElement, { attributes: true });
       
       // Search button handler
-      searchBtn.addEventListener('click', () => {
+      searchBtn.addEventListener('click', async () => {
         const fromValue = fromDateInput.value;
         const toValue = toDateInput.value;
         
         if (!fromValue || !toValue) {
-          alert('Seleziona entrambe le date per procedere');
+          const title = window.i18n ? window.i18n.t('common.warning') : 'Attenzione';
+          await window.customDialog.alert(title, 'Seleziona entrambe le date per procedere', 'OK');
           return;
         }
         
         if (fromValue > toValue) {
-          alert('La data di inizio non può essere successiva alla data di fine');
+          const title = window.i18n ? window.i18n.t('common.warning') : 'Attenzione';
+          await window.customDialog.alert(title, 'La data di inizio non può essere successiva alla data di fine', 'OK');
           return;
         }
         
@@ -570,7 +613,7 @@
               </div>
               <p class="text-gray-600 dark:text-gray-300 mb-4">Il tuo credito è stato aggiornato con successo.</p>
               <div class="flex justify-end">
-                <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
+                <button onclick="this.closest('.fixed').remove(); document.removeEventListener('keydown', handleSuccessDialogEsc); window.location.href = '/billing.html';" class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
                   OK
                 </button>
               </div>
@@ -578,8 +621,19 @@
           `;
           document.body.appendChild(dialog);
           
+          // Add ESC key support for success dialog
+          const handleSuccessDialogEsc = (e) => {
+            if (e.key === 'Escape') {
+              dialog.remove();
+              document.removeEventListener('keydown', handleSuccessDialogEsc);
+              window.location.href = '/billing.html';
+            }
+          };
+          document.addEventListener('keydown', handleSuccessDialogEsc);
+          
           // Ritarda il redirect per permettere di vedere il dialog
           setTimeout(() => {
+            document.removeEventListener('keydown', handleSuccessDialogEsc);
             window.location.href = '/billing.html'; // Remove URL parameters
           }, 3000);
         }, 500);
@@ -600,7 +654,7 @@
               </div>
               <p class="text-gray-600 dark:text-gray-300 mb-4">Nessun addebito è stato effettuato.</p>
               <div class="flex justify-end">
-                <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+                <button onclick="this.closest('.fixed').remove(); document.removeEventListener('keydown', handleCancelledDialogEsc); window.location.href = '/billing.html';" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
                   OK
                 </button>
               </div>
@@ -608,8 +662,19 @@
           `;
           document.body.appendChild(dialog);
           
+          // Add ESC key support for cancelled dialog
+          const handleCancelledDialogEsc = (e) => {
+            if (e.key === 'Escape') {
+              dialog.remove();
+              document.removeEventListener('keydown', handleCancelledDialogEsc);
+              window.location.href = '/billing.html';
+            }
+          };
+          document.addEventListener('keydown', handleCancelledDialogEsc);
+          
           // Ritarda il redirect per permettere di vedere il dialog
           setTimeout(() => {
+            document.removeEventListener('keydown', handleCancelledDialogEsc);
             window.location.href = '/billing.html'; // Remove URL parameters
           }, 3000);
         }, 500);
@@ -948,28 +1013,33 @@
       document.getElementById('rechargeBtn').addEventListener('click', () => {
         rechargeModal.classList.remove('hidden');
         rechargeModal.classList.add('flex');
+        document.addEventListener('keydown', handleRechargeModalEscape);
       });
 
       document.getElementById('closeRechargeModal').addEventListener('click', () => {
         rechargeModal.classList.add('hidden');
         rechargeModal.classList.remove('flex');
+        document.removeEventListener('keydown', handleRechargeModalEscape);
       });
 
       document.getElementById('cancelRecharge').addEventListener('click', () => {
         rechargeModal.classList.add('hidden');
         rechargeModal.classList.remove('flex');
+        document.removeEventListener('keydown', handleRechargeModalEscape);
       });
 
       // History modal handlers
       document.getElementById('rechargeHistoryBtn').addEventListener('click', async () => {
         rechargeHistoryModal.classList.remove('hidden');
         rechargeHistoryModal.classList.add('flex');
+        document.addEventListener('keydown', handleHistoryModalEscape);
         await loadRechargeHistory();
       });
 
       document.getElementById('closeHistoryModal').addEventListener('click', () => {
         rechargeHistoryModal.classList.add('hidden');
         rechargeHistoryModal.classList.remove('flex');
+        document.removeEventListener('keydown', handleHistoryModalEscape);
       });
 
       // Success modal handlers
@@ -978,7 +1048,15 @@
       document.getElementById('closeSuccessModal').addEventListener('click', () => {
         successModal.classList.add('hidden');
         successModal.classList.remove('flex');
+        document.removeEventListener('keydown', handleSuccessModalEscape);
         // Remove URL parameters and refresh page
+        window.location.href = '/billing.html';
+      });
+
+      document.getElementById('closeSuccessModalX').addEventListener('click', () => {
+        successModal.classList.add('hidden');
+        successModal.classList.remove('flex');
+        document.removeEventListener('keydown', handleSuccessModalEscape);
         window.location.href = '/billing.html';
       });
 
@@ -997,10 +1075,12 @@
           // Show modal
           successModal.classList.remove('hidden');
           successModal.classList.add('flex');
+          document.addEventListener('keydown', handleSuccessModalEscape);
         } catch (error) {
           console.error('Error showing success modal:', error);
-          // Fallback to old alert
-          alert('✅ Ricarica completata con successo! Il tuo credito è stato aggiornato.');
+          // Fallback to custom dialog
+          const title = window.i18n ? window.i18n.t('common.success') : 'Successo';
+          await window.customDialog.alert(title, '✅ Ricarica completata con successo! Il tuo credito è stato aggiornato.', 'OK');
           window.location.href = '/billing.html';
         }
       }
@@ -1024,7 +1104,8 @@
         e.preventDefault();
         const amount = parseFloat(document.getElementById('customAmount').value);
         if (!amount || amount < 1 || amount > 10000) {
-          alert('Inserisci un importo valido (da 1€ a 10.000€)');
+          const title = window.i18n ? window.i18n.t('common.warning') : 'Attenzione';
+          await window.customDialog.alert(title, 'Inserisci un importo valido (da 1€ a 10.000€)', 'OK');
           return;
         }
         
@@ -1049,11 +1130,13 @@
               'recharge_creation_failed': 'Errore nella creazione della ricarica. Riprova più tardi.'
             };
             const userMessage = errorMessages[result.error] || `Errore: ${result.error || 'Errore sconosciuto'}`;
-            alert(userMessage);
+            const title = window.i18n ? window.i18n.t('common.error') : 'Errore';
+            await window.customDialog.alert(title, userMessage, 'OK');
           }
         } catch (error) {
           console.error('Errore ricarica:', error);
-          alert('Errore nella richiesta di ricarica');
+          const title = window.i18n ? window.i18n.t('common.error') : 'Errore';
+          await window.customDialog.alert(title, 'Errore nella richiesta di ricarica', 'OK');
         }
       });
 
@@ -1098,14 +1181,17 @@
         if (e.target === rechargeModal) {
           rechargeModal.classList.add('hidden');
           rechargeModal.classList.remove('flex');
+          document.removeEventListener('keydown', handleRechargeModalEscape);
         }
         if (e.target === rechargeHistoryModal) {
           rechargeHistoryModal.classList.add('hidden');
           rechargeHistoryModal.classList.remove('flex');
+          document.removeEventListener('keydown', handleHistoryModalEscape);
         }
         if (e.target === successModal) {
           successModal.classList.add('hidden');
           successModal.classList.remove('flex');
+          document.removeEventListener('keydown', handleSuccessModalEscape);
           window.location.href = '/billing.html';
         }
       });

@@ -45,15 +45,24 @@ class CustomDialog {
         dialog.innerHTML = `
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 transform transition-all duration-300 scale-95 opacity-0">
                 <div class="p-6">
-                    <div class="flex items-center mb-4">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-question-circle text-yellow-500 text-2xl"></i>
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-question-circle text-yellow-500 text-2xl"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-lg font-medium text-gray-900 dark:text-white" id="dialog-title">
+                                    Conferma
+                                </h3>
+                            </div>
                         </div>
-                        <div class="ml-3">
-                            <h3 class="text-lg font-medium text-gray-900 dark:text-white" id="dialog-title">
-                                Conferma
-                            </h3>
-                        </div>
+                        <button id="dialog-close-x" 
+                                class="text-gray-300 hover:text-white bg-gray-700/50 hover:bg-red-600/30 transition-all p-2.5 rounded-lg border border-gray-500 hover:border-red-400 group shadow-lg"
+                                title="Chiudi dialog (ESC)">
+                            <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
                     </div>
                     <div class="mt-2">
                         <p class="text-sm text-gray-500 dark:text-gray-300" id="dialog-message">
@@ -86,9 +95,15 @@ class CustomDialog {
         const dialog = document.getElementById(this.dialogId);
         const cancelBtn = document.getElementById('dialog-cancel');
         const confirmBtn = document.getElementById('dialog-confirm');
+        const closeXBtn = document.getElementById('dialog-close-x');
 
         // Cancel button
         cancelBtn.addEventListener('click', () => {
+            this.hide();
+        });
+
+        // Close X button
+        closeXBtn.addEventListener('click', () => {
             this.hide();
         });
 

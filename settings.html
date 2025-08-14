@@ -937,8 +937,11 @@
         // Logout function
         window.logout = async function() {
             const lang = localStorage.getItem('servicehub-language') || 'it';
+            const title = lang === 'en' ? 'Confirm Logout' : 'Conferma Logout';
             const message = lang === 'en' ? 'Are you sure you want to logout?' : 'Sei sicuro di voler effettuare il logout?';
-            const confirmed = confirm(message);
+            const confirmText = lang === 'en' ? 'Logout' : 'Esci';
+            const cancelText = lang === 'en' ? 'Cancel' : 'Annulla';
+            const confirmed = await window.customDialog.confirm(title, message, confirmText, cancelText);
             if (confirmed) {
                 if (window.authManager) {
                     window.authManager.clearAuthData();
@@ -1061,7 +1064,8 @@
                     const companyInput = document.getElementById('sig_company_name');
                     const companyName = companyInput?.value.trim() || '';
                     if (!companyName) {
-                        alert('Il nome della concessionaria è obbligatorio / Company name is required');
+                        const title = window.i18n ? window.i18n.t('common.warning') : 'Attenzione';
+                        await window.customDialog.alert(title, 'Il nome della concessionaria è obbligatorio / Company name is required', 'OK');
                         companyInput?.focus();
                         return;
                     }
@@ -1099,7 +1103,8 @@
                     const firstName = firstInput?.value.trim() || '';
                     const lastName = lastInput?.value.trim() || '';
                     if (!firstName || !lastName) {
-                        alert('Nome e cognome sono obbligatori / First name and last name are required');
+                        const title = window.i18n ? window.i18n.t('common.warning') : 'Attenzione';
+                        await window.customDialog.alert(title, 'Nome e cognome sono obbligatori / First name and last name are required', 'OK');
                         (firstName ? lastInput : firstInput)?.focus();
                         return;
                     }
@@ -1317,24 +1322,28 @@
 
                 // Validation
                 if (!name) {
-                    alert('Il nome del template è obbligatorio / Template name is required');
+                    const title = window.i18n ? window.i18n.t('common.warning') : 'Attenzione';
+                    await window.customDialog.alert(title, 'Il nome del template è obbligatorio / Template name is required', 'OK');
                     document.getElementById('tmpl_name')?.focus();
                     return;
                 }
                 
                 if (!channel || !style || !type) {
-                    alert('Canale, stile e tipo template sono obbligatori / Channel, style and template type are required');
+                    const title = window.i18n ? window.i18n.t('common.warning') : 'Attenzione';
+                    await window.customDialog.alert(title, 'Canale, stile e tipo template sono obbligatori / Channel, style and template type are required', 'OK');
                     return;
                 }
                 
                 if ((type === 'ai' || type === 'hybrid') && !promptText) {
-                    alert('Il prompt AI è obbligatorio per template AI e ibridi / AI prompt is required for AI and hybrid templates');
+                    const title = window.i18n ? window.i18n.t('common.warning') : 'Attenzione';
+                    await window.customDialog.alert(title, 'Il prompt AI è obbligatorio per template AI e ibridi / AI prompt is required for AI and hybrid templates', 'OK');
                     document.getElementById('tmpl_prompt')?.focus();
                     return;
                 }
                 
                 if ((type === 'manual' || type === 'hybrid') && !content) {
-                    alert('Il contenuto del messaggio è obbligatorio per template manuali e ibridi / Message content is required for manual and hybrid templates');
+                    const title = window.i18n ? window.i18n.t('common.warning') : 'Attenzione';
+                    await window.customDialog.alert(title, 'Il contenuto del messaggio è obbligatorio per template manuali e ibridi / Message content is required for manual and hybrid templates', 'OK');
                     document.getElementById('tmpl_content')?.focus();
                     return;
                 }
@@ -1368,13 +1377,16 @@
                         throw new Error(result.error || 'Errore nel salvataggio / Save error');
                     }
 
-                    alert(editingTemplateId ? 'Template aggiornato con successo! / Template updated successfully!' : 'Template creato con successo! / Template created successfully!');
+                    const title = window.i18n ? window.i18n.t('common.success') : 'Successo';
+                    const message = editingTemplateId ? 'Template aggiornato con successo! / Template updated successfully!' : 'Template creato con successo! / Template created successfully!';
+                    await window.customDialog.alert(title, message, 'OK');
                     resetTemplateForm();
                     refreshTemplates();
                     
                 } catch (error) {
                     console.error('Error saving template:', error);
-                    alert('Errore nel salvataggio del template / Error saving template: ' + error.message);
+                    const title = window.i18n ? window.i18n.t('common.error') : 'Errore';
+                    await window.customDialog.alert(title, 'Errore nel salvataggio del template / Error saving template: ' + error.message, 'OK');
                 }
             }
 
@@ -1426,7 +1438,8 @@
                     
                 } catch (error) {
                     console.error('Error loading template for edit:', error);
-                    alert('Errore nel caricamento del template / Error loading template: ' + error.message);
+                    const title = window.i18n ? window.i18n.t('common.error') : 'Errore';
+                    await window.customDialog.alert(title, 'Errore nel caricamento del template / Error loading template: ' + error.message, 'OK');
                 }
             };
 
@@ -1459,12 +1472,15 @@
                     
                 } catch (error) {
                     console.error('Error duplicating template:', error);
-                    alert('Errore nella duplicazione del template / Error duplicating template: ' + error.message);
+                    const title = window.i18n ? window.i18n.t('common.error') : 'Errore';
+                    await window.customDialog.alert(title, 'Errore nella duplicazione del template / Error duplicating template: ' + error.message, 'OK');
                 }
             };
 
             window.deleteTemplate = async function(templateId, templateName) {
-                const confirmed = confirm(`Sei sicuro di voler eliminare il template "${templateName}"?\n\nAre you sure you want to delete template "${templateName}"?\n\nQuesta azione non può essere annullata.\nThis action cannot be undone.`);
+                const title = 'Conferma Eliminazione / Confirm Deletion';
+                const message = `Sei sicuro di voler eliminare il template "${templateName}"?\n\nAre you sure you want to delete template "${templateName}"?\n\nQuesta azione non può essere annullata.\nThis action cannot be undone.`;
+                const confirmed = await window.customDialog.confirm(title, message, 'Elimina / Delete', 'Annulla / Cancel');
                 
                 if (!confirmed) return;
                 
@@ -1479,7 +1495,8 @@
                         throw new Error(result.error || 'Errore nell\'eliminazione / Error deleting');
                     }
 
-                    alert('Template eliminato con successo! / Template deleted successfully!');
+                    const title = window.i18n ? window.i18n.t('common.success') : 'Successo';
+                    await window.customDialog.alert(title, 'Template eliminato con successo! / Template deleted successfully!', 'OK');
                     refreshTemplates();
                     
                     // If we were editing this template, reset the form
@@ -1489,7 +1506,8 @@
                     
                 } catch (error) {
                     console.error('Error deleting template:', error);
-                    alert('Errore nell\'eliminazione del template / Error deleting template: ' + error.message);
+                    const title = window.i18n ? window.i18n.t('common.error') : 'Errore';
+                    await window.customDialog.alert(title, 'Errore nell\'eliminazione del template / Error deleting template: ' + error.message, 'OK');
                 }
             };
 
