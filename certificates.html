@@ -1053,36 +1053,7 @@
                 </button>
             </div>
 
-    <!-- Group Filter Modal -->
-    <div id="groupFilterModal" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.8); display: none; z-index: 99999; align-items: center; justify-content: center;">
-        <div style="background-color: #1f2937; border-radius: 8px; padding: 24px; width: 90%; max-width: 600px; border: 1px solid #374151;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                <h3 style="font-size: 18px; font-weight: bold; color: white;">Filtra per Gruppo</h3>
-                <button onclick="closeGroupFilterModal()" style="color: #9ca3af; background: none; border: none; cursor: pointer; font-size: 24px;">×</button>
-            </div>
 
-            <div style="margin-bottom: 16px;">
-                <label style="display: block; font-size: 14px; font-weight: 500; color: #d1d5db; margin-bottom: 8px;">Seleziona Gruppi</label>
-                <select id="groupFilter" multiple style="width: 100%; padding: 8px 12px; background-color: #374151; border: 1px solid #4b5563; border-radius: 4px; color: white; min-height: 120px;">
-                    <option value="">Tutti i veicoli</option>
-                </select>
-                <p style="font-size: 12px; color: #9ca3af; margin-top: 4px;">Tieni premuto Ctrl (Cmd su Mac) per selezionare più gruppi</p>
-            </div>
-
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                    <span style="font-size: 14px; color: #d1d5db;">Gruppi selezionati:</span>
-                    <span id="selectedGroupsCount" style="background-color: #2563eb; color: white; font-size: 12px; padding: 2px 8px; border-radius: 12px;">0</span>
-                </div>
-                <button onclick="clearGroupFilter()" style="font-size: 14px; color: #9ca3af; background: none; border: none; cursor: pointer;">Cancella Filtro</button>
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 12px; padding-top: 16px; border-top: 1px solid #374151;">
-                <button onclick="closeGroupFilterModal()" style="padding: 8px 16px; background-color: #4b5563; color: white; border: none; border-radius: 4px; cursor: pointer;">Annulla</button>
-                <button onclick="applyGroupFilter()" style="padding: 8px 16px; background-color: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer;">Applica Filtro</button>
-            </div>
-        </div>
-    </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(90vh-120px)]">
                 <!-- Available Vehicles -->
@@ -4636,11 +4607,16 @@
         let groupVehicles = [];
 
         // Open vehicle groups modal
-        function openVehicleGroupsModal() {
+        async function openVehicleGroupsModal() {
             const modal = document.getElementById('vehicleGroupsModal');
             modal.classList.remove('hidden');
-            loadVehicleGroups();
-            loadAISuggestions(); // Load AI suggestions automatically
+            
+            // Load vehicle groups first, then AI suggestions
+            console.log('🔄 Loading vehicle groups...');
+            await loadVehicleGroups();
+            console.log('✅ Vehicle groups loaded, now loading AI suggestions...');
+            await loadAISuggestions(); // Load AI suggestions after groups are loaded
+            console.log('✅ AI suggestions loaded');
         }
 
         // Close vehicle groups modal
@@ -4702,6 +4678,8 @@
 
                 if (data.success) {
                     vehicleGroups = data.data;
+                    console.log('📁 Vehicle groups loaded:', vehicleGroups.length, 'groups');
+                    console.log('📝 Group names:', vehicleGroups.map(g => g.name).join(', '));
                     renderVehicleGroups();
                 } else {
                     throw new Error(data.message || 'Failed to load groups');
@@ -4728,7 +4706,7 @@
 
         // Open group filter modal
         async function openGroupFilterModal() {
-            // Create modal dynamically
+            // Create modal dynamically with beautiful buttons
             const modalHTML = `
                 <div id="dynamicGroupFilterModal" style="
                     position: fixed; 
@@ -4741,34 +4719,282 @@
                     display: flex; 
                     align-items: center; 
                     justify-content: center;
+                    backdrop-filter: blur(4px);
+                    animation: fadeIn 0.3s ease-out;
                 ">
                     <div style="
-                        background-color: #1f2937; 
-                        border-radius: 8px; 
-                        padding: 24px; 
+                        background: linear-gradient(135deg, #1f2937 0%, #111827 100%); 
+                        border-radius: 16px; 
+                        padding: 32px; 
                         width: 90%; 
-                        max-width: 600px; 
+                        max-width: 700px; 
                         border: 1px solid #374151;
+                        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+                        animation: slideUp 0.3s ease-out;
                     ">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-                            <h3 style="font-size: 18px; font-weight: bold; color: white;">Filtra per Gruppo</h3>
-                            <button onclick="closeDynamicModal()" style="color: #9ca3af; background: none; border: none; cursor: pointer; font-size: 24px;">×</button>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+                            <h3 style="
+                                font-size: 24px; 
+                                font-weight: bold; 
+                                color: white;
+                                background: linear-gradient(45deg, #00AE5D, #10b981);
+                                -webkit-background-clip: text;
+                                -webkit-text-fill-color: transparent;
+                                background-clip: text;
+                            " data-i18n="group_filter.title">Filtra per Gruppo</h3>
+                            <button onclick="closeDynamicModal()" style="
+                                color: #9ca3af; 
+                                background: none; 
+                                border: none; 
+                                cursor: pointer; 
+                                font-size: 28px;
+                                padding: 8px;
+                                border-radius: 8px;
+                                transition: all 0.2s ease;
+                            " onmouseover="this.style.backgroundColor='#374151'; this.style.color='white';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#9ca3af';">×</button>
                         </div>
                         
-                        <div style="margin-bottom: 16px;">
-                            <label style="display: block; font-size: 14px; font-weight: 500; color: #d1d5db; margin-bottom: 8px;">Seleziona Gruppi</label>
-                            <select id="dynamicGroupFilter" multiple style="width: 100%; padding: 8px 12px; background-color: #374151; border: 1px solid #4b5563; border-radius: 4px; color: white; min-height: 120px;">
-                                <option value="">Caricamento gruppi...</option>
-                            </select>
-                            <p style="font-size: 12px; color: #9ca3af; margin-top: 4px;">Tieni premuto Ctrl (Cmd su Mac) per selezionare più gruppi</p>
+                        <div style="margin-bottom: 24px;">
+                            <div style="
+                                display: flex;
+                                justify-content: space-between;
+                                align-items: center;
+                                margin-bottom: 16px;
+                            ">
+                                <label style="
+                                    font-size: 16px; 
+                                    font-weight: 600; 
+                                    color: #e5e7eb; 
+                                " data-i18n="group_filter.select_groups">Seleziona i Gruppi di Veicoli</label>
+                                <div style="
+                                    background: rgba(17, 24, 39, 0.8);
+                                    padding: 4px 12px;
+                                    border-radius: 20px;
+                                    border: 1px solid #374151;
+                                    font-size: 12px;
+                                    color: #9ca3af;
+                                    transition: all 0.3s ease;
+                                ">
+                                    <span id="modalSelectedCount">0</span> / <span id="modalTotalCount">0</span> <span data-i18n="group_filter.selected">selezionati</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Beautiful button container -->
+                            <div id="groupButtonsContainer" class="group-buttons-container" style="
+                                display: grid;
+                                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+                                gap: 8px;
+                                max-height: 450px;
+                                overflow-y: auto;
+                                padding: 12px;
+                                background: rgba(55, 65, 81, 0.3);
+                                border-radius: 12px;
+                                border: 1px solid #4b5563;
+                                scroll-behavior: smooth;
+                            ">
+                                <div style="
+                                    text-align: center;
+                                    color: #9ca3af;
+                                    padding: 20px;
+                                    font-style: italic;
+                                " data-i18n="group_filter.loading">Caricamento gruppi...</div>
+                            </div>
+                            
+                            <div style="
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                gap: 16px;
+                                margin-top: 16px;
+                                padding: 12px;
+                                background: rgba(17, 24, 39, 0.5);
+                                border-radius: 8px;
+                                border: 1px solid #374151;
+                            ">
+                                <button onclick="selectAllGroups()" style="
+                                    padding: 8px 16px;
+                                    background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+                                    color: white;
+                                    border: none;
+                                    border-radius: 8px;
+                                    cursor: pointer;
+                                    font-weight: 500;
+                                    transition: all 0.3s ease;
+                                    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+                                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(59, 130, 246, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.3)';" data-i18n="group_filter.select_all">
+                                    Seleziona Tutti
+                                </button>
+                                <button onclick="clearAllGroups()" style="
+                                    padding: 8px 16px;
+                                    background: linear-gradient(45deg, #ef4444, #dc2626);
+                                    color: white;
+                                    border: none;
+                                    border-radius: 8px;
+                                    cursor: pointer;
+                                    font-weight: 500;
+                                    transition: all 0.3s ease;
+                                    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+                                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(239, 68, 68, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(239, 68, 68, 0.3)';" data-i18n="group_filter.deselect_all">
+                                    Deseleziona Tutti
+                                </button>
+                            </div>
                         </div>
                         
-                        <div style="display: flex; justify-content: flex-end; gap: 12px; padding-top: 16px; border-top: 1px solid #374151;">
-                            <button onclick="closeDynamicModal()" style="padding: 8px 16px; background-color: #4b5563; color: white; border: none; border-radius: 4px; cursor: pointer;">Annulla</button>
-                            <button onclick="applyDynamicFilter()" style="padding: 8px 16px; background-color: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer;">Applica Filtro</button>
+                        <div style="display: flex; justify-content: flex-end; gap: 16px; padding-top: 24px; border-top: 1px solid #374151;">
+                            <button onclick="closeDynamicModal()" style="
+                                padding: 12px 24px; 
+                                background: linear-gradient(45deg, #6b7280, #4b5563); 
+                                color: white; 
+                                border: none; 
+                                border-radius: 12px; 
+                                cursor: pointer;
+                                font-weight: 600;
+                                transition: all 0.3s ease;
+                                box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+                            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(107, 114, 128, 0.4)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(107, 114, 128, 0.3)';" data-i18n="common.cancel">
+                                Annulla
+                            </button>
+                            <button onclick="applyDynamicFilter()" style="
+                                padding: 12px 24px; 
+                                background: linear-gradient(45deg, #00AE5D, #10b981); 
+                                color: white; 
+                                border: none; 
+                                border-radius: 12px; 
+                                cursor: pointer;
+                                font-weight: 600;
+                                transition: all 0.3s ease;
+                                box-shadow: 0 4px 12px rgba(0, 174, 93, 0.4);
+                                position: relative;
+                                overflow: hidden;
+                            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(0, 174, 93, 0.5)'; this.querySelector('.shimmer-effect').style.left='100%';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0, 174, 93, 0.4)'; this.querySelector('.shimmer-effect').style.left='-100%';" data-i18n="group_filter.apply_filter">
+                                <span style="position: relative; z-index: 1;" data-i18n="group_filter.apply_filter">Applica Filtro</span>
+                                <div style="
+                                    position: absolute;
+                                    top: 0;
+                                    left: -100%;
+                                    width: 100%;
+                                    height: 100%;
+                                    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+                                    transition: left 0.6s ease;
+                                " class="shimmer-effect"></div>
+                            </button>
                         </div>
                     </div>
                 </div>
+                
+                <style>
+                    @keyframes fadeIn {
+                        from { opacity: 0; }
+                        to { opacity: 1; }
+                    }
+                    
+                    @keyframes slideUp {
+                        from { 
+                            opacity: 0;
+                            transform: translateY(30px) scale(0.95);
+                        }
+                        to { 
+                            opacity: 1;
+                            transform: translateY(0) scale(1);
+                        }
+                    }
+                    
+                    @keyframes shimmer {
+                        0% { left: -100%; }
+                        100% { left: 100%; }
+                    }
+                    
+                    .group-button {
+                        position: relative;
+                        overflow: hidden;
+                    }
+                    
+                    .group-button::before {
+                        content: '';
+                        position: absolute;
+                        top: 0;
+                        left: -100%;
+                        width: 100%;
+                        height: 100%;
+                        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+                        transition: left 0.5s ease;
+                    }
+                    
+                    .group-button:hover::before {
+                        left: 100%;
+                    }
+                    
+                    .group-button.selected {
+                        animation: pulse 2s infinite;
+                    }
+                    
+                    @keyframes pulse {
+                        0%, 100% { box-shadow: 0 0 0 0 rgba(0, 174, 93, 0.4); }
+                        50% { box-shadow: 0 0 0 8px rgba(0, 174, 93, 0); }
+                    }
+                    
+                    @keyframes sparkle {
+                        0% { 
+                            opacity: 1;
+                            transform: scale(0) rotate(0deg);
+                        }
+                        50% {
+                            opacity: 1;
+                            transform: scale(1) rotate(180deg);
+                        }
+                        100% { 
+                            opacity: 0;
+                            transform: scale(0) rotate(360deg) translateY(-20px);
+                        }
+                    }
+                    
+                    @keyframes checkmarkAppear {
+                        0% { 
+                            opacity: 0;
+                            transform: scale(0) rotate(-180deg);
+                        }
+                        50% {
+                            transform: scale(1.2) rotate(-90deg);
+                        }
+                        100% { 
+                            opacity: 1;
+                            transform: scale(1) rotate(0deg);
+                        }
+                    }
+                    
+                    @keyframes vibrate {
+                        0%, 100% { transform: translateX(0); }
+                        10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+                        20%, 40%, 60%, 80% { transform: translateX(2px); }
+                    }
+                    
+                    .group-buttons-container::-webkit-scrollbar {
+                        width: 6px;
+                    }
+                    
+                    .group-buttons-container::-webkit-scrollbar-track {
+                        background: rgba(55, 65, 81, 0.3);
+                        border-radius: 3px;
+                    }
+                    
+                    .group-buttons-container::-webkit-scrollbar-thumb {
+                        background: linear-gradient(45deg, #00AE5D, #10b981);
+                        border-radius: 3px;
+                        transition: background 0.3s ease;
+                    }
+                    
+                    .group-buttons-container::-webkit-scrollbar-thumb:hover {
+                        background: linear-gradient(45deg, #10b981, #059669);
+                    }
+                    
+                    /* Responsive adjustments for many groups */
+                    @media (max-width: 768px) {
+                        .group-buttons-container {
+                            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)) !important;
+                            gap: 6px !important;
+                        }
+                    }
+                </style>
             `;
             
             // Add modal to body
@@ -4791,6 +5017,15 @@
             
             // Populate groups
             populateDynamicGroupFilter();
+            
+            // Initialize modal counters
+            updateModalSelectedCount(selectedGroupIds.size);
+            updateModalTotalCount(vehicleGroups ? vehicleGroups.length : 0);
+            
+            // Update translations for the dynamically created modal
+            if (window.i18n) {
+                window.i18n.updateAllTranslations();
+            }
         }
         
         // Close dynamic modal
@@ -4801,69 +5036,393 @@
             }
         }
         
-        // Populate dynamic group filter
+        // Store selected groups
+        let selectedGroupIds = new Set();
+        
+        // Populate dynamic group filter with beautiful buttons
         function populateDynamicGroupFilter() {
-            const groupFilter = document.getElementById('dynamicGroupFilter');
-            if (!groupFilter) return;
+            const groupContainer = document.getElementById('groupButtonsContainer');
+            if (!groupContainer) return;
             
-            // Clear and recreate the "All vehicles" option
-            groupFilter.innerHTML = '';
-            const allOption = document.createElement('option');
-            allOption.value = '';
-            allOption.textContent = 'Tutti i veicoli';
-            groupFilter.appendChild(allOption);
+            // Clear container
+            groupContainer.innerHTML = '';
 
-            // Add group options
+            // Add "All vehicles" button  
+            const allVehiclesText = t('group_filter.all_vehicles');
+            const allButton = createGroupButton('', allVehiclesText, 'tutti', true);
+            groupContainer.appendChild(allButton);
+
+            // Add group buttons
             if (vehicleGroups && vehicleGroups.length > 0) {
+                // Adjust grid layout based on number of groups
+                const groupCount = vehicleGroups.length;
+                let minWidth = '140px';
+                let gap = '8px';
+                
+                if (groupCount > 20) {
+                    minWidth = '120px';
+                    gap = '6px';
+                    groupContainer.style.gap = gap;
+                    groupContainer.style.gridTemplateColumns = `repeat(auto-fit, minmax(${minWidth}, 1fr))`;
+                } else if (groupCount > 15) {
+                    minWidth = '130px';
+                    gap = '7px';
+                    groupContainer.style.gap = gap;
+                    groupContainer.style.gridTemplateColumns = `repeat(auto-fit, minmax(${minWidth}, 1fr))`;
+                }
+                
                 vehicleGroups.forEach(group => {
-                    const option = document.createElement('option');
-                    option.value = group.id;
-                    option.textContent = `${group.name} (${group.vehicle_count} veicoli)`;
-                    groupFilter.appendChild(option);
+                    const button = createGroupButton(group.id, group.name, group.vehicle_count || 0, false);
+                    groupContainer.appendChild(button);
                 });
             } else {
-                // Show message if no groups available
-                const noGroupsOption = document.createElement('option');
-                noGroupsOption.value = '';
-                noGroupsOption.textContent = 'Nessun gruppo disponibile';
-                noGroupsOption.disabled = true;
-                groupFilter.appendChild(noGroupsOption);
+                const noGroupsText = t('group_filter.no_groups');
+                groupContainer.innerHTML = `
+                    <div style="
+                        text-align: center;
+                        color: #9ca3af;
+                        padding: 20px;
+                        font-style: italic;
+                        grid-column: 1 / -1;
+                    ">${noGroupsText}</div>
+                `;
+            }
+        }
+        
+        // Create a beautiful group button
+        function createGroupButton(groupId, groupName, vehicleCount, isAllButton = false) {
+            const button = document.createElement('button');
+            button.className = 'group-button';
+            button.dataset.groupId = groupId;
+            
+            const isSelected = isAllButton ? selectedGroupIds.size === 0 : selectedGroupIds.has(groupId);
+            
+            button.style.cssText = `
+                padding: 10px 12px;
+                background: ${isSelected ? 
+                    'linear-gradient(45deg, #00AE5D, #10b981)' : 
+                    'linear-gradient(45deg, #374151, #4b5563)'
+                };
+                color: white;
+                border: ${isSelected ? '2px solid #00AE5D' : '2px solid transparent'};
+                border-radius: 10px;
+                cursor: pointer;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                box-shadow: ${isSelected ? 
+                    '0 6px 18px rgba(0, 174, 93, 0.4), 0 0 0 1px rgba(0, 174, 93, 0.2), 0 0 15px rgba(0, 174, 93, 0.2)' : 
+                    '0 3px 8px rgba(0, 0, 0, 0.3)'
+                };
+                text-align: center;
+                position: relative;
+                overflow: hidden;
+                min-height: 60px;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                gap: 2px;
+                transform: ${isSelected ? 'scale(1.01)' : 'scale(1)'};
+                font-size: 13px;
+            `;
+            
+            if (isSelected) {
+                button.classList.add('selected');
+            }
+            
+            // Truncate long group names
+            const displayName = groupName.length > 15 ? groupName.substring(0, 12) + '...' : groupName;
+            
+            button.innerHTML = `
+                <div style="
+                    font-size: 12px;
+                    font-weight: 700;
+                    margin-bottom: 2px;
+                    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+                    line-height: 1.2;
+                    max-height: 24px;
+                    overflow: hidden;
+                " title="${groupName}">${displayName}</div>
+                <div style="
+                    font-size: 10px;
+                    opacity: 0.9;
+                    font-weight: 400;
+                    line-height: 1;
+                ">${isAllButton ? '∞' : vehicleCount} ${t('group_filter.vehicles')}</div>
+                ${isSelected ? `
+                    <div style="
+                        position: absolute;
+                        top: 4px;
+                        right: 4px;
+                        width: 16px;
+                        height: 16px;
+                        background: rgba(255, 255, 255, 0.9);
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 10px;
+                        color: #00AE5D;
+                        font-weight: bold;
+                    ">✓</div>
+                ` : ''}
+            `;
+            
+            // Add click handler
+            button.onclick = () => toggleGroupSelection(groupId, isAllButton);
+            
+            // Add hover effects
+            button.onmouseenter = function() {
+                if (!this.classList.contains('selected')) {
+                    this.style.transform = 'translateY(-2px) scale(1.02)';
+                    this.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.4)';
+                    this.style.background = 'linear-gradient(45deg, #4b5563, #6b7280)';
+                }
+            };
+            
+            button.onmouseleave = function() {
+                if (!this.classList.contains('selected')) {
+                    this.style.transform = 'scale(1)';
+                    this.style.boxShadow = '0 3px 8px rgba(0, 0, 0, 0.3)';
+                    this.style.background = 'linear-gradient(45deg, #374151, #4b5563)';
+                }
+            };
+            
+            return button;
+        }
+        
+        // Toggle group selection
+        function toggleGroupSelection(groupId, isAllButton = false) {
+            if (isAllButton) {
+                // If "All vehicles" is clicked, clear all selections
+                selectedGroupIds.clear();
+            } else {
+                // Toggle individual group
+                if (selectedGroupIds.has(groupId)) {
+                    selectedGroupIds.delete(groupId);
+                } else {
+                    selectedGroupIds.add(groupId);
+                }
+            }
+            
+            // Update button appearances
+            updateGroupButtonsAppearance();
+            
+            // Add sparkle effect
+            addSparkleEffect(event.target);
+            
+            // Add vibration effect
+            addVibrationEffect(event.target);
+            
+            // Update counters
+            updateSelectedGroupsCount(selectedGroupIds.size);
+            updateModalSelectedCount(selectedGroupIds.size);
+        }
+        
+        // Update button appearances based on selection
+        function updateGroupButtonsAppearance() {
+            const buttons = document.querySelectorAll('.group-button');
+            
+            buttons.forEach(button => {
+                const groupId = button.dataset.groupId;
+                const isAllButton = groupId === '';
+                const isSelected = isAllButton ? selectedGroupIds.size === 0 : selectedGroupIds.has(groupId);
+                
+                // Update styles
+                if (isSelected) {
+                    button.style.background = 'linear-gradient(45deg, #00AE5D, #10b981)';
+                    button.style.border = '2px solid #00AE5D';
+                    button.style.boxShadow = '0 6px 18px rgba(0, 174, 93, 0.4), 0 0 0 1px rgba(0, 174, 93, 0.2), 0 0 15px rgba(0, 174, 93, 0.2)';
+                    button.style.transform = 'scale(1.01)';
+                    button.classList.add('selected');
+                    
+                    // Add checkmark if not present
+                    if (!button.querySelector('.checkmark')) {
+                        const checkmark = document.createElement('div');
+                        checkmark.className = 'checkmark';
+                        checkmark.style.cssText = `
+                            position: absolute;
+                            top: 4px;
+                            right: 4px;
+                            width: 16px;
+                            height: 16px;
+                            background: rgba(255, 255, 255, 0.9);
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 10px;
+                            color: #00AE5D;
+                            font-weight: bold;
+                            animation: checkmarkAppear 0.3s ease-out;
+                        `;
+                        checkmark.textContent = '✓';
+                        button.appendChild(checkmark);
+                    }
+                } else {
+                    button.style.background = 'linear-gradient(45deg, #374151, #4b5563)';
+                    button.style.border = '2px solid transparent';
+                    button.style.boxShadow = '0 3px 8px rgba(0, 0, 0, 0.3)';
+                    button.style.transform = 'scale(1)';
+                    button.classList.remove('selected');
+                    
+                    // Remove checkmark
+                    const checkmark = button.querySelector('.checkmark');
+                    if (checkmark) {
+                        checkmark.remove();
+                    }
+                }
+            });
+        }
+        
+        // Add sparkle effect
+        function addSparkleEffect(element) {
+            // Create fewer, smaller sparkle elements for compact buttons
+            for (let i = 0; i < 5; i++) {
+                const sparkle = document.createElement('div');
+                const colors = ['#ffd700', '#ffed4e', '#fbbf24', '#f59e0b', '#ffffff'];
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                sparkle.style.cssText = `
+                    position: absolute;
+                    width: ${Math.random() * 2 + 1.5}px;
+                    height: ${Math.random() * 2 + 1.5}px;
+                    background: ${randomColor};
+                    border-radius: 50%;
+                    pointer-events: none;
+                    animation: sparkle ${0.5 + Math.random() * 0.3}s ease-out forwards;
+                    box-shadow: 0 0 4px ${randomColor};
+                `;
+                
+                // Random position around the button
+                const rect = element.getBoundingClientRect();
+                const x = Math.random() * (rect.width - 10) + 5;
+                const y = Math.random() * (rect.height - 10) + 5;
+                
+                sparkle.style.left = x + 'px';
+                sparkle.style.top = y + 'px';
+                
+                element.appendChild(sparkle);
+                
+                // Remove sparkle after animation
+                setTimeout(() => sparkle.remove(), 800);
+            }
+        }
+        
+        // Add vibration effect
+        function addVibrationEffect(element) {
+            element.style.animation = 'vibrate 0.3s ease-in-out';
+            
+            setTimeout(() => {
+                element.style.animation = '';
+            }, 300);
+        }
+        
+        // Select all groups
+        function selectAllGroups() {
+            if (vehicleGroups && vehicleGroups.length > 0) {
+                vehicleGroups.forEach(group => {
+                    selectedGroupIds.add(group.id);
+                });
+                updateGroupButtonsAppearance();
+                updateSelectedGroupsCount(selectedGroupIds.size);
+                updateModalSelectedCount(selectedGroupIds.size);
+                
+                // Add sparkle effect to all buttons
+                document.querySelectorAll('.group-button').forEach((button, index) => {
+                    setTimeout(() => {
+                        addSparkleEffect(button);
+                        addVibrationEffect(button);
+                    }, index * 100);
+                });
+            }
+        }
+        
+        // Clear all groups
+        function clearAllGroups() {
+            selectedGroupIds.clear();
+            updateGroupButtonsAppearance();
+            updateSelectedGroupsCount(0);
+            updateModalSelectedCount(0);
+            
+            // Add sparkle effect to all buttons
+            document.querySelectorAll('.group-button').forEach((button, index) => {
+                setTimeout(() => {
+                    addSparkleEffect(button);
+                    addVibrationEffect(button);
+                }, index * 80);
+            });
+        }
+        
+        // Update selected groups count in main button
+        function updateSelectedGroupsCount(count) {
+            const countElement = document.getElementById('selectedGroupsCount');
+            if (countElement) {
+                countElement.textContent = count;
+                
+                // Add animation when count changes
+                if (count > 0) {
+                    countElement.style.background = '#00AE5D';
+                    countElement.style.animation = 'pulse 0.5s ease-out';
+                } else {
+                    countElement.style.background = '#1e40af';
+                    countElement.style.animation = 'none';
+                }
+                
+                setTimeout(() => {
+                    countElement.style.animation = 'none';
+                }, 500);
+            }
+        }
+        
+        // Update selected groups count in modal
+        function updateModalSelectedCount(count) {
+            const modalCountElement = document.getElementById('modalSelectedCount');
+            if (modalCountElement) {
+                modalCountElement.textContent = count;
+                
+                // Add color animation
+                const parent = modalCountElement.parentElement;
+                if (count > 0) {
+                    parent.style.background = 'rgba(0, 174, 93, 0.2)';
+                    parent.style.borderColor = '#00AE5D';
+                    parent.style.color = '#10b981';
+                } else {
+                    parent.style.background = 'rgba(17, 24, 39, 0.8)';
+                    parent.style.borderColor = '#374151';
+                    parent.style.color = '#9ca3af';
+                }
+            }
+        }
+        
+        // Update total groups count in modal
+        function updateModalTotalCount(total) {
+            const modalTotalElement = document.getElementById('modalTotalCount');
+            if (modalTotalElement) {
+                modalTotalElement.textContent = total;
             }
         }
         
         // Apply dynamic filter
         async function applyDynamicFilter() {
-            const groupFilter = document.getElementById('dynamicGroupFilter');
-            if (!groupFilter) return;
-            
-            const selectedOptions = Array.from(groupFilter.selectedOptions);
-            
-            // Check if "All vehicles" is selected or no group is selected
-            const hasAllVehicles = selectedOptions.some(option => option.value === '');
-            if (hasAllVehicles || selectedOptions.length === 0) {
+            // Check if no groups are selected (means "All vehicles")
+            if (selectedGroupIds.size === 0) {
                 filteredCertificates = allCertificates;
                 displayCertificates();
                 updateCertificateCount();
+                updateSelectedGroupsCount(0);
                 closeDynamicModal();
                 return;
             }
             
-            // Get all selected group IDs
-            const selectedGroupIds = selectedOptions.map(option => option.value).filter(id => id !== '');
-            
-            if (selectedGroupIds.length === 0) {
-                filteredCertificates = allCertificates;
-                displayCertificates();
-                updateCertificateCount();
-                closeDynamicModal();
-                return;
-            }
+            // Get selected group IDs as array
+            const selectedGroupIdsArray = Array.from(selectedGroupIds);
             
             try {
                 // Collect all vehicle IDs from all selected groups
                 let allGroupVehicleIds = [];
                 
-                for (const groupId of selectedGroupIds) {
+                for (const groupId of selectedGroupIdsArray) {
                     const groupResponse = await fetch(`/api/vehicle-groups/${groupId}/vehicles`);
                     const groupData = await groupResponse.json();
                     
@@ -5005,6 +5564,7 @@
                     // Update the certificates display
                     displayCertificates();
                     updateCertificateCount();
+                    updateSelectedGroupsCount(selectedGroupIds.size);
                     closeDynamicModal();
                 } else {
                     throw new Error(data.message || 'Failed to load certificates');
@@ -5033,10 +5593,13 @@
                 document.getElementById('aiSuggestionsList').innerHTML = '';
 
                 // Fetch AI suggestions from API
+                console.log('🌐 Fetching AI suggestions for dealer:', currentDealerId);
                 const response = await fetch(`/api/vehicle-analysis/${currentDealerId}`);
                 const data = await response.json();
 
                 if (data.success) {
+                    console.log('🔍 AI Suggestions received:', data.data.suggestions.length, 'suggestions');
+                    console.log('📋 Suggestion names:', data.data.suggestions.map(s => s.name).join(', '));
                     renderAISuggestions(data.data.suggestions, data.data.statistics);
                 } else {
                     throw new Error(data.message || 'Failed to load AI suggestions');
@@ -5105,6 +5668,14 @@
 
         // Create group from AI suggestion
         async function createGroupFromSuggestion(name, description, color, icon) {
+            // Trova e disabilita il pulsante per evitare doppi click
+            const buttons = document.querySelectorAll(`button[onclick*="createGroupFromSuggestion('${name}'"]`);
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="text-xs">Creazione...</span>';
+                btn.classList.add('opacity-50', 'cursor-not-allowed');
+            });
+
             try {
                 const groupData = {
                     dealerId: currentDealerId,
@@ -5125,14 +5696,30 @@
                 const data = await response.json();
 
                 if (data.success) {
+                    // Ricarica sia i gruppi esistenti che i suggerimenti AI
                     await loadVehicleGroups();
+                    await loadAISuggestions();
                     showNotification('Gruppo creato dal suggerimento AI!', 'success');
                 } else {
-                    throw new Error(data.message || 'Failed to create group');
+                    // Handle specific error types
+                    if (data.error === 'duplicate_group') {
+                        showNotification(`⚠️ ${data.message}`, 'warning');
+                        // Reload AI suggestions to remove the duplicate
+                        await loadAISuggestions();
+                    } else {
+                        throw new Error(data.message || 'Failed to create group');
+                    }
                 }
             } catch (error) {
                 console.error('Error creating group from suggestion:', error);
                 showNotification(`Errore nella creazione del gruppo: ${error.message}`, 'error');
+                
+                // Ripristina i pulsanti in caso di errore
+                buttons.forEach(btn => {
+                    btn.disabled = false;
+                    btn.innerHTML = '<span data-it="Crea Gruppo" data-en="Create Group">Crea Gruppo</span>';
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                });
             }
         }
 

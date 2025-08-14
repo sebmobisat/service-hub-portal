@@ -564,6 +564,18 @@ class I18nManager {
                 'ai.tags.km': '{KM}',
                 'ai.tags.vin': '{VIN}',
                 'ai.tags.serial': '{SERIAL}',
+                
+                // Group Filter Dialog
+                'group_filter.title': 'Filtra per Gruppo',
+                'group_filter.select_groups': 'Seleziona i Gruppi di Veicoli',
+                'group_filter.selected': 'selezionati',
+                'group_filter.select_all': 'Seleziona Tutti',
+                'group_filter.deselect_all': 'Deseleziona Tutti',
+                'group_filter.apply_filter': 'Applica Filtro',
+                'group_filter.loading': 'Caricamento gruppi...',
+                'group_filter.all_vehicles': 'Tutti i Veicoli',
+                'group_filter.vehicles': 'veicoli',
+                'group_filter.no_groups': 'Nessun gruppo disponibile',
             },
             
             en: {
@@ -1083,6 +1095,18 @@ class I18nManager {
                 'ai.tags.km': '{MILES}',
                 'ai.tags.vin': '{VIN}',
                 'ai.tags.serial': '{SERIAL}',
+                
+                // Group Filter Dialog
+                'group_filter.title': 'Filter by Group',
+                'group_filter.select_groups': 'Select Vehicle Groups',
+                'group_filter.selected': 'selected',
+                'group_filter.select_all': 'Select All',
+                'group_filter.deselect_all': 'Deselect All',
+                'group_filter.apply_filter': 'Apply Filter',
+                'group_filter.loading': 'Loading groups...',
+                'group_filter.all_vehicles': 'All Vehicles',
+                'group_filter.vehicles': 'vehicles',
+                'group_filter.no_groups': 'No groups available',
             }
         };
     }

@@ -6896,7 +6896,7 @@ app.get('/api/vehicle-analysis/:dealerId', async (req, res) => {
     try {
         const { dealerId } = req.params;
         
-        console.log(` Starting AI analysis for dealer ${dealerId}...`);
+        console.log(`🚨🚨🚨 NUOVO ENDPOINT CHIAMATO! AI analysis for dealer ${dealerId}...`);
         
         // Get all certificates for the dealer (using the same query as certificates page)
         const certificatesQuery = `
@@ -6938,10 +6938,32 @@ app.get('/api/vehicle-analysis/:dealerId', async (req, res) => {
         }
         
         // Analyze vehicle data for patterns
+        console.log(` 🔄 About to analyze vehicles...`);
         const analysis = analyzeVehiclesForGroups(certificates);
+        console.log(` ✅ Analysis completed, now filtering existing groups...`);
+        console.log(` 📊 Analysis result:`, analysis ? 'OK' : 'NULL');
         
-        // Generate AI suggestions
-        const suggestions = generateAIGroupSuggestions(analysis, dealerId);
+        // Get existing groups to filter out duplicates
+        console.log(` Getting existing groups for dealer ${dealerId}...`);
+        console.log(` About to query Supabase for existing groups...`);
+        const { data: existingGroups, error: groupsError } = await supabaseAdmin
+            .from('vehicle_groups')
+            .select('name')
+            .eq('dealer_id', dealerId)
+            .eq('is_active', true);
+            
+        if (groupsError) {
+            console.warn(' ❌ Warning: Could not load existing groups:', groupsError);
+        } else {
+            console.log(` ✅ Supabase query successful, got ${existingGroups ? existingGroups.length : 0} groups`);
+        }
+        
+        const existingGroupNames = existingGroups ? existingGroups.map(g => g.name.toLowerCase()) : [];
+        console.log(` Found ${existingGroupNames.length} existing groups:`, existingGroupNames);
+        console.log(` Raw existing groups:`, existingGroups ? existingGroups.map(g => g.name) : []);
+        
+        // Generate AI suggestions (filtered by existing groups)
+        const suggestions = generateAIGroupSuggestions(analysis, dealerId, existingGroupNames);
         
         console.log(` Generated ${suggestions.length} AI group suggestions`);
         
@@ -6999,6 +7021,16 @@ app.post('/api/vehicle-groups', async (req, res) => {
         
         if (error) {
             console.error('Supabase error:', error);
+            
+            // Handle unique constraint violation (duplicate group name)
+            if (error.code === '23505') {
+                return res.status(409).json({
+                    success: false,
+                    error: 'duplicate_group',
+                    message: `Il gruppo "${name}" esiste già per questo dealer`
+                });
+            }
+            
             throw error;
         }
         
@@ -7418,8 +7450,9 @@ function analyzeVehiclesForGroups(certificates) {
 }
 
 // Generate AI group suggestions based on analysis
-function generateAIGroupSuggestions(analysis, dealerId) {
+function generateAIGroupSuggestions(analysis, dealerId, existingGroupNames = []) {
     console.log(' Generating AI group suggestions...');
+    console.log(' Existing groups to filter out:', existingGroupNames);
     
     const suggestions = [];
     const colors = ['#FF5733', '#33FF57', '#3357FF', '#F3FF33', '#FF33F3', '#33FFF3', '#FF8C33', '#8C33FF'];
@@ -7432,8 +7465,16 @@ function generateAIGroupSuggestions(analysis, dealerId) {
         .filter(([brand, count]) => count >= 3 && brand !== 'Unknown')
         .sort(([,a], [,b]) => b - a)
         .forEach(([brand, count]) => {
+            const suggestionName = `${brand} Vehicles`;
+            
+            // Skip if group already exists
+            if (existingGroupNames.includes(suggestionName.toLowerCase())) {
+                console.log(` Skipping existing brand group: ${suggestionName}`);
+                return;
+            }
+            
             suggestions.push({
-                name: `${brand} Vehicles`,
+                name: suggestionName,
                 description: `All ${brand} vehicles (${count} vehicles)`,
                 color: colors[colorIndex % colors.length],
                 icon: icons[iconIndex % icons.length],
@@ -7459,8 +7500,18 @@ function generateAIGroupSuggestions(analysis, dealerId) {
                 'CNG': 'Metano'
             };
             
+            const suggestionName = `${fuelNames[fuelType] || fuelType} Vehicles`;
+            
+            // Skip if group already exists
+            console.log(` Checking fuel suggestion: "${suggestionName}" (lowercase: "${suggestionName.toLowerCase()}") against existing:`, existingGroupNames);
+            if (existingGroupNames.includes(suggestionName.toLowerCase())) {
+                console.log(` ✅ Skipping existing fuel group: ${suggestionName}`);
+                return;
+            }
+            console.log(` ➕ Adding fuel suggestion: ${suggestionName}`);
+            
             suggestions.push({
-                name: `${fuelNames[fuelType] || fuelType} Vehicles`,
+                name: suggestionName,
                 description: `All ${fuelType} vehicles (${count} vehicles)`,
                 color: colors[colorIndex % colors.length],
                 icon: fuelType === 'Electric' ? 'electric' : fuelType === 'Hybrid' ? 'hybrid' : 'fuel',
@@ -7479,8 +7530,16 @@ function generateAIGroupSuggestions(analysis, dealerId) {
     
     if (recentYears.length > 0) {
         recentYears.forEach(([year, count]) => {
+            const suggestionName = `Veicoli ${year}`;
+            
+            // Skip if group already exists
+            if (existingGroupNames.includes(suggestionName.toLowerCase())) {
+                console.log(` Skipping existing year group: ${suggestionName}`);
+                return;
+            }
+            
             suggestions.push({
-                name: `Veicoli ${year}`,
+                name: suggestionName,
                 description: `All vehicles from ${year} (${count} vehicles)`,
                 color: colors[colorIndex % colors.length],
                 icon: 'car',
@@ -7498,8 +7557,16 @@ function generateAIGroupSuggestions(analysis, dealerId) {
         .filter(([city, count]) => count >= 5 && city !== 'Unknown')
         .sort(([,a], [,b]) => b - a)
         .forEach(([city, count]) => {
+            const suggestionName = `Veicoli ${city}`;
+            
+            // Skip if group already exists
+            if (existingGroupNames.includes(suggestionName.toLowerCase())) {
+                console.log(` Skipping existing city group: ${suggestionName}`);
+                return;
+            }
+            
             suggestions.push({
-                name: `Veicoli ${city}`,
+                name: suggestionName,
                 description: `All vehicles from ${city} (${count} vehicles)`,
                 color: colors[colorIndex % colors.length],
                 icon: 'fleet',
@@ -7515,8 +7582,16 @@ function generateAIGroupSuggestions(analysis, dealerId) {
     Object.entries(analysis.byOdometer)
         .filter(([range, count]) => count >= 3 && range !== 'Unknown')
         .forEach(([range, count]) => {
+            const suggestionName = `Veicoli ${range}`;
+            
+            // Skip if group already exists
+            if (existingGroupNames.includes(suggestionName.toLowerCase())) {
+                console.log(` Skipping existing odometer group: ${suggestionName}`);
+                return;
+            }
+            
             suggestions.push({
-                name: `Veicoli ${range}`,
+                name: suggestionName,
                 description: `Vehicles with ${range} (${count} vehicles)`,
                 color: colors[colorIndex % colors.length],
                 icon: 'car',
@@ -7532,17 +7607,24 @@ function generateAIGroupSuggestions(analysis, dealerId) {
     if (analysis.byBrand['Dacia'] && analysis.byYear['2024']) {
         const dacia2024Count = Math.min(analysis.byBrand['Dacia'], analysis.byYear['2024']);
         if (dacia2024Count >= 2) {
-            suggestions.push({
-                name: 'Dacia 2024',
-                description: `All Dacia vehicles from 2024 (${dacia2024Count} vehicles)`,
-                color: colors[colorIndex % colors.length],
-                icon: 'car',
-                confidence: 0.9,
-                vehicleCount: dacia2024Count,
-                criteria: { brand: 'Dacia', year: '2024' },
-                type: 'combination'
-            });
-            colorIndex++;
+            const suggestionName = 'Dacia 2024';
+            
+            // Skip if group already exists
+            if (!existingGroupNames.includes(suggestionName.toLowerCase())) {
+                suggestions.push({
+                    name: suggestionName,
+                    description: `All Dacia vehicles from 2024 (${dacia2024Count} vehicles)`,
+                    color: colors[colorIndex % colors.length],
+                    icon: 'car',
+                    confidence: 0.9,
+                    vehicleCount: dacia2024Count,
+                    criteria: { brand: 'Dacia', year: '2024' },
+                    type: 'combination'
+                });
+                colorIndex++;
+            } else {
+                console.log(` Skipping existing combination group: ${suggestionName}`);
+            }
         }
     }
     
