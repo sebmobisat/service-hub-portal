@@ -7775,7 +7775,7 @@ app.post('/api/templates', express.json(), async (req, res) => {
             style,
             template_type,
             prompt: prompt?.trim() || null,
-            message_content: message_content.trim(),
+            message_content: message_content?.trim() || null,
             email_subject: email_subject?.trim() || null,
             is_favorite: !!is_favorite
         };
