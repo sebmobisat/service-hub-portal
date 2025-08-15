@@ -7813,6 +7813,7 @@ app.put('/api/templates/:templateId', express.json(), async (req, res) => {
         const updateData = req.body;
         
         console.log(`📄 Updating template ${templateId}`);
+        console.log('📋 Update data:', updateData);
         
         const { supabaseAdmin } = require('./config/supabase.js');
         

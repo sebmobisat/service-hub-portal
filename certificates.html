@@ -9662,10 +9662,16 @@
                     prompt: null,
                     message_content: message.trim(),
                     email_subject: channel === 'email' ? subject.trim() : null
-                };
+                                };
                 
+                console.log('🔄 Template save operation:', {
+                    isUpdating,
+                    selectedTemplateId,
+                    method: isUpdating ? 'PUT' : 'POST',
+                    url: isUpdating ? `/api/templates/${selectedTemplateId}` : '/api/templates'
+                });
 
-
+                
                 const url = isUpdating ? `/api/templates/${selectedTemplateId}` : '/api/templates';
                 const method = isUpdating ? 'PUT' : 'POST';
                 
@@ -9850,12 +9856,16 @@
                     prompt: (type === 'ai' || type === 'hybrid') && promptText ? promptText.trim() : null,
                     message_content: (type === 'manual' || type === 'hybrid') && content ? content.trim() : null,
                     email_subject: channel === 'email' && emailSubject ? emailSubject : null
-                };
+                                };
                 
+                console.log('🔄 AI Template save operation:', {
+                    isUpdating,
+                    selectedTemplateId,
+                    method: isUpdating ? 'PUT' : 'POST',
+                    url: isUpdating ? `/api/templates/${selectedTemplateId}` : '/api/templates'
+                });
 
                 
-
-
                 const url = isUpdating ? `/api/templates/${selectedTemplateId}` : '/api/templates';
                 const method = isUpdating ? 'PUT' : 'POST';
                 
