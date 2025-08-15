@@ -9464,19 +9464,17 @@
 
         // Handle template selection for AI dialog
         async function onTemplateSelectedAI() {
-            console.log('🔄 onTemplateSelectedAI called');
             const dropdown = document.getElementById('templateSelectorAI');
             const templateId = dropdown.value;
-            console.log('📋 Selected template ID:', templateId);
             
             if (!templateId) {
                 // Clear fields when no template selected
-                console.log('⚪ No template selected, clearing fields');
+
                 document.getElementById('aiPromptInput').value = '';
                 const emailSubjectInput = document.getElementById('emailSubjectInput');
                 if (emailSubjectInput) {
                     emailSubjectInput.value = '';
-                    console.log('✅ Cleared email subject input');
+
                 }
                 // Update save button text for no template selected
                 updateSaveButtonText('saveTemplateAIBtn', 'templateSelectorAI');
@@ -9504,15 +9502,11 @@
                 
                 // Apply email subject if present
                 const emailSubjectInput = document.getElementById('emailSubjectInput');
-                console.log('📧 AI Template subject:', template.email_subject);
-                console.log('📧 AI Subject input element:', emailSubjectInput);
                 
                 if (template.email_subject && emailSubjectInput) {
                     emailSubjectInput.value = template.email_subject;
-                    console.log('✅ AI Subject set to:', template.email_subject);
                 } else if (emailSubjectInput) {
                     emailSubjectInput.value = '';
-                    console.log('⚠️ AI No subject in template, cleared input');
                 } else {
                     console.log('❌ AI Subject input element not found');
                 }
@@ -9722,8 +9716,6 @@
 
         // Save template from AI dialog
         async function saveTemplateFromAI() {
-            console.log('🔄 Starting saveTemplateFromAI...');
-            
             const channelElement = document.querySelector('#channelToggleGroup .active-chip');
             const styleElement = document.querySelector('#styleToggleGroup .active-chip');
             const promptElement = document.getElementById('aiPromptInput');
@@ -9743,13 +9735,6 @@
             const style = styleElement?.dataset.value;
             const promptText = promptElement.value;
             const content = contentElement.value;
-            
-            console.log('📋 AI template data:', { 
-                channel, 
-                style, 
-                promptText: promptText?.length, 
-                content: content?.length 
-            });
             
             // Check if we're updating an existing template
             const dropdown = document.getElementById('templateSelectorAI');
@@ -9814,7 +9799,6 @@
             
             // Get template type from result (no need for second dialog!)
             const type = result.templateType || 'hybrid';
-            console.log('✅ Selected template type:', type);
             
             // Validate required fields based on template type
             if (type === 'ai' && (!promptText || !promptText.trim())) {
@@ -9868,8 +9852,7 @@
                     email_subject: channel === 'email' && emailSubject ? emailSubject : null
                 };
                 
-                console.log('📧 Email subject from input:', emailSubject);
-                console.log('📋 Final templateData.email_subject:', templateData.email_subject);
+
                 
 
 
