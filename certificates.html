@@ -9767,7 +9767,7 @@
                 return;
             }
             
-            if (!promptText.trim() && !content.trim()) {
+            if ((!promptText || !promptText.trim()) && (!content || !content.trim())) {
                 console.warn('❌ No prompt or content');
                 const lang = localStorage.getItem('servicehub-language') || 'it';
                 const title = lang === 'en' ? 'Warning' : 'Attenzione';
@@ -9817,7 +9817,7 @@
             console.log('✅ Selected template type:', type);
             
             // Validate required fields based on template type
-            if (type === 'ai' && !promptText.trim()) {
+            if (type === 'ai' && (!promptText || !promptText.trim())) {
                 console.warn('❌ AI template requires prompt');
             const lang = localStorage.getItem('servicehub-language') || 'it';
                 const title = lang === 'en' ? 'Warning' : 'Attenzione';
@@ -9826,7 +9826,7 @@
                 return;
             }
             
-            if (type === 'manual' && !content.trim()) {
+            if (type === 'manual' && (!content || !content.trim())) {
                 console.warn('❌ Manual template requires content');
                 const lang = localStorage.getItem('servicehub-language') || 'it';
                 const title = lang === 'en' ? 'Warning' : 'Attenzione';
@@ -9835,7 +9835,7 @@
                 return;
             }
             
-            if (type === 'hybrid' && (!promptText.trim() || !content.trim())) {
+            if (type === 'hybrid' && ((!promptText || !promptText.trim()) || (!content || !content.trim()))) {
                 console.warn('❌ Hybrid template requires both prompt and content');
                 const lang = localStorage.getItem('servicehub-language') || 'it';
                 const title = lang === 'en' ? 'Warning' : 'Attenzione';
@@ -9863,8 +9863,8 @@
                     channel: channel,
                     style: style || 'professional',
                     template_type: type,
-                    prompt: (type === 'ai' || type === 'hybrid') ? promptText.trim() : null,
-                    message_content: (type === 'manual' || type === 'hybrid') ? content.trim() : null,
+                    prompt: (type === 'ai' || type === 'hybrid') && promptText ? promptText.trim() : null,
+                    message_content: (type === 'manual' || type === 'hybrid') && content ? content.trim() : null,
                     email_subject: channel === 'email' && emailSubject ? emailSubject : null
                 };
                 
