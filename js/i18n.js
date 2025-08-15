@@ -1267,7 +1267,7 @@ class I18nManager {
             return;
         }
 
-        console.log('Changing language to:', lang);
+
         this.currentLanguage = lang;
         this.saveLanguage(lang);
         document.documentElement.lang = lang;
@@ -1445,7 +1445,7 @@ class I18nManager {
                 }
             }
             
-            console.log('Language buttons updated. Current language:', this.currentLanguage, 'Page:', window.location.pathname);
+
         }
     }
     
