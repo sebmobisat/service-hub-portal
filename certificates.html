@@ -6307,9 +6307,9 @@
                                 box-shadow: 0 4px 12px rgba(0, 174, 93, 0.4);
                                 position: relative;
                                 overflow: hidden;
-                            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(0, 174, 93, 0.5)'; this.querySelector('.shimmer-effect').style.left='100%';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0, 174, 93, 0.4)'; this.querySelector('.shimmer-effect').style.left='-100%';" data-i18n="group_filter.apply_filter">
+                            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(0, 174, 93, 0.5)'; var shimmer = this.querySelector('.shimmer-effect'); if(shimmer) shimmer.style.left='100%';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(0, 174, 93, 0.4)'; var shimmer = this.querySelector('.shimmer-effect'); if(shimmer) shimmer.style.left='-100%';" data-i18n="group_filter.apply_filter">
                                 <span style="position: relative; z-index: 1;" data-i18n="group_filter.apply_filter">Applica Filtro</span>
-                                <div style="
+                                <div class="shimmer-effect" style="
                                     position: absolute;
                                     top: 0;
                                     left: -100%;
