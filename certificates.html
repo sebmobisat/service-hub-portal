@@ -9664,12 +9664,7 @@
                     email_subject: channel === 'email' ? subject.trim() : null
                                 };
                 
-                console.log('🔄 Template save operation:', {
-                    isUpdating,
-                    selectedTemplateId,
-                    method: isUpdating ? 'PUT' : 'POST',
-                    url: isUpdating ? `/api/templates/${selectedTemplateId}` : '/api/templates'
-                });
+
 
                 
                 const url = isUpdating ? `/api/templates/${selectedTemplateId}` : '/api/templates';
@@ -9858,12 +9853,7 @@
                     email_subject: channel === 'email' && emailSubject ? emailSubject : null
                                 };
                 
-                console.log('🔄 AI Template save operation:', {
-                    isUpdating,
-                    selectedTemplateId,
-                    method: isUpdating ? 'PUT' : 'POST',
-                    url: isUpdating ? `/api/templates/${selectedTemplateId}` : '/api/templates'
-                });
+
 
                 
                 const url = isUpdating ? `/api/templates/${selectedTemplateId}` : '/api/templates';
