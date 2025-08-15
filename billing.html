@@ -474,7 +474,7 @@
           try {
               const parsed = JSON.parse(servicehubUser);
               dealerId = parsed.id;
-              console.log('✅ Found dealer ID in servicehub-user:', dealerId);
+
           } catch (e) {
               console.warn('⚠️ Invalid servicehub-user format');
           }
@@ -487,7 +487,7 @@
               try {
                   const parsed = JSON.parse(authData);
                   dealerId = parsed.dealerId;
-                  console.log('✅ Found dealer ID in authData:', dealerId);
+
               } catch (e) {
                   console.warn('⚠️ Invalid authData format');
               }
@@ -503,7 +503,7 @@
       // Forza aggiornamento traduzioni i18n
       if (window.i18n) {
         window.i18n.updateAllTranslations();
-        console.log('🌐 Traduzioni billing aggiornate');
+
       }
       
       // Date Range GeeksforGeeks Implementation
@@ -695,9 +695,15 @@
           const timestamp = Date.now(); // Cache busting
           const b = await fetch(`/api/billing/balance/${dealerId}?_t=${timestamp}`).then(r=>r.json());
           if (b?.success){
-            document.getElementById('balanceValue').textContent = formatEuroCents(b.balance_cents);
-            document.getElementById('balanceCurrency').textContent = b.currency || 'EUR';
-            console.log('💳 Balance aggiornato:', b.balance_cents, 'centesimi');
+            const balanceElement = document.getElementById('balanceValue');
+            const currencyElement = document.getElementById('balanceCurrency');
+            
+            if (balanceElement) {
+              balanceElement.textContent = formatEuroCents(b.balance_cents);
+            }
+            if (currencyElement) {
+              currencyElement.textContent = b.currency || 'EUR';
+            }
           } else {
             console.error('❌ Errore caricamento balance:', b);
           }
