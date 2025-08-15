@@ -2979,7 +2979,7 @@
                 populateDynamicDropdown(selectedType);
             }
             
-            console.log('🎯 Search type changed to:', selectedType);
+
         }
         // Populate dynamic dropdown based on search type
         function populateDynamicDropdown(type) {
@@ -3952,6 +3952,8 @@
         // Helper function to create a custom prompt dialog
         async function customPrompt(title, message, defaultValue = '') {
             return new Promise((resolve) => {
+                console.log('🔄 Opening custom prompt...', { title, message, defaultValue });
+                
                 const dialog = document.createElement('div');
                 dialog.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70] p-4';
                 dialog.innerHTML = `
@@ -3965,7 +3967,7 @@
                                 </div>
                                 <h3 class="text-xl font-bold text-white">${title}</h3>
                             </div>
-                            <button onclick="this.parentElement.parentElement.parentElement.remove(); resolve(null);" 
+                            <button id="customPromptCloseBtn" 
                                     class="text-gray-300 hover:text-white bg-gray-700/50 hover:bg-red-600/30 transition-all p-2.5 rounded-lg border border-gray-500 hover:border-red-400 group shadow-lg"
                                     title="Chiudi (ESC)">
                                 <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -3982,11 +3984,11 @@
                         </div>
                         
                         <div class="flex gap-3 mt-6 pt-4 border-t border-gray-700">
-                            <button onclick="this.parentElement.parentElement.parentElement.remove(); resolve(null);" 
+                            <button id="customPromptCancelBtn" 
                                     class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors">
                                 Annulla
                             </button>
-                            <button onclick="const val = document.getElementById('promptInput').value; this.parentElement.parentElement.parentElement.remove(); resolve(val || null);" 
+                            <button id="customPromptConfirmBtn" 
                                     class="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg transition-all">
                                 Conferma
                             </button>
@@ -3996,9 +3998,36 @@
                 
                 document.body.appendChild(dialog);
                 
+                // Setup event listeners
+                const closeBtn = document.getElementById('customPromptCloseBtn');
+                const cancelBtn = document.getElementById('customPromptCancelBtn');
+                const confirmBtn = document.getElementById('customPromptConfirmBtn');
+                const input = document.getElementById('promptInput');
+                
+                // Close dialog function
+                const closeDialog = (result = null) => {
+                    console.log('🔄 Closing custom prompt with result:', result);
+                    dialog.remove();
+                    document.removeEventListener('keydown', handleEsc);
+                    document.removeEventListener('keydown', handleEnter);
+                    resolve(result);
+                };
+                
+                // Close button
+                closeBtn.addEventListener('click', () => closeDialog(null));
+                
+                // Cancel button
+                cancelBtn.addEventListener('click', () => closeDialog(null));
+                
+                // Confirm button
+                confirmBtn.addEventListener('click', () => {
+                    const val = input.value;
+                    console.log('✅ Custom prompt confirmed:', val);
+                    closeDialog(val || null);
+                });
+                
                 // Focus on input
                 setTimeout(() => {
-                    const input = document.getElementById('promptInput');
                     input.focus();
                     input.select();
                 }, 100);
@@ -4006,9 +4035,8 @@
                 // ESC key support
                 const handleEsc = (e) => {
                     if (e.key === 'Escape') {
-                        dialog.remove();
-                        document.removeEventListener('keydown', handleEsc);
-                        resolve(null);
+                        console.log('⌨️ ESC key pressed, closing custom prompt');
+                        closeDialog(null);
                     }
                 };
                 document.addEventListener('keydown', handleEsc);
@@ -4016,29 +4044,76 @@
                 // Enter key support
                 const handleEnter = (e) => {
                     if (e.key === 'Enter') {
-                        const val = document.getElementById('promptInput').value;
-                        dialog.remove();
-                        document.removeEventListener('keydown', handleEsc);
-                        document.removeEventListener('keydown', handleEnter);
-                        resolve(val || null);
+                        console.log('⌨️ Enter key pressed, confirming custom prompt');
+                        confirmBtn.click();
                     }
                 };
                 document.addEventListener('keydown', handleEnter);
             });
         }
 
-        // New unified template dialog with name + description
-        async function showTemplateDialog(isEdit = false, currentName = '', currentDescription = '') {
+        // Unified template dialog with name, description and type selection
+        async function showTemplateDialog(isEdit = false, currentName = '', currentDescription = '', showTypeSelection = false, currentType = 'hybrid') {
             return new Promise((resolve) => {
+
+                
                 const lang = localStorage.getItem('servicehub-language') || 'it';
                 const title = isEdit 
                     ? (lang === 'en' ? 'Edit Template' : 'Modifica Template')
                     : (lang === 'en' ? 'Save Template' : 'Salva Template');
                 
+                const typeSelectionHtml = showTypeSelection ? `
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-3">
+                            ${lang === 'en' ? 'Template Type' : 'Tipo Template'} *
+                        </label>
+                        <div class="space-y-3">
+                            <label class="flex items-center p-3 bg-gray-700/50 rounded-lg border border-gray-600 hover:border-purple-500 transition-colors cursor-pointer">
+                                <input type="radio" name="templateType" value="ai" ${currentType === 'ai' ? 'checked' : ''} 
+                                       class="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 focus:ring-purple-500 focus:ring-2">
+                                <div class="ml-3">
+                                    <div class="text-white font-medium" data-it="🤖 Template AI" data-en="🤖 AI Template">
+                                        ${lang === 'en' ? '🤖 AI Template' : '🤖 Template AI'}
+                                    </div>
+                                    <div class="text-gray-400 text-sm" data-it="Salva solo il prompt AI per generare contenuti" data-en="Saves only the AI prompt for generating content">
+                                        ${lang === 'en' ? 'Saves only the AI prompt for generating content' : 'Salva solo il prompt AI per generare contenuti'}
+                                    </div>
+                                </div>
+                            </label>
+                            
+                            <label class="flex items-center p-3 bg-gray-700/50 rounded-lg border border-gray-600 hover:border-purple-500 transition-colors cursor-pointer">
+                                <input type="radio" name="templateType" value="manual" ${currentType === 'manual' ? 'checked' : ''} 
+                                       class="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 focus:ring-purple-500 focus:ring-2">
+                                <div class="ml-3">
+                                    <div class="text-white font-medium" data-it="✏️ Template Manuale" data-en="✏️ Manual Template">
+                                        ${lang === 'en' ? '✏️ Manual Template' : '✏️ Template Manuale'}
+                                    </div>
+                                    <div class="text-gray-400 text-sm" data-it="Salva solo il contenuto generato come testo fisso" data-en="Saves only the generated content as fixed text">
+                                        ${lang === 'en' ? 'Saves only the generated content as fixed text' : 'Salva solo il contenuto generato come testo fisso'}
+                                    </div>
+                                </div>
+                            </label>
+                            
+                            <label class="flex items-center p-3 bg-gray-700/50 rounded-lg border border-gray-600 hover:border-purple-500 transition-colors cursor-pointer">
+                                <input type="radio" name="templateType" value="hybrid" ${currentType === 'hybrid' ? 'checked' : ''} 
+                                       class="w-4 h-4 text-purple-600 bg-gray-700 border-gray-600 focus:ring-purple-500 focus:ring-2">
+                                <div class="ml-3">
+                                    <div class="text-white font-medium" data-it="🔗 Template Ibrido" data-en="🔗 Hybrid Template">
+                                        ${lang === 'en' ? '🔗 Hybrid Template' : '🔗 Template Ibrido'}
+                                    </div>
+                                    <div class="text-gray-400 text-sm" data-it="Salva sia il prompt AI che il contenuto generato" data-en="Saves both AI prompt and generated content">
+                                        ${lang === 'en' ? 'Saves both AI prompt and generated content' : 'Salva sia il prompt AI che il contenuto generato'}
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                ` : '';
+                
                 const dialog = document.createElement('div');
                 dialog.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70] p-4';
                 dialog.innerHTML = `
-                    <div class="bg-gray-800 rounded-xl p-6 w-full max-w-md border border-gray-600 shadow-2xl">
+                    <div class="bg-gray-800 rounded-xl p-6 w-full max-w-lg border border-gray-600 shadow-2xl max-h-[90vh] overflow-y-auto">
                         <div class="flex items-center justify-between mb-6">
                             <div class="flex items-center gap-3">
                                 <div class="p-2 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg">
@@ -4048,7 +4123,7 @@
                                 </div>
                                 <h3 class="text-xl font-bold text-white">${title}</h3>
                             </div>
-                            <button onclick="this.closest('.fixed').remove(); resolve(null);" 
+                            <button id="templateDialogCloseBtn" 
                                     class="text-gray-300 hover:text-white bg-gray-700/50 hover:bg-red-600/30 transition-all p-2.5 rounded-lg border border-gray-500 hover:border-red-400 group shadow-lg"
                                     title="Chiudi (ESC)">
                                 <svg class="w-6 h-6 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -4076,14 +4151,16 @@
                                           rows="3"
                                           placeholder="${lang === 'en' ? 'Enter description...' : 'Inserisci descrizione...'}">${currentDescription}</textarea>
                             </div>
+                            
+                            ${typeSelectionHtml}
                         </div>
                         
                         <div class="flex gap-3 mt-6 pt-4 border-t border-gray-700">
-                            <button onclick="this.closest('.fixed').remove(); resolve(null);" 
+                            <button id="templateDialogCancelBtn" 
                                     class="flex-1 px-4 py-2 bg-gray-600 hover:bg-gray-500 text-white rounded-lg transition-colors">
                                 ${lang === 'en' ? 'Cancel' : 'Annulla'}
                             </button>
-                            <button onclick="const name = document.getElementById('templateNameInput').value.trim(); const desc = document.getElementById('templateDescriptionInput').value.trim(); this.closest('.fixed').remove(); resolve(name ? {name, description: desc} : null);" 
+                            <button id="templateDialogConfirmBtn" 
                                     class="flex-1 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg transition-all">
                                 ${isEdit ? (lang === 'en' ? 'Save Changes' : 'Salva Modifiche') : (lang === 'en' ? 'Save Template' : 'Salva Template')}
                             </button>
@@ -4093,9 +4170,43 @@
                 
                 document.body.appendChild(dialog);
                 
+                // Setup event listeners
+                const closeBtn = document.getElementById('templateDialogCloseBtn');
+                const cancelBtn = document.getElementById('templateDialogCancelBtn');
+                const confirmBtn = document.getElementById('templateDialogConfirmBtn');
+                const nameInput = document.getElementById('templateNameInput');
+                
+                // Close dialog function
+                const closeDialog = (result = null) => {
+
+                    dialog.remove();
+                    document.removeEventListener('keydown', handleEscape);
+                    resolve(result);
+                };
+                
+                // Close button
+                closeBtn.addEventListener('click', () => closeDialog(null));
+                
+                // Cancel button
+                cancelBtn.addEventListener('click', () => closeDialog(null));
+                
+                // Confirm button
+                confirmBtn.addEventListener('click', () => {
+                    const name = nameInput.value.trim();
+                    const desc = document.getElementById('templateDescriptionInput').value.trim();
+                    
+                    let templateType = 'manual'; // Default for manual templates
+                    if (showTypeSelection) {
+                        const selectedType = document.querySelector('input[name="templateType"]:checked');
+                        templateType = selectedType ? selectedType.value : 'hybrid';
+                    }
+                    
+
+                    closeDialog(name ? {name, description: desc, templateType} : null);
+                });
+                
                 // Focus the name input
                 setTimeout(() => {
-                    const nameInput = document.getElementById('templateNameInput');
                     if (nameInput) {
                         nameInput.focus();
                         nameInput.select();
@@ -4105,12 +4216,18 @@
                 // Handle ESC key
                 const handleEscape = (e) => {
                     if (e.key === 'Escape') {
-                        dialog.remove();
-                        document.removeEventListener('keydown', handleEscape);
-                        resolve(null);
+                        console.log('⌨️ ESC key pressed, closing template dialog');
+                        closeDialog(null);
                     }
                 };
                 document.addEventListener('keydown', handleEscape);
+                
+                // Handle Enter key in name input
+                nameInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        confirmBtn.click();
+                    }
+                });
             });
         }
 
@@ -4716,9 +4833,7 @@
                 }
                 
                 // Only log if value is null/undefined or for debugging specific fields
-                if (value === null || value === undefined || ['vehicleBrand', 'deviceId'].includes(field)) {
-                    console.log(`📊 Field "${field}" for cert ${cert.id}: "${value}" (type: ${typeof value})`);
-                }
+
                 return value;
             } catch (error) {
                 console.error('Error getting certificate field value:', error, { cert, field });
@@ -4896,7 +5011,7 @@
                     return;
                 }
                 
-                console.log('🔄 Updating existing search:', currentSearch.name);
+
                 
                 const response = await fetch(`/api/saved-searches/${currentEditingSearchId}`, {
                     method: 'PUT',
@@ -4916,7 +5031,7 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    console.log('✅ Search updated:', data.data);
+
                     showCopyNotification(`✅ Ricerca "${currentSearch.name}" aggiornata con successo!`, 'success');
                     
                     // Save current dropdown selection before reloading
@@ -5226,13 +5341,13 @@
         // Load saved searches for current dealer
         async function loadSavedSearches() {
             try {
-                console.log('🔍 Loading saved searches for dealer:', currentDealerId);
+
                 const response = await fetch(`/api/saved-searches/${currentDealerId}`);
                 const data = await response.json();
                 
                 if (data.success) {
                     savedSearches = data.data;
-                    console.log(`✅ Loaded ${savedSearches.length} saved searches`);
+
                     renderSavedSearchesDropdown();
                     return savedSearches;
                 } else {
@@ -5288,7 +5403,7 @@
                     body: JSON.stringify(requestData)
                 });
                 
-                console.log('📡 Response status:', response.status, response.statusText);
+
                 
                 if (!response.ok) {
                     const errorText = await response.text();
@@ -5299,7 +5414,7 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    console.log('✅ Search saved:', data.data);
+
                     showCopyNotification(`${t('advanced_search.search_saved')}: ${name}`, 'success');
                     await loadSavedSearches(); // Reload list
                     return data.data;
@@ -5321,8 +5436,7 @@
         // Load and apply a saved search
         async function loadSavedSearch(searchId) {
             try {
-                console.log('📂 Loading saved search:', searchId, 'type:', typeof searchId);
-                console.log('📋 Available searches:', savedSearches.map(s => ({ id: s.id, name: s.name, idType: typeof s.id })));
+                
                 
                 // Find search in local array (handle both string and number IDs)
                 const search = savedSearches.find(s => s.id == searchId); // Use == instead of === for loose comparison
@@ -5363,7 +5477,7 @@
                 await markSearchAsUsed(searchId);
                 
                 showCopyNotification(`Ricerca caricata per modifica: ${search.name}`, 'success');
-                console.log('✅ Search loaded successfully for editing');
+
                 return true;
                 
             } catch (error) {
@@ -5407,7 +5521,7 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    console.log('✅ Search deleted:', data.data.name);
+
                     showCopyNotification(`Ricerca eliminata: ${data.data.name}`, 'success');
                     await loadSavedSearches(); // Reload list
                     return true;
@@ -5425,7 +5539,7 @@
         // Mark search as used (increment usage count)
         async function markSearchAsUsed(searchId) {
             try {
-                console.log('🎯 Marking search as used:', searchId);
+
                 const response = await fetch(`/api/saved-searches/${searchId}/use`, {
                     method: 'POST'
                 });
@@ -5433,7 +5547,7 @@
                 const data = await response.json();
                 
                 if (data.success) {
-                    console.log(`✅ Search usage updated: ${data.data.name} (${data.data.usage_count} uses)`);
+
                     // Update local array
                     const searchIndex = savedSearches.findIndex(s => s.id === searchId);
                     if (searchIndex !== -1) {
@@ -5474,7 +5588,7 @@
 
         // Handle saved search selection change
         async function handleSavedSearchSelection(searchId) {
-            console.log('🔄 Search selection changed:', searchId);
+
             
             const deleteButton = document.getElementById('deleteSearchButton');
             
@@ -5495,7 +5609,7 @@
             if (deleteButton) deleteButton.classList.remove('hidden');
             
             // Auto-load the selected search
-            console.log('📂 Auto-loading saved search ID:', searchId);
+            
             const success = await loadSavedSearch(searchId);
             if (success) {
                 showCopyNotification(`Ricerca "${success.name}" caricata per modifica!`, 'success');
@@ -5550,8 +5664,7 @@
 
         // Render saved searches dropdown (placeholder)
         function renderSavedSearchesDropdown() {
-            console.log('📋 Rendering saved searches dropdown with', savedSearches.length, 'searches');
-            console.log('📋 Searches data:', savedSearches);
+
             
             const dropdown = document.getElementById('savedSearchesDropdown');
             if (!dropdown) {
@@ -5570,7 +5683,7 @@
                 if (search.description) {
                     option.title = search.description;
                 }
-                console.log('➕ Adding option:', { value: search.id, text: option.textContent });
+
                 dropdown.appendChild(option);
             });
             
@@ -5942,11 +6055,11 @@
             document.addEventListener('keydown', handleVehicleGroupsEscape);
             
             // Load vehicle groups first, then AI suggestions
-            console.log('🔄 Loading vehicle groups...');
+
             await loadVehicleGroups();
-            console.log('✅ Vehicle groups loaded, now loading AI suggestions...');
+
             await loadAISuggestions(); // Load AI suggestions after groups are loaded
-            console.log('✅ AI suggestions loaded');
+
         }
 
         // Close vehicle groups modal
@@ -6011,8 +6124,6 @@
 
                 if (data.success) {
                     vehicleGroups = data.data;
-                    console.log('📁 Vehicle groups loaded:', vehicleGroups.length, 'groups');
-                    console.log('📝 Group names:', vehicleGroups.map(g => g.name).join(', '));
                     renderVehicleGroups();
                 } else {
                     throw new Error(data.message || 'Failed to load groups');
@@ -6934,13 +7045,12 @@
                 document.getElementById('aiSuggestionsList').innerHTML = '';
 
                 // Fetch AI suggestions from API
-                console.log('🌐 Fetching AI suggestions for dealer:', currentDealerId);
+    
                 const response = await fetch(`/api/vehicle-analysis/${currentDealerId}`);
                 const data = await response.json();
 
                 if (data.success) {
-                    console.log('🔍 AI Suggestions received:', data.data.suggestions.length, 'suggestions');
-                    console.log('📋 Suggestion names:', data.data.suggestions.map(s => s.name).join(', '));
+
                     renderAISuggestions(data.data.suggestions, data.data.statistics);
                 } else {
                     throw new Error(data.message || 'Failed to load AI suggestions');
@@ -7891,7 +8001,7 @@
                     };
                 });
                 
-                console.log('🔍 DEBUG: Final recipients sample:', recipients[0]);
+
             }
 
             if (!sendToTest && !selectedCerts.length) {
@@ -7921,7 +8031,7 @@
             }
 
             try {
-                console.log('🤖 Calling AI generation with:', { channel, style, prompt, recipients: recipients.length, useFields, language, dealerId });
+
                 
                 const response = await fetch('/api/communications/generate', {
                     method: 'POST',
@@ -7966,7 +8076,7 @@
                         ...document.querySelectorAll('input[type="text"]')
                     ].filter(Boolean);
                     
-                    console.log('🔍 Found possible subject fields:', possibleSubjectFields.length);
+
                     
                     const subjectToUse = data.email_subject;
                     
@@ -7980,12 +8090,11 @@
                         return;
                     }
                     
-                    console.log('📧 Oggetto email ricevuto dal server:', subjectToUse);
+
                     
                     // FORZA il popolamento su TUTTI i campi possibili
                     possibleSubjectFields.forEach((field, index) => {
                         if (field) {
-                            console.log(`📧 Setting subject on field ${index}:`, field.id || field.className);
                             field.value = subjectToUse;
                             field.setAttribute('value', subjectToUse);
                             // Trigger eventi per assicurarsi che il valore sia registrato
@@ -7994,7 +8103,7 @@
                         }
                     });
                     
-                    console.log('✅ FORCED email subject population:', subjectToUse);
+
                     
                     // BACKUP: Riprova dopo 500ms nel caso il DOM non fosse pronto
                     setTimeout(() => {
@@ -8003,8 +8112,6 @@
                             console.log('🔄 BACKUP: Re-setting email subject with:', subjectToUse);
                             backupField.value = subjectToUse;
                             backupField.dispatchEvent(new Event('input', { bubbles: true }));
-                        } else if (backupField) {
-                            console.log('✅ BACKUP: Field already has correct value:', backupField.value);
                         }
                     }, 500);
                 }
@@ -8028,7 +8135,7 @@
                         const newBalanceEuro = (data.newBalance / 100).toLocaleString(locale, {style: 'currency', currency: 'EUR'});
                         
                         balanceElement.textContent = newBalanceEuro;
-                        console.log('💰 Balance updated dynamically after AI generation:', newBalanceEuro);
+
                     } else {
                         console.error('💰 Balance element not found!');
                     }
@@ -8155,20 +8262,8 @@
             let recipients;
             if (isTestMode) {
                 const testClients = await fetch(`/api/communications/test-clients/${dealerId}`).then(r=>r.json()).then(j=> j.data||[]);
-                console.log('🔍 DEBUG TEST CLIENTS RAW:', testClients[0]);
-                console.log('🔍 DEBUG TEST CLIENTS AVAILABLE KEYS:', Object.keys(testClients[0] || {}));
                 
                 recipients = testClients.map(c => {
-                    console.log('🔍 DEBUG TEST CLIENT MAPPING:', {
-                        vehicle_brand: c.vehicle_brand,
-                        vehicle_model: c.vehicle_model,
-                        fuel_type: c.fuel_type,
-                        odometer: c.odometer,
-                        plate: c.plate,
-                        year: c.year,
-                        vin: c.vin,
-                        serial: c.serial
-                    });
                     
                     return {
                         id: c.id,
@@ -8186,11 +8281,9 @@
                     };
                 });
                 
-                console.log('🔍 DEBUG TEST RECIPIENTS FINAL:', recipients[0]);
+
             } else {
                 const selectedCerts = getSelectedCertificates();
-                console.log('🔍 DEBUG MANUAL: selectedCerts sample:', selectedCerts[0]);
-                console.log('🔍 DEBUG MANUAL: Available keys:', Object.keys(selectedCerts[0] || {}));
                 
                 recipients = selectedCerts.map(cert => {
                     console.log('🔍 DEBUG MANUAL: Processing cert:', {
@@ -8282,7 +8375,7 @@
                         const newBalanceEuro = (data.newBalance / 100).toLocaleString(locale, {style: 'currency', currency: 'EUR'});
                         
                         balanceElement.textContent = newBalanceEuro;
-                        console.log('💰 Balance updated dynamically:', newBalanceEuro);
+
                     } else {
                         console.error('💰 Balance element not found!');
                     }
@@ -8377,85 +8470,100 @@
             
             if (!container || !textarea) return;
 
+            // Clear existing event listeners by cloning and replacing elements
+            const newTextarea = textarea.cloneNode(true);
+            textarea.parentNode.replaceChild(newTextarea, textarea);
+
             // Add drag and drop functionality to AI tags
             container.querySelectorAll('.tag-item').forEach(tag => {
-                tag.addEventListener('dragstart', (e) => {
-                    e.dataTransfer.setData('text/plain', tag.dataset.tag);
-                    tag.classList.add('dragging');
+                // Remove existing listeners by cloning
+                const newTag = tag.cloneNode(true);
+                tag.parentNode.replaceChild(newTag, tag);
+                
+                newTag.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', newTag.dataset.tag);
+                    newTag.classList.add('dragging');
                 });
 
-                tag.addEventListener('dragend', () => {
-                    tag.classList.remove('dragging');
+                newTag.addEventListener('dragend', () => {
+                    newTag.classList.remove('dragging');
                 });
             });
+
+            // Get the new textarea reference after cloning
+            const updatedTextarea = document.getElementById('aiResults');
 
             // Make textarea a drop zone
-            textarea.addEventListener('dragover', (e) => {
+            updatedTextarea.addEventListener('dragover', (e) => {
                 e.preventDefault();
-                textarea.classList.add('drag-over');
+                updatedTextarea.classList.add('drag-over');
             });
 
-            textarea.addEventListener('dragleave', () => {
-                textarea.classList.remove('drag-over');
+            updatedTextarea.addEventListener('dragleave', () => {
+                updatedTextarea.classList.remove('drag-over');
             });
 
-            textarea.addEventListener('drop', (e) => {
+            updatedTextarea.addEventListener('drop', (e) => {
                 e.preventDefault();
-                textarea.classList.remove('drag-over');
+                updatedTextarea.classList.remove('drag-over');
                 
                 const tagData = e.dataTransfer.getData('text/plain');
                 if (tagData) {
-                    const cursorPos = textarea.selectionStart;
-                    const textBefore = textarea.value.substring(0, cursorPos);
-                    const textAfter = textarea.value.substring(cursorPos);
+                    const cursorPos = updatedTextarea.selectionStart;
+                    const textBefore = updatedTextarea.value.substring(0, cursorPos);
+                    const textAfter = updatedTextarea.value.substring(cursorPos);
                     
-                    textarea.value = textBefore + `{${tagData}}` + textAfter;
+                    updatedTextarea.value = textBefore + `{${tagData}}` + textAfter;
                     
                     // Position cursor after inserted tag
                     const newPos = cursorPos + tagData.length + 2;
-                    textarea.setSelectionRange(newPos, newPos);
-                    textarea.focus();
+                    updatedTextarea.setSelectionRange(newPos, newPos);
+                    updatedTextarea.focus();
                     
                     // Visual feedback
-                    textarea.classList.add('tag-inserted');
+                    updatedTextarea.classList.add('tag-inserted');
                     setTimeout(() => {
-                        textarea.classList.remove('tag-inserted');
+                        updatedTextarea.classList.remove('tag-inserted');
                     }, 500);
                 }
             });
 
             // Add drag and drop to email subject input if it exists
             if (emailSubjectInput) {
-                emailSubjectInput.addEventListener('dragover', (e) => {
+                // Clear existing event listeners by cloning
+                const newEmailSubjectInput = emailSubjectInput.cloneNode(true);
+                emailSubjectInput.parentNode.replaceChild(newEmailSubjectInput, emailSubjectInput);
+                
+                newEmailSubjectInput.addEventListener('dragover', (e) => {
                     e.preventDefault();
-                    emailSubjectInput.classList.add('drag-over');
+                    newEmailSubjectInput.classList.add('drag-over');
                 });
 
-                emailSubjectInput.addEventListener('dragleave', () => {
-                    emailSubjectInput.classList.remove('drag-over');
+                newEmailSubjectInput.addEventListener('dragleave', () => {
+                    newEmailSubjectInput.classList.remove('drag-over');
                 });
 
-                emailSubjectInput.addEventListener('drop', (e) => {
+                newEmailSubjectInput.addEventListener('drop', (e) => {
                     e.preventDefault();
-                    emailSubjectInput.classList.remove('drag-over');
+                    newEmailSubjectInput.classList.remove('drag-over');
                     
                     const tagData = e.dataTransfer.getData('text/plain');
                     if (tagData) {
-                        const cursorPos = emailSubjectInput.selectionStart;
-                        const textBefore = emailSubjectInput.value.substring(0, cursorPos);
-                        const textAfter = emailSubjectInput.value.substring(cursorPos);
+                        const cursorPos = newEmailSubjectInput.selectionStart;
+                        const textBefore = newEmailSubjectInput.value.substring(0, cursorPos);
+                        const textAfter = newEmailSubjectInput.value.substring(cursorPos);
                         
-                        emailSubjectInput.value = textBefore + `{${tagData}}` + textAfter;
+                        newEmailSubjectInput.value = textBefore + `{${tagData}}` + textAfter;
                         
                         // Position cursor after inserted tag
                         const newPos = cursorPos + tagData.length + 2;
-                        emailSubjectInput.setSelectionRange(newPos, newPos);
-                        emailSubjectInput.focus();
+                        newEmailSubjectInput.setSelectionRange(newPos, newPos);
+                        newEmailSubjectInput.focus();
                         
                         // Visual feedback
-                        emailSubjectInput.classList.add('tag-inserted');
+                        newEmailSubjectInput.classList.add('tag-inserted');
                         setTimeout(() => {
-                            emailSubjectInput.classList.remove('tag-inserted');
+                            newEmailSubjectInput.classList.remove('tag-inserted');
                         }, 500);
                     }
                 });
@@ -8506,24 +8614,38 @@
             // Store tags data for language updates
             window.draggableTagsData = tags;
 
-            // Make textarea a drop zone
+            // Make textarea a drop zone - clear existing listeners first
             const textarea = document.getElementById('manualMessageInput');
             if (textarea) {
-                textarea.addEventListener('dragover', handleDragOver);
-                textarea.addEventListener('drop', handleDrop);
-                textarea.addEventListener('dragenter', handleDragEnter);
-                textarea.addEventListener('dragleave', handleDragLeave);
+                // Clear existing event listeners by cloning
+                const newTextarea = textarea.cloneNode(true);
+                textarea.parentNode.replaceChild(newTextarea, textarea);
+                
+                // Get the new textarea reference after cloning
+                const updatedTextarea = document.getElementById('manualMessageInput');
+                
+                updatedTextarea.addEventListener('dragover', handleDragOver);
+                updatedTextarea.addEventListener('drop', handleDrop);
+                updatedTextarea.addEventListener('dragenter', handleDragEnter);
+                updatedTextarea.addEventListener('dragleave', handleDragLeave);
                 
                 // Update preview on input
-                textarea.addEventListener('input', () => {
+                updatedTextarea.addEventListener('input', () => {
                     updateManualMessagePreview();
                 });
             }
             
-            // Add listener for email subject input to update preview
+            // Add listener for email subject input to update preview - clear existing listeners first
             const emailSubjectInput = document.getElementById('emailSubjectInputNoAI');
             if (emailSubjectInput) {
-                emailSubjectInput.addEventListener('input', () => {
+                // Clear existing event listeners by cloning
+                const newEmailSubjectInput = emailSubjectInput.cloneNode(true);
+                emailSubjectInput.parentNode.replaceChild(newEmailSubjectInput, emailSubjectInput);
+                
+                // Get the new email subject input reference after cloning
+                const updatedEmailSubjectInput = document.getElementById('emailSubjectInputNoAI');
+                
+                updatedEmailSubjectInput.addEventListener('input', () => {
                     updateManualMessagePreview();
                 });
             }
@@ -8859,9 +8981,16 @@
                 const costEuro = (totalCost / 100).toLocaleString('it-IT', {style: 'currency', currency: 'EUR'});
                 
                 // Show confirmation dialog
-                const confirmMessage = channel === 'email' 
-                    ? window.i18n ? window.i18n.t('manual_contact.confirm_send_email', { count: testClients.length, cost: costEuro }) : `Stai per inviare ${testClients.length} email al costo di ${costEuro}. Sei sicuro di voler procedere?`
-                    : window.i18n ? window.i18n.t('manual_contact.confirm_send_whatsapp', { count: testClients.length, cost: costEuro }) : `Stai per inviare ${testClients.length} WhatsApp al costo di ${costEuro}. Sei sicuro di voler procedere?`;
+                let confirmMessage;
+                if (channel === 'email') {
+                    confirmMessage = window.i18n 
+                        ? window.i18n.t('manual_contact.confirm_send_email', { count: testClients.length, cost: costEuro })
+                        : `Stai per inviare ${testClients.length} email al costo di ${costEuro}. Sei sicuro di voler procedere?`;
+                } else {
+                    confirmMessage = window.i18n 
+                        ? window.i18n.t('manual_contact.confirm_send_whatsapp', { count: testClients.length, cost: costEuro })
+                        : `Stai per inviare ${testClients.length} WhatsApp al costo di ${costEuro}. Sei sicuro di voler procedere?`;
+                }
                 
                 const lang = localStorage.getItem('servicehub-language') || 'it';
                 const title = lang === 'en' ? 'Confirm Sending' : 'Conferma Invio';
@@ -8915,9 +9044,16 @@
             const costEuro = (totalCost / 100).toLocaleString('it-IT', {style: 'currency', currency: 'EUR'});
             
             // Show confirmation dialog
-            const confirmMessage = channel === 'email' 
-                ? window.i18n ? window.i18n.t('manual_contact.confirm_send_email', { count: selectedCerts.length, cost: costEuro }) : `Stai per inviare ${selectedCerts.length} email al costo di ${costEuro}. Sei sicuro di voler procedere?`
-                : window.i18n ? window.i18n.t('manual_contact.confirm_send_whatsapp', { count: selectedCerts.length, cost: costEuro }) : `Stai per inviare ${selectedCerts.length} WhatsApp al costo di ${costEuro}. Sei sicuro di voler procedere?`;
+            let confirmMessage;
+            if (channel === 'email') {
+                confirmMessage = window.i18n 
+                    ? window.i18n.t('manual_contact.confirm_send_email', { count: selectedCerts.length, cost: costEuro })
+                    : `Stai per inviare ${selectedCerts.length} email al costo di ${costEuro}. Sei sicuro di voler procedere?`;
+            } else {
+                confirmMessage = window.i18n 
+                    ? window.i18n.t('manual_contact.confirm_send_whatsapp', { count: selectedCerts.length, cost: costEuro })
+                    : `Stai per inviare ${selectedCerts.length} WhatsApp al costo di ${costEuro}. Sei sicuro di voler procedere?`;
+            }
             
             const lang = localStorage.getItem('servicehub-language') || 'it';
             const title = lang === 'en' ? 'Confirm Sending' : 'Conferma Invio';
@@ -9193,7 +9329,7 @@
                     dropdown.appendChild(option);
                 });
                 
-                console.log(`📋 Populated ${dropdownId} with ${templates.length} templates, cached ${templateCache.size} total`);
+
             } catch (error) {
                 console.error('Error populating template dropdown:', error);
             }
@@ -9205,7 +9341,7 @@
         // Clear template cache when needed (e.g., after saving new template)
         function clearTemplateCache() {
             templateCache.clear();
-            console.log('🗑️ Template cache cleared');
+
         }
 
         // Update save button text based on template selection
@@ -9231,11 +9367,14 @@
 
         // Handle template selection for manual dialog
         async function onTemplateSelectedManual() {
+
             const dropdown = document.getElementById('templateSelectorNoAI');
             const templateId = dropdown.value;
+
             
             if (!templateId) {
                 // Clear fields when no template selected
+
                 document.getElementById('emailSubjectInputNoAI').value = '';
                 document.getElementById('manualMessageInput').value = '';
                 updateManualMessagePreview();
@@ -9266,13 +9405,13 @@
                     return;
                 }
 
-                console.log('📋 Loading template:', template.name, 'Subject:', template.email_subject);
+    
 
                 // Apply template to form - ALWAYS set subject first
                 const subjectInput = document.getElementById('emailSubjectInputNoAI');
                 if (template.email_subject && subjectInput) {
                     subjectInput.value = template.email_subject;
-                    console.log('✅ Subject set to:', template.email_subject);
+
                 } else {
                     subjectInput.value = '';
                     console.log('⚠️ No subject in template or input not found');
@@ -9325,10 +9464,20 @@
 
         // Handle template selection for AI dialog
         async function onTemplateSelectedAI() {
+            console.log('🔄 onTemplateSelectedAI called');
             const dropdown = document.getElementById('templateSelectorAI');
             const templateId = dropdown.value;
+            console.log('📋 Selected template ID:', templateId);
             
             if (!templateId) {
+                // Clear fields when no template selected
+                console.log('⚪ No template selected, clearing fields');
+                document.getElementById('aiPromptInput').value = '';
+                const emailSubjectInput = document.getElementById('emailSubjectInput');
+                if (emailSubjectInput) {
+                    emailSubjectInput.value = '';
+                    console.log('✅ Cleared email subject input');
+                }
                 // Update save button text for no template selected
                 updateSaveButtonText('saveTemplateAIBtn', 'templateSelectorAI');
                 return;
@@ -9354,8 +9503,18 @@
                 }
                 
                 // Apply email subject if present
-                if (template.email_subject) {
-                    document.getElementById('emailSubjectInput').value = template.email_subject;
+                const emailSubjectInput = document.getElementById('emailSubjectInput');
+                console.log('📧 AI Template subject:', template.email_subject);
+                console.log('📧 AI Subject input element:', emailSubjectInput);
+                
+                if (template.email_subject && emailSubjectInput) {
+                    emailSubjectInput.value = template.email_subject;
+                    console.log('✅ AI Subject set to:', template.email_subject);
+                } else if (emailSubjectInput) {
+                    emailSubjectInput.value = '';
+                    console.log('⚠️ AI No subject in template, cleared input');
+                } else {
+                    console.log('❌ AI Subject input element not found');
                 }
                 
                 // Set channel if different
@@ -9408,28 +9567,50 @@
 
         // Save template from manual dialog
         async function saveTemplateFromManual() {
-            const channel = document.querySelector('#channelToggleGroupNoAI .active-chip')?.dataset.value;
-            const subject = document.getElementById('emailSubjectInputNoAI').value;
-            const message = document.getElementById('manualMessageInput').value;
+
+            
+            const channelElement = document.querySelector('#channelToggleGroupNoAI .active-chip');
+            const subjectElement = document.getElementById('emailSubjectInputNoAI');
+            const messageElement = document.getElementById('manualMessageInput');
+            
+
+            
+            if (!subjectElement || !messageElement) {
+                console.error('❌ Required DOM elements not found');
+                const title = 'Errore';
+                const messageText = 'Elementi dell\'interfaccia non trovati. Ricarica la pagina.';
+                await window.customDialog.alert(title, messageText, 'OK');
+                return;
+            }
+            
+            const channel = channelElement?.dataset.value;
+            const subject = subjectElement.value;
+            const message = messageElement.value;
+            
+
             
             // Check if we're updating an existing template
             const dropdown = document.getElementById('templateSelectorNoAI');
             const selectedTemplateId = dropdown?.value;
             const isUpdating = selectedTemplateId && selectedTemplateId !== '';
             
+
+            
             if (!channel) {
+                console.warn('❌ No channel selected');
                 const lang = localStorage.getItem('servicehub-language') || 'it';
                 const title = lang === 'en' ? 'Warning' : 'Attenzione';
-                const message = lang === 'en' ? 'Select a channel first' : 'Seleziona prima un canale';
-                await window.customDialog.alert(title, message, 'OK');
+                const messageText = lang === 'en' ? 'Select a channel first' : 'Seleziona prima un canale';
+                await window.customDialog.alert(title, messageText, 'OK');
                 return;
             }
             
             if (!message.trim()) {
+                console.warn('❌ No message content');
                 const lang = localStorage.getItem('servicehub-language') || 'it';
                 const title = lang === 'en' ? 'Warning' : 'Attenzione';
-                const message = lang === 'en' ? 'Enter a message before saving' : 'Inserisci un messaggio prima di salvare';
-                await window.customDialog.alert(title, message, 'OK');
+                const messageText = lang === 'en' ? 'Enter a message before saving' : 'Inserisci un messaggio prima di salvare';
+                await window.customDialog.alert(title, messageText, 'OK');
                 return;
             }
 
@@ -9437,63 +9618,103 @@
             if (isUpdating) {
                 // Get existing template data for editing
                 try {
+
                     const existingTemplate = templateCache.get(selectedTemplateId);
                     if (existingTemplate) {
-                        result = await showTemplateDialog(true, existingTemplate.name, existingTemplate.description);
+
+                        result = await showTemplateDialog(
+                            true, 
+                            existingTemplate.name, 
+                            existingTemplate.description, 
+                            false, // No type selection for manual templates
+                            'manual'
+                        );
                     } else {
-                        result = await showTemplateDialog(true);
+                        console.log('⚠️ Template not in cache, showing empty dialog');
+                        result = await showTemplateDialog(true, '', '', false, 'manual');
                     }
                 } catch (error) {
-                    console.error('Error loading existing template:', error);
-                    result = await showTemplateDialog(true);
+                    console.error('❌ Error loading existing template:', error);
+                    result = await showTemplateDialog(true, '', '', false, 'manual');
                 }
             } else {
                 // Creating new template
-                result = await showTemplateDialog(false);
+                console.log('➕ Creating new manual template');
+                result = await showTemplateDialog(false, '', '', false, 'manual');
             }
-            if (!result) return;
+            
+            if (!result) {
+
+                return;
+            }
+            
+
 
             try {
                 const dealerId = getCurrentDealerId();
+
+                
+                if (!dealerId) {
+                    throw new Error('Dealer ID non trovato. Rieffettua il login.');
+                }
+                
                 const templateData = {
                     dealer_id: dealerId,
                     name: result.name,
                     description: result.description,
                     channel: channel,
                     style: 'professional', // Default style for manual templates
-                    template_type: 'manual',
+                    template_type: result.templateType || 'manual',
                     prompt: null,
                     message_content: message.trim(),
                     email_subject: channel === 'email' ? subject.trim() : null
                 };
+                
+
 
                 const url = isUpdating ? `/api/templates/${selectedTemplateId}` : '/api/templates';
                 const method = isUpdating ? 'PUT' : 'POST';
+                
+
                 
                 const response = await fetch(url, {
                     method: method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(templateData)
                 });
+                
+
 
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || 'Errore nel salvataggio');
+                    const errorText = await response.text();
+                    console.error('❌ Server error response:', errorText);
+                    let errorMessage = 'Errore nel salvataggio';
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        errorMessage = errorJson.error || errorMessage;
+                    } catch (e) {
+                        errorMessage = errorText || errorMessage;
+                    }
+                    throw new Error(errorMessage);
                 }
+
+                const responseData = await response.json();
+
 
                 const lang = localStorage.getItem('servicehub-language') || 'it';
                 const title = lang === 'en' ? 'Success' : 'Successo';
-                const message = isUpdating 
+                const messageText = isUpdating 
                     ? (lang === 'en' ? 'Changes saved successfully!' : 'Modifiche salvate con successo!')
                     : (lang === 'en' ? 'Template saved successfully!' : 'Template salvato con successo!');
-                await window.customDialog.alert(title, message, 'OK');
+                await window.customDialog.alert(title, messageText, 'OK');
                 
                 // Clear cache and refresh template dropdown
+
                 clearTemplateCache();
                 populateTemplateDropdown('templateSelectorNoAI', 'manual', channel);
                 
             } catch (error) {
-                console.error('Error saving template:', error);
+                console.error('❌ Error saving manual template:', error);
                 const title = localStorage.getItem('servicehub-language') === 'en' ? 'Error' : 'Errore';
                 await window.customDialog.alert(title, 'Errore nel salvataggio del template: ' + error.message, 'OK');
             }
@@ -9501,17 +9722,44 @@
 
         // Save template from AI dialog
         async function saveTemplateFromAI() {
-            const channel = document.querySelector('#channelToggleGroup .active-chip')?.dataset.value;
-            const style = document.querySelector('#styleToggleGroup .active-chip')?.dataset.value;
-            const promptText = document.getElementById('aiPromptInput').value;
-            const content = document.getElementById('aiResults').value;
+            console.log('🔄 Starting saveTemplateFromAI...');
+            
+            const channelElement = document.querySelector('#channelToggleGroup .active-chip');
+            const styleElement = document.querySelector('#styleToggleGroup .active-chip');
+            const promptElement = document.getElementById('aiPromptInput');
+            const contentElement = document.getElementById('aiResults');
+            
+
+            
+            if (!promptElement || !contentElement) {
+                console.error('❌ Required DOM elements not found');
+                const title = 'Errore';
+                const messageText = 'Elementi dell\'interfaccia non trovati. Ricarica la pagina.';
+                await window.customDialog.alert(title, messageText, 'OK');
+                return;
+            }
+            
+            const channel = channelElement?.dataset.value;
+            const style = styleElement?.dataset.value;
+            const promptText = promptElement.value;
+            const content = contentElement.value;
+            
+            console.log('📋 AI template data:', { 
+                channel, 
+                style, 
+                promptText: promptText?.length, 
+                content: content?.length 
+            });
             
             // Check if we're updating an existing template
             const dropdown = document.getElementById('templateSelectorAI');
             const selectedTemplateId = dropdown?.value;
             const isUpdating = selectedTemplateId && selectedTemplateId !== '';
             
+
+            
             if (!channel) {
+                console.warn('❌ No channel selected');
                 const lang = localStorage.getItem('servicehub-language') || 'it';
                 const title = lang === 'en' ? 'Warning' : 'Attenzione';
                 const message = lang === 'en' ? 'Select a channel first' : 'Seleziona prima un canale';
@@ -9520,6 +9768,7 @@
             }
             
             if (!promptText.trim() && !content.trim()) {
+                console.warn('❌ No prompt or content');
                 const lang = localStorage.getItem('servicehub-language') || 'it';
                 const title = lang === 'en' ? 'Warning' : 'Attenzione';
                 const message = lang === 'en' ? 'Generate an AI communication first or enter a prompt' : 'Genera prima una comunicazione AI o inserisci un prompt';
@@ -9531,33 +9780,82 @@
             if (isUpdating) {
                 // Get existing template data for editing
                 try {
+
                     const existingTemplate = templateCache.get(selectedTemplateId);
                     if (existingTemplate) {
-                        result = await showTemplateDialog(true, existingTemplate.name, existingTemplate.description);
+
+                        result = await showTemplateDialog(
+                            true, 
+                            existingTemplate.name, 
+                            existingTemplate.description, 
+                            true, // Show type selection for AI templates
+                            existingTemplate.template_type || 'hybrid'
+                        );
                     } else {
-                        result = await showTemplateDialog(true);
+                        console.log('⚠️ Template not in cache, showing empty dialog');
+                        result = await showTemplateDialog(true, '', '', true, 'hybrid');
                     }
                 } catch (error) {
-                    console.error('Error loading existing template:', error);
-                    result = await showTemplateDialog(true);
+                    console.error('❌ Error loading existing template:', error);
+                    result = await showTemplateDialog(true, '', '', true, 'hybrid');
                 }
             } else {
-                // Creating new template
-                result = await showTemplateDialog(false);
+                // Creating new template - show unified dialog with type selection
+                console.log('➕ Creating new AI template');
+                result = await showTemplateDialog(false, '', '', true, 'hybrid');
             }
-            if (!result) return;
             
+            if (!result) {
+
+                return;
+            }
+            
+
+            
+            // Get template type from result (no need for second dialog!)
+            const type = result.templateType || 'hybrid';
+            console.log('✅ Selected template type:', type);
+            
+            // Validate required fields based on template type
+            if (type === 'ai' && !promptText.trim()) {
+                console.warn('❌ AI template requires prompt');
             const lang = localStorage.getItem('servicehub-language') || 'it';
-            const templateTypePrompt = lang === 'en' 
-                ? 'Choose template type:\n1 = AI (prompt only)\n2 = Manual (content only)\n3 = Hybrid (both)'
-                : 'Scegli il tipo di template:\n1 = AI (solo prompt)\n2 = Manuale (solo contenuto)\n3 = Ibrido (entrambi)';
-            const templateType = await customPrompt('Tipo Template', templateTypePrompt, '3');
-            let type = 'hybrid';
-            if (templateType === '1') type = 'ai';
-            else if (templateType === '2') type = 'manual';
+                const title = lang === 'en' ? 'Warning' : 'Attenzione';
+                const message = lang === 'en' ? 'AI prompt is required for AI templates' : 'Il prompt AI è obbligatorio per i template AI';
+                await window.customDialog.alert(title, message, 'OK');
+                return;
+            }
+            
+            if (type === 'manual' && !content.trim()) {
+                console.warn('❌ Manual template requires content');
+                const lang = localStorage.getItem('servicehub-language') || 'it';
+                const title = lang === 'en' ? 'Warning' : 'Attenzione';
+                const message = lang === 'en' ? 'Message content is required for manual templates' : 'Il contenuto del messaggio è obbligatorio per i template manuali';
+                await window.customDialog.alert(title, message, 'OK');
+                return;
+            }
+            
+            if (type === 'hybrid' && (!promptText.trim() || !content.trim())) {
+                console.warn('❌ Hybrid template requires both prompt and content');
+                const lang = localStorage.getItem('servicehub-language') || 'it';
+                const title = lang === 'en' ? 'Warning' : 'Attenzione';
+                const message = lang === 'en' ? 'Both AI prompt and message content are required for hybrid templates' : 'Sia il prompt AI che il contenuto del messaggio sono obbligatori per i template ibridi';
+                await window.customDialog.alert(title, message, 'OK');
+                return;
+            }
 
             try {
                 const dealerId = getCurrentDealerId();
+
+                
+                if (!dealerId) {
+                    throw new Error('Dealer ID non trovato. Rieffettua il login.');
+                }
+                
+                // Get email subject from input field
+                const emailSubjectInput = document.getElementById('emailSubjectInput');
+                const emailSubject = emailSubjectInput ? emailSubjectInput.value.trim() : '';
+                
                 const templateData = {
                     dealer_id: dealerId,
                     name: result.name,
@@ -9566,23 +9864,43 @@
                     style: style || 'professional',
                     template_type: type,
                     prompt: (type === 'ai' || type === 'hybrid') ? promptText.trim() : null,
-                    message_content: (type === 'manual' || type === 'hybrid') ? content.trim() : '',
-                    email_subject: null // Will be generated by AI
+                    message_content: (type === 'manual' || type === 'hybrid') ? content.trim() : null,
+                    email_subject: channel === 'email' && emailSubject ? emailSubject : null
                 };
+                
+                console.log('📧 Email subject from input:', emailSubject);
+                console.log('📋 Final templateData.email_subject:', templateData.email_subject);
+                
+
 
                 const url = isUpdating ? `/api/templates/${selectedTemplateId}` : '/api/templates';
                 const method = isUpdating ? 'PUT' : 'POST';
+                
+
                 
                 const response = await fetch(url, {
                     method: method,
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(templateData)
                 });
+                
+
 
                 if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || 'Errore nel salvataggio');
+                    const errorText = await response.text();
+                    console.error('❌ Server error response:', errorText);
+                    let errorMessage = 'Errore nel salvataggio';
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        errorMessage = errorJson.error || errorMessage;
+                    } catch (e) {
+                        errorMessage = errorText || errorMessage;
+                    }
+                    throw new Error(errorMessage);
                 }
+
+                const responseData = await response.json();
+
 
                 const title = localStorage.getItem('servicehub-language') === 'en' ? 'Success' : 'Successo';
                 const message = isUpdating 
@@ -9591,11 +9909,12 @@
                 await window.customDialog.alert(title, message, 'OK');
                 
                 // Clear cache and refresh template dropdown
+
                 clearTemplateCache();
                 populateTemplateDropdown('templateSelectorAI', 'ai', channel);
                 
             } catch (error) {
-                console.error('Error saving template:', error);
+                console.error('❌ Error saving AI template:', error);
                 const title = localStorage.getItem('servicehub-language') === 'en' ? 'Error' : 'Errore';
                 await window.customDialog.alert(title, 'Errore nel salvataggio del template: ' + error.message, 'OK');
             }

@@ -90,29 +90,33 @@ INSERT INTO ai_prompts (
 Contesto: {context}
 Informazioni cliente: {clientInfo}
 Dati veicolo: {vehicleData}
+Istruzioni dealer: {dealerInstructions}
 
-Scrivi un''email che:
-- Sia professionale ma cordiale
-- Includa tutte le informazioni rilevanti
-- Sia chiara e diretta
-- Mantenga un tono rispettoso
-- Includa un saluto appropriato e una chiusura professionale
+ISTRUZIONI IMPORTANTI:
+- Usa SOLO i placeholder forniti in {clientInfo}
+- Struttura il messaggio con paragrafi separati (usa \\n\\n per separare)
+- NON aggiungere firme, saluti finali o informazioni di contatto (vengono aggiunti automaticamente dal sistema)
+- NON inventare placeholder non forniti
+- Mantieni un tono professionale ma cordiale
+- Includi tutte le informazioni rilevanti dal contesto
 
-Genera SOLO il contenuto dell''email, senza intestazioni aggiuntive.',
+Genera SOLO il contenuto del messaggio, senza firme o chiusure.',
     'You are a professional assistant for an automotive services company. Write a professional and friendly email communication for clients.
 
 Context: {context}
 Client information: {clientInfo}
 Vehicle data: {vehicleData}
+Dealer instructions: {dealerInstructions}
 
-Write an email that:
-- Is professional but friendly
-- Includes all relevant information
-- Is clear and direct
-- Maintains a respectful tone
-- Includes appropriate greeting and professional closing
+IMPORTANT INSTRUCTIONS:
+- Use ONLY the placeholders provided in {clientInfo}
+- Structure the message with separate paragraphs (use \\n\\n to separate)
+- DO NOT add signatures, final greetings, or contact information (added automatically by the system)
+- DO NOT invent placeholders not provided
+- Maintain a professional but friendly tone
+- Include all relevant information from the context
 
-Generate ONLY the email content, without additional headers.',
+Generate ONLY the message content, without signatures or closings.',
     'Prompt per generare comunicazioni email professionali ai clienti',
     'Prompt for generating professional email communications to clients',
     '["context", "clientInfo", "vehicleData", "clientName", "vehicleModel", "licensePlate"]'::jsonb,

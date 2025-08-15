@@ -60,12 +60,10 @@ async function getAIPrompt(promptKey, language = 'it') {
         const cacheKey = `${promptKey}_${language}`;
         
         if (promptCache.has(cacheKey) && now < promptCacheExpiry) {
-            console.log(`📋 Using cached prompt: ${promptKey}`);
             return promptCache.get(cacheKey);
         }
         
         // Query dal database
-        console.log(`📋 Loading prompt from database: ${promptKey}`);
         const { data: prompts, error } = await supabaseAdmin
             .from('ai_prompts')
             .select('*')
@@ -97,7 +95,7 @@ async function getAIPrompt(promptKey, language = 'it') {
         promptCache.set(cacheKey, result);
         promptCacheExpiry = now + PROMPT_CACHE_DURATION;
         
-        console.log(`✅ Loaded prompt: ${promptKey}, tokens: ${result.maxTokens}, temp: ${result.temperature}`);
+
         return result;
         
     } catch (error) {
@@ -1477,14 +1475,12 @@ app.post('/api/communications/generate', express.json(), async (req, res) => {
                     };
                     const promptStyle = styleMapping[style] || 'informal';
                     const promptKey = channel === 'email' ? `communication_email_${promptStyle}` : `communication_whatsapp_${promptStyle}`;
-                    console.log(`🎨 Using style: ${style} -> prompt: ${promptKey}`);
                     const dbPrompt = await getAIPrompt(promptKey, language);
                     
                     let systemMessage, userMessage, maxTokens, temperature;
                     
                     if (dbPrompt) {
                         // Usa prompt dal database
-                        console.log(`📋 Using database prompt: ${promptKey}`);
                         systemMessage = language === 'it' ? 'Sei un assistente professionale che scrive messaggi di contatto per clienti di un concessionario.' : 'You are a professional assistant writing outreach messages to dealership customers.';
                         
                         // Sostituisci le variabili nel prompt
@@ -1522,7 +1518,6 @@ ${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci ESATTAME
                         { role: 'system', content: systemMessage },
                         { role: 'user', content: userMessage }
                     ];
-                    console.log('🤖 Calling OpenAI with model: gpt-4o');
                     const completion = await openai.chat.completions.create({ 
                         model: 'gpt-4o', 
                         messages,
@@ -1530,15 +1525,12 @@ ${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci ESATTAME
                         temperature: temperature
                     });
                     const rawResponse = completion.choices?.[0]?.message?.content?.trim() || '';
-                    console.log('🎯 OpenAI response received from model:', completion.model);
                     
                     // Parse response for email (JSON format) or regular message
                     if (channel === 'email') {
-                        console.log('🤖 AI raw response for email:', rawResponse);
                         try {
                             // Pulisci i markdown code blocks prima del parsing
                             const cleanedResponse = rawResponse.replace(/```json\s*/gi, '').replace(/```\s*$/gi, '').trim();
-                            console.log('🧹 Cleaned response for parsing:', cleanedResponse);
                             const parsed = JSON.parse(cleanedResponse);
                             baseMessage = parsed.message || rawResponse;
                             emailSubject = parsed.subject || '';
@@ -1546,33 +1538,28 @@ ${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci ESATTAME
                             // Pulisci il messaggio da testi di stop
                             baseMessage = baseMessage.replace(/\[STOP[^\]]*\]/gi, '').trim();
                             
-                            console.log('✅ JSON parsed successfully:');
-                            console.log('  - Subject:', emailSubject);
-                            console.log('  - Subject length:', emailSubject?.length || 0);
-                            console.log('  - Message length:', baseMessage.length);
-                            console.log('  - Raw parsed object:', parsed);
+
                         } catch (parseError) {
                             console.warn('❌ JSON parsing failed:', parseError.message, 'Raw response:', rawResponse);
                             // Fallback if JSON parsing fails
                             baseMessage = rawResponse.replace(/\[STOP[^\]]*\]/gi, '').trim();
                             emailSubject = language === 'it' ? 'Comunicazione Service Portal' : 'Service Portal Communication';
-                            console.log('🔄 Using fallback subject:', emailSubject);
+
                         }
                     } else {
                         // Per WhatsApp/SMS, anche se l'AI restituisce JSON, prendiamo solo il messaggio
-                        console.log('🤖 AI raw response for WhatsApp/SMS:', rawResponse);
                         try {
                             const parsed = JSON.parse(rawResponse);
                             if (parsed.message) {
                                 baseMessage = parsed.message;
-                                console.log('⚠️ AI returned JSON for WhatsApp, extracted message only');
+
                     } else {
                         baseMessage = rawResponse;
                             }
                         } catch (parseError) {
                             // Non è JSON, usa direttamente la risposta
                             baseMessage = rawResponse;
-                            console.log('✅ Using raw response for WhatsApp/SMS');
+    
                         }
                         
                         // Pulisci il messaggio da testi di stop anche per WhatsApp/SMS
@@ -1846,11 +1833,7 @@ ${channel === 'email' ? (language === 'it' ? 'OBBLIGATORIO: Restituisci ESATTAME
             // Return all results for test mode, or just first for normal preview
             const isTestMode = req.body.sendToTestClients || false;
             const returnResults = isTestMode ? results : (results.length ? [results[0]] : []);
-            console.log('📤 SENDING RESPONSE TO FRONTEND:');
-            console.log('  - Channel:', channel);
-            console.log('  - Email Subject:', channel === 'email' ? emailSubject : 'N/A (not email)');
-            console.log('  - Email Subject Length:', emailSubject?.length || 0);
-            console.log('  - Base Message Length:', baseMessage?.length || 0);
+
             
             return res.json({ 
                 success: true, 
@@ -6743,7 +6726,7 @@ app.get('/api/communications/test-clients/:dealerId', async (req, res) => {
         
         // DEBUG: Log del primo cliente test per vedere i dati del veicolo
         if (data && data.length > 0) {
-            console.log('🚗 DEBUG TEST CLIENT SAMPLE:', JSON.stringify(data[0], null, 2));
+            // Test client data available
         }
         
         res.json({ success: true, data });
@@ -7752,11 +7735,33 @@ app.post('/api/templates', express.json(), async (req, res) => {
         
         console.log(`📄 Creating template "${name}" for dealer ${dealer_id}`);
         
-        // Validazioni
-        if (!dealer_id || !name || !channel || !style || !template_type || !message_content) {
+        // Validazioni base
+        if (!dealer_id || !name || !channel || !style || !template_type) {
             return res.status(400).json({ 
                 success: false, 
-                error: 'Missing required fields: dealer_id, name, channel, style, template_type, message_content' 
+                error: 'Missing required fields: dealer_id, name, channel, style, template_type' 
+            });
+        }
+        
+        // Validazioni specifiche per tipo di template
+        if (template_type === 'manual' && !message_content) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'message_content is required for manual templates' 
+            });
+        }
+        
+        if (template_type === 'ai' && !prompt) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'prompt is required for AI templates' 
+            });
+        }
+        
+        if (template_type === 'hybrid' && (!prompt || !message_content)) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Both prompt and message_content are required for hybrid templates' 
             });
         }
         
