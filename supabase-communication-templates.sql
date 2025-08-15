@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS public.communication_templates (
   
   -- SEPARAZIONE CONTENUTI AI vs MANUALE
   prompt text, -- Solo per template AI (può essere NULL per template manuali)
-  message_content text NOT NULL, -- Contenuto del messaggio (sempre presente)
+  message_content text, -- Contenuto del messaggio (NULL per template AI-only)
   email_subject text, -- Oggetto email (solo per channel='email')
   
   -- TIPO TEMPLATE
@@ -31,7 +31,13 @@ CREATE TABLE IF NOT EXISTS public.communication_templates (
   updated_at timestamptz DEFAULT now(),
   
   -- VINCOLI
-  UNIQUE(dealer_id, name, channel)
+  UNIQUE(dealer_id, name, channel),
+  
+  -- Constraint condizionale per message_content
+  CONSTRAINT check_message_content_for_type CHECK (
+    (template_type = 'ai' AND message_content IS NULL) OR 
+    (template_type IN ('manual', 'hybrid') AND message_content IS NOT NULL)
+  )
 );
 
 -- Indici per performance
@@ -68,20 +74,9 @@ CREATE TRIGGER update_communication_templates_updated_at BEFORE UPDATE
 
 -- Template di esempio per testing
 INSERT INTO public.communication_templates (dealer_id, name, description, channel, style, template_type, prompt, message_content, email_subject, is_favorite) VALUES
-(1, 'Promemoria Tagliando', 'Template per promemoria manutenzione veicolo', 'email', 'professional', 'ai', 
- 'Scrivi un promemoria professionale per il tagliando del veicolo, menzionando i chilometri raggiunti e l''importanza della manutenzione preventiva.',
- '{SALUTATION},
-
-La contattiamo per ricordarle che il suo {VEICOLO} con targa {TARGA} ha raggiunto {KM} chilometri.
-
-È il momento ideale per un controllo di manutenzione presso la nostra officina. La manutenzione preventiva garantisce:
-- Sicurezza di guida
-- Prestazioni ottimali
-- Risparmio sui costi futuri
-
-La preghiamo di contattarci per fissare un appuntamento.
-
-Cordiali saluti',
+(1, 'Promemoria Tagliando AI', 'Template AI-only per promemoria manutenzione veicolo', 'email', 'professional', 'ai', 
+ 'Scrivi un promemoria professionale per il tagliando del veicolo, menzionando i chilometri raggiunti e l''importanza della manutenzione preventiva. Includi i placeholder {SALUTATION}, {VEICOLO}, {TARGA} e {KM}.',
+ NULL, -- AI-only template non ha message_content
  'Promemoria Tagliando - {VEICOLO} {TARGA}',
  true),
 
@@ -117,4 +112,4 @@ Cordiali saluti',
 COMMENT ON TABLE public.communication_templates IS 'Template per comunicazioni AI e manuali del Service Hub';
 COMMENT ON COLUMN public.communication_templates.template_type IS 'Tipo template: ai (solo AI), manual (solo manuale), hybrid (entrambi)';
 COMMENT ON COLUMN public.communication_templates.prompt IS 'Prompt per AI (NULL per template manuali)';
-COMMENT ON COLUMN public.communication_templates.message_content IS 'Contenuto del messaggio con placeholder';
+COMMENT ON COLUMN public.communication_templates.message_content IS 'Contenuto del messaggio con placeholder (NULL per template AI-only)';
