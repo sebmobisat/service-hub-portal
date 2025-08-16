@@ -20,24 +20,39 @@ class VonageService {
         console.log('🔍 Raw private key length:', process.env.VONAGE_PRIVATE_KEY?.length || 0);
         
         // Check if service should be enabled
-        this.isEnabled = !!(this.apiKey && this.apiSecret && this.applicationId && this.privateKey);
+        // Sandbox mode: requires only API Key + Secret
+        // Production mode: requires API Key + Secret + Application ID + Private Key
+        this.isEnabled = !!(this.apiKey && this.apiSecret);
         this.whatsappEnabled = !!(this.isEnabled && this.whatsappNumber);
         this.smsEnabled = !!(this.isEnabled && this.fromNumber);
         
         if (this.isEnabled) {
             try {
-                console.log('🔧 PROCESSING PRIVATE KEY...');
-                console.log('✅ PRIVATE KEY PROCESSED');
-                console.log('🔍 Processed private key starts with:', this.privateKey.substring(0, 30) + '...');
-                console.log('🔍 Processed private key length:', this.privateKey.length);
-                console.log('🔍 Processed private key ends with:', this.privateKey.substring(this.privateKey.length - 30));
+                console.log('🔧 INITIALIZING VONAGE CLIENT...');
                 
-                this.vonage = new Vonage({
-                    apiKey: this.apiKey,
-                    apiSecret: this.apiSecret,
-                    applicationId: this.applicationId,
-                    privateKey: this.privateKey
-                });
+                // For Sandbox: use API Key + Secret only (no JWT)
+                // For Production: use Application ID + Private Key (with JWT)
+                if (this.applicationId && this.privateKey) {
+                    console.log('🔧 Using Application ID + Private Key (Production mode)');
+                    console.log('🔧 PROCESSING PRIVATE KEY...');
+                    console.log('✅ PRIVATE KEY PROCESSED');
+                    console.log('🔍 Processed private key starts with:', this.privateKey.substring(0, 30) + '...');
+                    console.log('🔍 Processed private key length:', this.privateKey.length);
+                    console.log('🔍 Processed private key ends with:', this.privateKey.substring(this.privateKey.length - 30));
+                    
+                    this.vonage = new Vonage({
+                        apiKey: this.apiKey,
+                        apiSecret: this.apiSecret,
+                        applicationId: this.applicationId,
+                        privateKey: this.privateKey
+                    });
+                } else {
+                    console.log('🔧 Using API Key + Secret only (Sandbox mode)');
+                    this.vonage = new Vonage({
+                        apiKey: this.apiKey,
+                        apiSecret: this.apiSecret
+                    });
+                }
                 
                 console.log('✅ Vonage client initialized successfully');
             } catch (error) {
