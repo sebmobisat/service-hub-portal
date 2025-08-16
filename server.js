@@ -8209,6 +8209,8 @@ app.post('/api/test-vonage', express.json(), async (req, res) => {
         }
         
         console.log(`🧪 Testing Vonage: Dealer ${dealerId} → ${customerPhone} (${channel})`);
+        console.log('🔍 ConversationManager exists:', !!conversationManager);
+        console.log('🔍 ConversationManager type:', typeof conversationManager);
         
         console.log('🔄 Calling conversationManager.sendDealerMessage...');
         
