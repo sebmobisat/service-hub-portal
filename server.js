@@ -8211,17 +8211,26 @@ app.post('/api/test-vonage', express.json(), async (req, res) => {
         console.log(`🧪 Testing Vonage: Dealer ${dealerId} → ${customerPhone} (${channel})`);
         
         console.log('🔄 Calling conversationManager.sendDealerMessage...');
-        const result = await conversationManager.sendDealerMessage(
-            dealerId, 
-            customerPhone, 
-            message, 
-            language,
-            channel
-        );
         
-        console.log('✅ ConversationManager result:', JSON.stringify(result, null, 2));
-        
-        res.json(result);
+        try {
+            const result = await conversationManager.sendDealerMessage(
+                dealerId, 
+                customerPhone, 
+                message, 
+                language,
+                channel
+            );
+            
+            console.log('✅ ConversationManager result:', JSON.stringify(result, null, 2));
+            res.json(result);
+        } catch (error) {
+            console.error('❌ ConversationManager ERROR:', error);
+            console.error('❌ Error stack:', error.stack);
+            res.status(500).json({ 
+                success: false, 
+                error: error.message 
+            });
+        }
     } catch (error) {
         console.error('❌ Test Vonage error:', error);
         res.status(500).json({ 
