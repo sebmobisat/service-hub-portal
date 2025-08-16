@@ -16,6 +16,7 @@ const Stripe = require('stripe');
 const FMB003Mapping = require('./js/fmb003-mapping.js');
 const { emailService } = require('./js/email-service.js');
 const { SupabasePinManager } = require('./js/supabase-pin-manager.js');
+const ConversationManager = require('./js/conversation-manager.js');
 
 // Initialize Twilio for WhatsApp (if credentials are available)
 let twilioClient = null;
@@ -43,6 +44,9 @@ try {
     console.error('❌ Failed to load Twilio module:', error.message);
     console.error('❌ Full error:', error);
 }
+
+// Initialize ConversationManager (handles Vonage service)
+const conversationManager = new ConversationManager();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -8187,6 +8191,43 @@ app.post('/api/templates/:templateId/use', async (req, res) => {
     } catch (error) {
         console.error('❌ Error in increment template usage:', error);
         res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// 🧪 Vonage Test Endpoint
+app.post('/api/test-vonage', express.json(), async (req, res) => {
+    try {
+        console.log('🔍 DEBUG - Request body:', req.body);
+        console.log('🔍 DEBUG - Request headers:', req.headers);
+        const { dealerId, customerPhone, message, language = 'it', channel = 'auto' } = req.body;
+        
+        if (!dealerId || !customerPhone || !message) {
+            return res.status(400).json({ 
+                success: false, 
+                error: 'Missing required fields: dealerId, customerPhone, message' 
+            });
+        }
+        
+        console.log(`🧪 Testing Vonage: Dealer ${dealerId} → ${customerPhone} (${channel})`);
+        
+        console.log('🔄 Calling conversationManager.sendDealerMessage...');
+        const result = await conversationManager.sendDealerMessage(
+            dealerId, 
+            customerPhone, 
+            message, 
+            language,
+            channel
+        );
+        
+        console.log('✅ ConversationManager result:', JSON.stringify(result, null, 2));
+        
+        res.json(result);
+    } catch (error) {
+        console.error('❌ Test Vonage error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
     }
 });
 
