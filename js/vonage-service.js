@@ -71,24 +71,38 @@ class VonageService {
     processPrivateKey(rawKey) {
         if (!rawKey) return null;
         
+        console.log('🔧 PROCESSING PRIVATE KEY - Input type:', typeof rawKey);
+        console.log('🔧 PROCESSING PRIVATE KEY - Input length:', rawKey.length);
+        console.log('🔧 PROCESSING PRIVATE KEY - First 50 chars:', rawKey.substring(0, 50));
+        console.log('🔧 PROCESSING PRIVATE KEY - Last 50 chars:', rawKey.substring(rawKey.length - 50));
+        
         // If already formatted, return as is
         if (rawKey.includes('-----BEGIN PRIVATE KEY-----')) {
-            return rawKey;
+            console.log('✅ Key already formatted with BEGIN/END markers');
+            // Ensure proper line breaks
+            let formattedKey = rawKey.replace(/\\n/g, '\n');
+            console.log('🔧 After newline replacement:', formattedKey.substring(0, 100));
+            return formattedKey;
         }
         
         // If base64 encoded, decode it
         try {
+            console.log('🔧 Attempting base64 decode...');
             const decoded = Buffer.from(rawKey, 'base64').toString('utf8');
             if (decoded.includes('-----BEGIN PRIVATE KEY-----')) {
-                return decoded;
+                console.log('✅ Successfully decoded base64 key');
+                return decoded.replace(/\\n/g, '\n');
             }
         } catch (e) {
-            // Not base64, continue
+            console.log('❌ Base64 decode failed:', e.message);
         }
         
         // Assume it's raw key content, format it
+        console.log('🔧 Formatting raw key content...');
         const lines = rawKey.match(/.{1,64}/g) || [];
-        return `-----BEGIN PRIVATE KEY-----\n${lines.join('\n')}\n-----END PRIVATE KEY-----`;
+        const formatted = `-----BEGIN PRIVATE KEY-----\n${lines.join('\n')}\n-----END PRIVATE KEY-----`;
+        console.log('✅ Formatted key:', formatted.substring(0, 100) + '...');
+        return formatted;
     }
 
     /**
@@ -110,8 +124,8 @@ class VonageService {
             return { success: true, channel: 'simulated', messageId: 'simulated-' + Date.now(), cost: 0 };
         }
 
-        // Try WhatsApp first if enabled
-        if (this.whatsappEnabled && this.whatsappNumber) {
+        // TEMPORARY: Skip WhatsApp for testing, go directly to SMS
+        if (false && this.whatsappEnabled && this.whatsappNumber) {
             try {
                 const whatsappResult = await this.sendWhatsAppMessage(to, message, language);
                 if (whatsappResult.success) {
