@@ -79,9 +79,22 @@ class VonageService {
         // If already formatted, return as is
         if (rawKey.includes('-----BEGIN PRIVATE KEY-----')) {
             console.log('✅ Key already formatted with BEGIN/END markers');
-            // Ensure proper line breaks
-            let formattedKey = rawKey.replace(/\\n/g, '\n');
-            console.log('🔧 After newline replacement:', formattedKey.substring(0, 100));
+            // Clean up the key: remove quotes and fix newlines
+            let formattedKey = rawKey
+                .replace(/^"|"$/g, '') // Remove leading/trailing quotes
+                .replace(/\\n/g, '\n') // Replace literal \n with actual newlines
+                .replace(/\s+/g, ' ') // Normalize spaces
+                .replace(/ -----/g, '\n-----') // Fix header/footer
+                .replace(/----- /g, '-----\n') // Fix header/footer
+                .trim();
+            
+            // Ensure proper formatting
+            if (!formattedKey.endsWith('\n')) {
+                formattedKey += '\n';
+            }
+            
+            console.log('🔧 After cleanup:', formattedKey.substring(0, 100));
+            console.log('🔧 Key ends with:', formattedKey.substring(formattedKey.length - 50));
             return formattedKey;
         }
         
