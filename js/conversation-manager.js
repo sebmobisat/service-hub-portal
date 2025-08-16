@@ -20,37 +20,50 @@ class ConversationManager {
     async sendDealerMessage(dealerId, customerPhone, message, language = 'it', channel = 'auto') {
         try {
             console.log(`💬 Dealer ${dealerId} sending message to ${customerPhone} via ${channel}`);
+            console.log(`🔍 ConversationManager - VonageService status:`, this.vonageService.getStatus());
             
             // Validate inputs
             if (!dealerId || !customerPhone || !message) {
+                console.log('❌ Missing required parameters');
                 return {
                     success: false,
                     error: 'Missing required parameters: dealerId, customerPhone, message'
                 };
             }
 
+            console.log('✅ Parameters validated');
+            
             // Ensure phone number is in E.164 format
+            console.log('🔧 Formatting phone number...');
             const formattedPhone = this.formatPhoneNumber(customerPhone);
+            console.log(`📱 Formatted phone: ${formattedPhone}`);
             
             let result;
             
+            console.log(`🔀 Processing channel: ${channel}`);
+            
             switch (channel) {
                 case 'whatsapp':
+                    console.log('📱 Forcing WhatsApp only...');
                     // Force WhatsApp only
                     result = await this.vonageService.sendMessage(formattedPhone, message, language, true);
                     break;
                     
                 case 'sms':
+                    console.log('📞 Forcing SMS only...');
                     // Force SMS only
                     result = await this.vonageService.sendSMS(formattedPhone, message, language);
                     break;
                     
                 case 'auto':
                 default:
+                    console.log('🔄 Auto mode - trying WhatsApp first...');
                     // Try WhatsApp first, fallback to SMS
                     result = await this.vonageService.sendMessage(formattedPhone, message, language, false);
                     break;
             }
+            
+            console.log('🎯 VonageService call completed, result:', result);
 
             // Log the result
             if (result.success) {
