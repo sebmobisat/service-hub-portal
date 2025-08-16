@@ -124,8 +124,8 @@ class VonageService {
             return { success: true, channel: 'simulated', messageId: 'simulated-' + Date.now(), cost: 0 };
         }
 
-        // TEMPORARY: Skip WhatsApp for testing, go directly to SMS
-        if (false && this.whatsappEnabled && this.whatsappNumber) {
+        // Try WhatsApp first if enabled
+        if (this.whatsappEnabled && this.whatsappNumber) {
             try {
                 const whatsappResult = await this.sendWhatsAppMessage(to, message, language);
                 if (whatsappResult.success) {
